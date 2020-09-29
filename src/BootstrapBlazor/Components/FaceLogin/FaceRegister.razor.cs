@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components
@@ -9,13 +6,9 @@ namespace BootstrapBlazor.Components
     /// <summary>
     /// 
     /// </summary>
-    public sealed partial class FaceLogin
+    public sealed partial class FaceRegister
     {
         private ElementReference FaceElement { get; set; }
-
-#nullable disable
-        private Modal ModalSetting { get; set; }
-#nullable restore
 
         /// <summary>
         /// OnAfterRenderAsync 方法
@@ -26,7 +19,7 @@ namespace BootstrapBlazor.Components
         {
             await base.OnAfterRenderAsync(firstRender);
 
-            if (firstRender) await JSRuntime.InvokeVoidAsync(FaceElement, "bb_face");
+            if (firstRender) await JSRuntime.InvokeVoidAsync(FaceElement, "bb_face", "register");
         }
 
         private async Task OnRegister()

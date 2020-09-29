@@ -1,0 +1,14 @@
+﻿@namespace BootstrapBlazor.Components
+@inherits BootstrapComponentBase
+@inject BaiduFaceAIHttpClient BaiduFaceHttpClient
+
+<div class="face-lab" @ref="FaceElement">
+    <div class="face-lab-header">
+        <video></video>
+        <canvas></canvas>
+    </div>
+    <div class="face-lab-footer">
+        <Button Text="注册" Icon="fa fa-user" data-method="register" />
+        <Button Text="拍照" Icon="fa fa-user" IsDisabled="true" data-method="capture" />
+    </div>
+</div>
