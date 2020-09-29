@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<PopoverService>();
             services.AddScoped<ToastService>();
             services.AddScoped<SwalService>();
+            services.AddHttpClient<BaiduFaceAIHttpClient>();
             return services;
         }
     }
