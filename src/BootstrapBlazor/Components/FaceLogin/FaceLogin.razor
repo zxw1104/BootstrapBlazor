@@ -6,15 +6,20 @@
     <video class="face-header"></video>
     <canvas></canvas>
     <div class="face-footer">
-        <Button Text="注册" Icon="fa fa-user" data-method="register" />
-        <Button Text="拍照" Icon="fa fa-user" IsDisabled="true" data-method="capture" />
         <Button Text="登录" Icon="fa fa-user" />
         <Button Text="设置" Icon="fa fa-gear" />
     </div>
 
     <Modal @ref="ModalSetting">
-        <ModalDialog>
-
+        <ModalDialog Title="人脸识别设置">
+            <BodyTemplate>
+                <Button Text="注册" Icon="fa fa-user" data-method="register" />
+                <Button Text="拍照" Icon="fa fa-user" IsDisabled="true" data-method="capture" />
+            </BodyTemplate>
+            <FooterTemplate>
+                <Button Text="注册" Icon="fa fa-user" data-method="register" />
+                <Button Text="拍照" Icon="fa fa-user" IsDisabled="true" data-method="capture" />
+            </FooterTemplate>
         </ModalDialog>
     </Modal>
 </div>

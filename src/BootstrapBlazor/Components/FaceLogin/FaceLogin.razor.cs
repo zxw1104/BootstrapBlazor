@@ -13,6 +13,10 @@ namespace BootstrapBlazor.Components
     {
         private ElementReference FaceElement { get; set; }
 
+#nullable disable
+        private Modal ModalSetting { get; set; }
+#nullable restore
+
         /// <summary>
         /// OnAfterRenderAsync 方法
         /// </summary>
