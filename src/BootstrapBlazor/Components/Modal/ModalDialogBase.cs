@@ -38,7 +38,7 @@ namespace BootstrapBlazor.Components
         public Size Size { get; set; } = Size.Large;
 
         /// <summary>
-        /// 获得/设置 是否垂直居中 默认为 true
+        /// 获得/设置 是否垂直居中 默认为 false
         /// </summary>
         [Parameter]
         public bool IsCentered { get; set; }
