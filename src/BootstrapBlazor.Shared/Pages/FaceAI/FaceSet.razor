@@ -1,0 +1,26 @@
+﻿@namespace BootstrapBlazor.Shared.Pages
+@page "/face-set"
+@inject DialogService Dialog
+
+<h3>FaceSet 人脸库管理</h3>
+
+<h4>通过人脸识别进行应用运用</h4>
+
+<Block Title="人脸注册" Introduction="录入人脸信息" CodeFile="face.1.html">
+    <p>操作步骤：</p>
+    <ul class="ul-demo">
+        <li>录入用户名</li>
+        <li>点击录入按钮</li>
+    </ul>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <span class="input-group-text">用户名</span>
+        </div>
+        <BootstrapInput @bind-Value="@UserName" />
+        <div class="input-group-append">
+            <Button Color="Color.Primary" Text="录入" Icon="fa fa-pencil-square-o" OnClick="@OnRegister" />
+        </div>
+    </div>
+</Block>
+
+<AttributeTable Items="@GetAttributes()" />
