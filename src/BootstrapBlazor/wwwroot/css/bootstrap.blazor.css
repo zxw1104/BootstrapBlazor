@@ -5452,3 +5452,17 @@ input:disabled,
     display: none;
 }
 /*end scanner*/
+
+/*face login*/
+.face .face-header,
+.face canvas {
+    width: 300px;
+    height: 170px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.face canvas {
+    display: none;
+}
+/*end face*/
