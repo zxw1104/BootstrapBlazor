@@ -1844,6 +1844,32 @@
                     obj.invokeMethodAsync("Stop");
                 }
             });
+        },
+        bb_face: function (el) {
+            var $el = $(el);
+            var video = $el.find('video')[0];
+            var canvas = $el.find('canvas')[0];
+            var context = canvas.getContext('2d');
+            var mediaStreamTrack;
+            $el.on('click', '[data-method]', function () {
+                var $btn = $(this);
+                var method = $btn.attr('data-method');
+                if (method === 'register') {
+                    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+                        video.srcObject = stream;
+                        video.play();
+                        $btn.next().prop('disabled', false).removeClass('disabled');
+                        mediaStreamTrack = typeof stream.stop === 'function' ? stream : stream.getTracks()[0];
+                    });
+                }
+                else if (method === 'capture') {
+                    video.pause();
+                    mediaStreamTrack.stop();
+                    context.drawImage(video, 0, 0, 300, 200);
+                    var url = canvas.toDataURL();
+                    $btn.prop('disabled', true).addClass('disabled');
+                }
+            });
         }
     });
 
