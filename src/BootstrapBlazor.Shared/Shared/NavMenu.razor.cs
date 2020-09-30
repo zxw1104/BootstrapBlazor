@@ -91,11 +91,29 @@ namespace BootstrapBlazor.Shared.Shared
 
             item = new MenuItem()
             {
+                Text = "人脸识别",
+                Icon = "fa fa-fw fa-user-circle-o"
+            };
+            AddFace(item);
+
+            item = new MenuItem()
+            {
                 Text = "组件总览",
                 Icon = "fa fa-fw fa-fa",
                 Url = "components"
             };
             AddSummary(item);
+        }
+
+        private void AddFace(MenuItem item)
+        {
+            item.AddItem(new MenuItem()
+            {
+                Text = "人脸库管理 FaceSet",
+                Url = "face-set"
+            });
+
+            AddBadge(item);
         }
 
         private void AddQuickStar(MenuItem item)
