@@ -573,8 +573,8 @@ namespace BootstrapBlazor.Shared.Pages
     /// <summary>
     /// 
     /// </summary>
-    //[TableName("Test")]
-    //[PrimaryKey("Id", AutoIncrement = true)]
+    [PetaPoco.TableName("Test")]
+    [PetaPoco.PrimaryKey("Id", AutoIncrement = true)]
     //[FreeSql.DataAnnotations.Table(Name = "Test")]
     public class BindItem
     {

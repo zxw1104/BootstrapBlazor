@@ -16,6 +16,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using PetaPoco;
+using PetaPoco.Providers;
 using System.Globalization;
 using System.Linq;
 
@@ -76,13 +78,13 @@ namespace BootstrapBlazor.Server
 
             // 增加 PetaPoco ORM 数据服务操作类
             // 需要时打开下面代码
-            //services.AddPetaPoco(option =>
-            //{
-            //    // 配置数据信息
-            //    // 使用 SQLite 数据以及从配置文件中获取数据库连接字符串
-            //    option.UsingProvider<SQLiteDatabaseProvider>()
-            //          .UsingConnectionString(Configuration.GetConnectionString("bb"));
-            //});
+            services.AddPetaPoco(option =>
+            {
+                // 配置数据信息
+                // 使用 SQLite 数据以及从配置文件中获取数据库连接字符串
+                option.UsingProvider<SQLiteDatabaseProvider>()
+                      .UsingConnectionString(Configuration.GetConnectionString("bb"));
+            });
 
             // 增加 FreeSql ORM 数据服务操作类
             // 需要时打开下面代码

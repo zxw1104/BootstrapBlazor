@@ -11,6 +11,8 @@
 
     <ItemGroup>
         <PackageReference Include="Longbow.Tasks" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="5.0.1" />
+        <PackageReference Include="PetaPoco.Extensions" Version="5.0.1" />
     </ItemGroup>
 
     <ItemGroup>
