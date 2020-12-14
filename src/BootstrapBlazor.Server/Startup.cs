@@ -68,13 +68,17 @@ namespace BootstrapBlazor.Server
             services.AddBlazorBackgroundTask();
 
             // 增加 BootstrapBlazor 组件
-            services.AddBootstrapBlazor();
+            services.AddBootstrapBlazor(options =>
+            {
+                // 统一设置 Toast 组件自动消失时间
+                options.ToastDelay = 4000;
+            });
 
             // 增加 Table Excel 导出服务
             services.AddBootstrapBlazorTableExcelExport();
 
             // 增加 Table 数据服务操作类
-            //services.AddTableDemoDataService();
+            services.AddTableDemoDataService();
 
             // 增加 PetaPoco ORM 数据服务操作类
             // 需要时打开下面代码
@@ -88,13 +92,26 @@ namespace BootstrapBlazor.Server
 
             // 增加 FreeSql ORM 数据服务操作类
             // 需要时打开下面代码
-            //services.AddFreeSql(option => option.UseConnectionString(FreeSql.DataType.Sqlite, Configuration.GetConnectionString("bb")));
+            // 需要引入 FreeSql 对 SQLite 的扩展包 FreeSql.Provider.Sqlite
+            //services.AddFreeSql(option =>
+            //{
+            //    option.UseConnectionString(FreeSql.DataType.Sqlite, Configuration.GetConnectionString("bb"))
+#if DEBUG
+            //         //开发环境:自动同步实体
+            //         .UseAutoSyncStructure(true)
+            //         //调试sql语句输出
+            //         .UseMonitorCommand(cmd => System.Console.WriteLine(cmd.CommandText))
+#endif
+            //        ;
+            //});
 
-            // 统一设置 Toast 组件自动消失时间
-            services.Configure<BootstrapBlazorOptions>(options =>
-            {
-                options.ToastDelay = 4000;
-            });
+            // 增加 EFCore ORM 数据服务操作类
+            // 需要时打开下面代码
+            //services.AddEntityFrameworkCore<Shared.Pages.BindItemDbContext>(option =>
+            //{
+            //    // 需要引用 Microsoft.EntityFrameworkCore.Sqlite 包，操作 SQLite 数据库
+            //    option.UseSqlite(Configuration.GetConnectionString("bb"));
+            //});
 
             // 增加多语言支持配置信息
             services.Configure<RequestLocalizationOptions>(options =>
