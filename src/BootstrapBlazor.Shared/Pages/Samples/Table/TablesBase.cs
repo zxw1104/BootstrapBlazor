@@ -5,6 +5,7 @@
 using BootstrapBlazor.Components;
 using BootstrapBlazor.Shared.Common;
 using Microsoft.AspNetCore.Components;
+using PetaPoco;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -604,7 +605,6 @@ namespace BootstrapBlazor.Shared.Pages
         [Display(Name = "主键")]
         [AutoGenerateColumn(Ignore = true, Searchable = false, Editable = false)]
         [Key]
-        //[FreeSql.DataAnnotations.Column(IsIdentity = true)]
         public int Id { get; set; }
 
         /// <summary>
@@ -613,6 +613,7 @@ namespace BootstrapBlazor.Shared.Pages
         [Required(ErrorMessage = "姓名不能为空")]
         [AutoGenerateColumn(Order = 10, Filterable = true)]
         [ColumnName(Name = "姓名", ResourceName = "Name", ResourceType = typeof(BindItem))]
+        [PetaPoco.Column(Name = "Name")]
         public string? Name { get; set; }
 
         /// <summary>
@@ -650,7 +651,7 @@ namespace BootstrapBlazor.Shared.Pages
         [Required(ErrorMessage = "请选择学历")]
         [ColumnName(Name = "学历", ResourceName = "Education", ResourceType = typeof(BindItem))]
         [AutoGenerateColumn(Order = 60)]
-        //[EnumConverter(typeof(EnumEducation))]
+        [EnumConverter(typeof(EnumEducation))]
         public EnumEducation? Education { get; set; }
     }
 
