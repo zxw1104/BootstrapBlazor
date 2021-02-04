@@ -52,7 +52,7 @@ namespace BootstrapBlazor.DataAcces.PetaPoco
                         var p = (callExp.Arguments[0] as ConstantExpression)?.Value;
                         if (p != null)
                         {
-                            sql.Where($"{db.Provider.EscapeSqlIdentifier(callColName)} like '%{p}%'");
+                            sql.Where($"{db.Provider.EscapeSqlIdentifier(callColName)} like @0", $"%{p}%");
                         }
                     }
                     break;
