@@ -672,24 +672,4 @@ namespace BootstrapBlazor.Shared.Pages
         [Description("中学")]
         Middel
     }
-
-    ///// <summary>
-    ///// BindItemContext 上下文操作类
-    ///// </summary>
-    //public class BindItemDbContext : Microsoft.EntityFrameworkCore.DbContext
-    //{
-    //    /// <summary>
-    //    /// 构造函数
-    //    /// </summary>
-    //    /// <param name="options"></param>
-    //    public BindItemDbContext(Microsoft.EntityFrameworkCore.DbContextOptions<BindItemDbContext> options) : base(options)
-    //    {
-
-    //    }
-
-    //    /// <summary>
-    //    /// 
-    //    /// </summary>
-    //    public Microsoft.EntityFrameworkCore.DbSet<BindItem>? BindItems { get; set; }
-    //}
 }
