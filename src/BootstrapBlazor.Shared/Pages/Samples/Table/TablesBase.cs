@@ -593,7 +593,7 @@ namespace BootstrapBlazor.Shared.Pages
     [FreeSql.DataAnnotations.Table(Name = "Test")]
     public class BindItem
     {
-        // 列头信息支持 ColumnName Display DisplayName 三种标签
+        // 列头信息支持 Display DisplayName 两种标签
 
         /// <summary>
         /// 
@@ -607,21 +607,21 @@ namespace BootstrapBlazor.Shared.Pages
         /// 
         /// </summary>
         [Required(ErrorMessage = "姓名不能为空")]
-        [AutoGenerateColumn(Order = 10, Filterable = true, Sortable = true)]
-        [ColumnName(Name = "姓名", ResourceName = "Name", ResourceType = typeof(BindItem))]
+        [AutoGenerateColumn(Order = 10, Filterable = true)]
+        [Display(Name = "姓名")]
         public string? Name { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        [AutoGenerateColumn(Order = 1, FormatString = "yyyy-MM-dd", Width = 180, Sortable = true)]
-        [ColumnName(Name = "日期", ResourceName = "DateTime", ResourceType = typeof(BindItem))]
+        [AutoGenerateColumn(Order = 1, FormatString = "yyyy-MM-dd", Width = 180)]
+        [Display(Name = "日期")]
         public DateTime? DateTime { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        [ColumnName(Name = "地址", ResourceName = "Address", ResourceType = typeof(BindItem))]
+        [Display(Name = "地址")]
         [Required(ErrorMessage = "地址不能为空")]
         [AutoGenerateColumn(Order = 20, Filterable = true, Sortable = true)]
         public string? Address { get; set; }
@@ -629,23 +629,24 @@ namespace BootstrapBlazor.Shared.Pages
         /// <summary>
         /// 
         /// </summary>
-        [ColumnName(Name = "数量", ResourceName = "Count", ResourceType = typeof(BindItem))]
-        [AutoGenerateColumn(Order = 40, Sortable = true)]
+        [Display(Name = "数量")]
+        [AutoGenerateColumn(Order = 40)]
         public int Count { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        [ColumnName(Name = "是/否", ResourceName = "Complete", ResourceType = typeof(BindItem))]
-        [AutoGenerateColumn(Order = 50, Sortable = true)]
+        [Display(Name = "是/否")]
+        [AutoGenerateColumn(Order = 50)]
         public bool Complete { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         [Required(ErrorMessage = "请选择学历")]
-        [ColumnName(Name = "学历", ResourceName = "Education", ResourceType = typeof(BindItem))]
-        [AutoGenerateColumn(Order = 60, Sortable = true)]
+        [Display(Name = "学历")]
+        [AutoGenerateColumn(Order = 60)]
+        //[EnumConverter(typeof(EnumEducation))]
         public EnumEducation? Education { get; set; }
     }
 
