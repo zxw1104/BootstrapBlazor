@@ -29,18 +29,16 @@ namespace BootstrapBlazor.DataAcces.FreeSql
                 var actions = filter.GetFilterConditions();
                 foreach (var f in actions)
                 {
+                    item.Logic = f.FilterLogic.ToDynamicFilterLogic();
                     item.Filters.Add(new DynamicFilterInfo()
                     {
                         Field = f.FieldKey,
                         Value = f.FieldValue,
-                        Logic = f.FilterLogic.ToDynamicFilterLogic(),
                         Operator = f.FilterAction.ToDynamicFilterOperator()
                     });
                 }
-
                 ret.Filters.Add(item);
             }
-
             return ret;
         }
 
