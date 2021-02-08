@@ -3,10 +3,7 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using BootstrapBlazor.Components;
-using FreeSql.Internal.Model;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace BootstrapBlazor.DataAcces.FreeSql
@@ -67,121 +64,10 @@ namespace BootstrapBlazor.DataAcces.FreeSql
 
         private List<TModel> FetchAsync(QueryPageOptions option, out long count)
         {
-            var dynamicFilterInfo = MakeDynamicFilterInfo(option, out var isSerach);
-            var fsql_select = _db.Select<TModel>();
-            if (isSerach) fsql_select = fsql_select.WhereDynamicFilter(dynamicFilterInfo);
-            return fsql_select
+            return _db.Select<TModel>().WhereDynamicFilter(option.ToDynamicFilter())
                 .OrderByPropertyNameIf(option.SortOrder != SortOrder.Unset, option.SortName, option.SortOrder == SortOrder.Asc)
                 .Count(out count)
                 .Page(option.PageIndex, option.PageItems).ToList();
-
         }
-
-
-        #region 生成Where子句的DynamicFilterInfo对象
-        /// <summary>
-        /// 生成Where子句的DynamicFilterInfo对象
-        /// </summary>
-        /// <param name="option"></param>
-        /// <param name="isSerach"></param>
-        /// <returns></returns>
-        private DynamicFilterInfo? MakeDynamicFilterInfo(QueryPageOptions option, out bool isSerach)
-        {
-            var filters = new List<DynamicFilterInfo>();
-
-            object? searchModel = option.SearchModel;
-            Type type = searchModel.GetType();
-
-            var instance = Activator.CreateInstance(type);
-
-            if (string.IsNullOrEmpty(option.SearchText))
-            {
-                //生成高级搜索子句
-                //TODO : 支持更多类型
-                foreach (var propertyinfo in type.GetProperties().Where(a => a.PropertyType == typeof(string) || a.PropertyType == typeof(int)).ToList())
-                {
-                    if (propertyinfo.GetValue(searchModel) != null && !propertyinfo.GetValue(searchModel).Equals(propertyinfo.GetValue(instance)))
-                    {
-                        string propertyValue = propertyinfo.GetValue(searchModel).ToString();
-                        if (propertyinfo.PropertyType == typeof(int) && !IsNumeric(propertyValue)) continue;
-
-                        filters.Add(new DynamicFilterInfo()
-                        {
-                            Field = propertyinfo.Name,
-                            Operator = propertyinfo.PropertyType == typeof(int) ? DynamicFilterOperator.Equal : DynamicFilterOperator.Contains,
-                            Value = propertyinfo.PropertyType == typeof(int) ? Convert.ToInt32(propertyValue) : propertyValue,
-                        });
-                    }
-                }
-
-            }
-            else
-            {
-                //生成默认搜索子句
-                //TODO : 支持更多类型
-                foreach (var propertyinfo in type.GetProperties().Where(a => a.PropertyType == typeof(string) || a.PropertyType == typeof(int)).ToList())
-                {
-                    if (propertyinfo.PropertyType == typeof(int) && !IsNumeric(option.SearchText)) continue;
-
-                    filters.Add(new DynamicFilterInfo()
-                    {
-                        Field = propertyinfo.Name,
-                        Operator = propertyinfo.PropertyType == typeof(int) ? DynamicFilterOperator.Equal : DynamicFilterOperator.Contains,
-                        Value = propertyinfo.PropertyType == typeof(int) ? Convert.ToInt32(option.SearchText) : option.SearchText,
-                    });
-                }
-
-            }
-
-            if (option.Filters.Any())
-            {
-                foreach (var item in option.Filters)
-                {
-                    var filter = item.GetFilterConditions().First();
-                    var filterOperator = DynamicFilterOperator.Contains;
-
-                    switch (filter.FilterAction)
-                    {
-                        case FilterAction.Contains:
-                            filterOperator = DynamicFilterOperator.Contains;
-                            break;
-                        case FilterAction.NotContains:
-                            filterOperator = DynamicFilterOperator.NotContains;
-                            break;
-                        case FilterAction.NotEqual:
-                            filterOperator = DynamicFilterOperator.NotEqual;
-                            break;
-                        case FilterAction.Equal:
-                            filterOperator = DynamicFilterOperator.Equal;
-                            break;
-                    }
-
-                    filters.Add(new DynamicFilterInfo()
-                    {
-                        Field = filter.FieldKey,
-                        Operator = filterOperator,
-                        Value = filter.FieldValue,
-                    });
-                }
-            }
-
-            if (filters.Any())
-            {
-                DynamicFilterInfo dyfilter = new DynamicFilterInfo()
-                {
-                    Logic = string.IsNullOrEmpty(option.SearchText) ? DynamicFilterLogic.And : DynamicFilterLogic.Or,
-                    Filters = filters
-                };
-                isSerach = true;
-                return dyfilter;
-
-            }
-
-            isSerach = false;
-            return null;
-        }
-        private bool IsNumeric(string text) => double.TryParse(text, out _);
-        #endregion
-
     }
 }
