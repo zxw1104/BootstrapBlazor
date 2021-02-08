@@ -53,21 +53,20 @@ namespace BootstrapBlazor.DataAcces.FreeSql
         /// <returns></returns>
         public override Task<QueryData<TModel>> QueryAsync(QueryPageOptions option)
         {
-            var Items = FetchAsync(option, out var count);
+            var Items = _db.Select<TModel>().WhereDynamicFilter(option.ToDynamicFilter())
+                .OrderByPropertyNameIf(option.SortOrder != SortOrder.Unset, option.SortName, option.SortOrder == SortOrder.Asc)
+                .Count(out var count)
+                .Page(option.PageIndex, option.PageItems).ToList();
+
             var ret = new QueryData<TModel>()
             {
                 TotalCount = (int)count,
-                Items = Items
+                Items = Items,
+                IsFiltered = true,
+                IsSearch = true,
+                IsSorted = true
             };
             return Task.FromResult(ret);
-        }
-
-        private List<TModel> FetchAsync(QueryPageOptions option, out long count)
-        {
-            return _db.Select<TModel>().WhereDynamicFilter(option.ToDynamicFilter())
-                .OrderByPropertyNameIf(option.SortOrder != SortOrder.Unset, option.SortName, option.SortOrder == SortOrder.Asc)
-                .Count(out count)
-                .Page(option.PageIndex, option.PageItems).ToList();
         }
     }
 }
