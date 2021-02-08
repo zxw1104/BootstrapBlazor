@@ -13,8 +13,7 @@ using Microsoft.Extensions.Options;
 using PetaPoco;
 using PetaPoco.Providers;
 using System;
-using System.Globalization;
-using System.Linq;
+using System.Reflection;
 
 namespace BootstrapBlazor.Server
 {

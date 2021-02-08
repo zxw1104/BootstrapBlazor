@@ -627,7 +627,7 @@ namespace BootstrapBlazor.Shared.Pages
         /// </summary>
         [Display(Name = "地址")]
         [Required(ErrorMessage = "{0}不能为空")]
-        [AutoGenerateColumn(Order = 20, Filterable = true)]
+        [AutoGenerateColumn(Order = 20, Filterable = true, Sortable = true)]
         public string? Address { get; set; }
 
         /// <summary>
