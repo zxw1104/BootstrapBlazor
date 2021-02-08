@@ -27,7 +27,16 @@ namespace BootstrapBlazor.Shared.Pages
         private IEnumerable<SelectedItem> DemoValues { get; set; } = new List<SelectedItem>(2)
         {
             new SelectedItem("1", "选项一"),
-            new SelectedItem("2", "选项二")
+            new SelectedItem("2", "选项二"),
+        };
+
+        private IEnumerable<SelectedItem> DemoRadioGroupValues { get; set; } = new List<SelectedItem>(2)
+        {
+            new SelectedItem("1", "选项1"),
+            new SelectedItem("2", "选项2"),
+            new SelectedItem("3", "选项3"),
+            new SelectedItem("4", "选项4"),
+            new SelectedItem("5", "选项5")
         };
 
         /// <summary>
@@ -91,6 +100,13 @@ namespace BootstrapBlazor.Shared.Pages
                     DefaultValue = "false"
                 },
                 new AttributeItem() {
+                    Name = "IsVertical",
+                    Description = "是否垂直分布",
+                    Type = "boolean",
+                    ValueList = "true / false",
+                    DefaultValue = "false"
+                },
+                new AttributeItem() {
                     Name = "Items",
                     Description = "绑定数据源",
                     Type = "IEnumerable<TItem>",
@@ -103,6 +119,13 @@ namespace BootstrapBlazor.Shared.Pages
                     Type = "CheckboxState",
                     ValueList = " Checked / UnChecked",
                     DefaultValue = "text"
+                },
+                new AttributeItem() {
+                    Name = "RadioGroup",
+                    Description = "竖向排列",
+                    Type = "boolean",
+                    ValueList = "true / false",
+                    DefaultValue = "false"
                 },
             };
         }

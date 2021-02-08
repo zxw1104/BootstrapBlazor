@@ -4,16 +4,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class EditDialog : BootstrapComponentBase
+    internal class RouteContext
     {
+        public string[]? Segments { get; set; }
+
+        public Type? Handler { get; set; }
+
+        public IReadOnlyDictionary<string, object>? Parameters { get; set; }
     }
 }

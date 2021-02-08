@@ -52,6 +52,10 @@
     <Logger @ref="BinderLog" class="mt-3" />
 </Block>
 
+<Block Title="竖向排列" Introduction="通过设置 <code>IsVertical</code> 使组件内部竖向排列">
+    <Radio Items="@DemoRadioGroupValues" OnStateChanged="@OnStateChanged" IsVertical="true"></Radio>
+</Block>
+
 <AttributeTable Items="@GetAttributes()" />
 
 <EventTable Items="@GetEvents()" />

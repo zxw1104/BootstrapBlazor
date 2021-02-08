@@ -20,6 +20,12 @@ namespace BootstrapBlazor.Components
         public IEnumerable<TItem>? Items { get; set; }
 
         /// <summary>
+        /// 获得/设置 是否为竖向排列 默认为 false
+        /// </summary>
+        [Parameter]
+        public bool IsVertical { get; set; }
+
+        /// <summary>
         /// 点击选择框方法
         /// </summary>
         protected override async Task OnToggleClick()
