@@ -14,7 +14,14 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得/设置 是否分页 默认为 false
         /// </summary>
-        [Parameter] public bool IsPagination { get; set; }
+        [Parameter]
+        public bool IsPagination { get; set; }
+
+        /// <summary>
+        /// 获得/设置 是否在顶端显示分页 默认为 false
+        /// </summary>
+        [Parameter]
+        public bool ShowTopPagination { get; set; }
 
         /// <summary>
         /// 获得/设置 是否显示行号列 默认为 false
@@ -43,7 +50,7 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得/设置 数据总条目
         /// </summary>
-        protected int TotalCount { get; set; }
+        protected long TotalCount { get; set; }
 
         /// <summary>
         /// 获得/设置 当前页码
