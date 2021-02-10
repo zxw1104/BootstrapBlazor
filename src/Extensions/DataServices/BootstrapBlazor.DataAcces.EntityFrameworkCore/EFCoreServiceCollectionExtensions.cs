@@ -5,6 +5,7 @@
 using BootstrapBlazor.Components;
 using BootstrapBlazor.DataAcces.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -19,12 +20,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services"></param>
         /// <param name="optionsAction"></param>
+        /// <param name="contextLifetime"></param>
+        /// <param name="optionsLifetime"></param>
         /// <returns></returns>
-        public static IServiceCollection AddEntityFrameworkCore<TContext>(this IServiceCollection services, Action<DbContextOptionsBuilder> optionsAction) where TContext : DbContext
+        public static IServiceCollection AddEntityFrameworkCore<TContext>(this IServiceCollection services, Action<DbContextOptionsBuilder>? optionsAction = null, ServiceLifetime contextLifetime = ServiceLifetime.Scoped, ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
+            where TContext : DbContext
         {
-            services.AddDbContext<TContext>(optionsAction);
-            services.AddScoped(typeof(IDataService<>), typeof(DefaultDataService<>));
-            services.AddScoped(provider =>
+            services.AddDbContext<TContext>(optionsAction, contextLifetime, optionsLifetime);
+            services.TryAdd(new ServiceDescriptor(typeof(IDataService<>), typeof(DefaultDataService<>), contextLifetime));
+            services.TryAddSingleton(provider =>
             {
                 DbContext DbContextResolve(IEntityFrameworkCoreDataService server)
                 {
