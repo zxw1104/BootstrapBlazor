@@ -75,9 +75,6 @@ namespace BootstrapBlazor.Server
             // 增加 Table Excel 导出服务
             services.AddBootstrapBlazorTableExcelExport();
 
-            // 增加 Table 数据服务操作类
-            services.AddTableDemoDataService();
-
             // 增加 PetaPoco ORM 数据服务操作类
             // 需要时打开下面代码
             services.AddPetaPoco(option =>
@@ -110,6 +107,9 @@ namespace BootstrapBlazor.Server
             //    // 需要引用 Microsoft.EntityFrameworkCore.Sqlite 包，操作 SQLite 数据库
             //    option.UseSqlite(Configuration.GetConnectionString("bb"));
             //});
+
+            // 增加 Table 数据服务操作类
+            services.AddTableDemoDataService();
 
             // 增加多语言支持配置信息
             services.AddRequestLocalization<IOptions<BootstrapBlazorOptions>>((localizerOption, blazorOption) =>
