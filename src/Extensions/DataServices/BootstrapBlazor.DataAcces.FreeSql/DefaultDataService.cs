@@ -60,7 +60,7 @@ namespace BootstrapBlazor.DataAcces.FreeSql
 
             var ret = new QueryData<TModel>()
             {
-                TotalCount = (int)count,
+                TotalCount = count,
                 Items = Items,
                 IsFiltered = true,
                 IsSearch = true,
