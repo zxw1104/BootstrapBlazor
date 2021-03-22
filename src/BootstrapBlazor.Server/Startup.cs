@@ -3,9 +3,11 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using BootstrapBlazor.Components;
+using BootstrapBlazor.Shared.Pages.Components;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -83,6 +85,9 @@ namespace BootstrapBlazor.Server
             // 增加 Table Excel 导出服务
             services.AddBootstrapBlazorTableExcelExport();
 
+            // 增加 Table 数据服务操作类
+            services.AddTableDemoDataService();
+
             // 增加 PetaPoco ORM 数据服务操作类
             // 需要时打开下面代码
             //services.AddPetaPoco(option =>
@@ -112,14 +117,11 @@ namespace BootstrapBlazor.Server
 
             // 增加 EFCore ORM 数据服务操作类
             // 需要时打开下面代码
-            //services.AddEntityFrameworkCore<Shared.Pages.FooDbContext>(option =>
-            //{
-            //    // 需要引用 Microsoft.EntityFrameworkCore.Sqlite 包，操作 SQLite 数据库
-            //    option.UseSqlite(Configuration.GetConnectionString("bb"));
-            //});
-
-            // 增加 Table 数据服务操作类
-            services.AddTableDemoDataService();
+            services.AddEntityFrameworkCore<FooContext>(option =>
+            {
+                // 需要引用 Microsoft.EntityFrameworkCore.Sqlite 包，操作 SQLite 数据库
+                option.UseSqlite(Configuration.GetConnectionString("bb"));
+            });
         }
 
         /// <summary>

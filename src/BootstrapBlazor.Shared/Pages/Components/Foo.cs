@@ -7,6 +7,7 @@ using Microsoft.Extensions.Localization;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 namespace BootstrapBlazor.Shared.Pages.Components
@@ -14,6 +15,7 @@ namespace BootstrapBlazor.Shared.Pages.Components
     /// <summary>
     ///
     /// </summary>
+    [Table("Test")]
     public class Foo
     {
         // 列头信息支持 Display DisplayName 两种标签
@@ -23,6 +25,7 @@ namespace BootstrapBlazor.Shared.Pages.Components
         /// </summary>
         [Display(Name = "主键")]
         [AutoGenerateColumn(Ignore = true)]
+        [Key]
         public int Id { get; set; }
 
         /// <summary>
@@ -77,6 +80,7 @@ namespace BootstrapBlazor.Shared.Pages.Components
         [Required(ErrorMessage = "请选择一种{0}")]
         [Display(Name = "爱好")]
         [AutoGenerateColumn(Order = 70)]
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public IEnumerable<string> Hobby { get; set; } = new List<string>();
 
         private static readonly Random random = new();
