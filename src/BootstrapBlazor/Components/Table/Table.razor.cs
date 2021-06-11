@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Components.Web;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -596,7 +598,15 @@ namespace BootstrapBlazor.Components
             else
             {
                 var content = "";
-                var val = Table<TItem>.GetItemValue(col.GetFieldName(), item);
+                object? val = null;
+                if (item is IDynamicType cType)
+                {
+                    val = cType.GetValue(col.GetFieldName());
+                }
+                else
+                {
+                    val = Table<TItem>.GetItemValue(col.GetFieldName(), item);
+                }
 
                 // 自动化处理 bool 值
                 if (val is bool && col.ComponentType != null)
