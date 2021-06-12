@@ -116,9 +116,22 @@ namespace BootstrapBlazor.Components
         public static IEnumerable<ITableColumn> GetProperties<TModel>(IEnumerable<ITableColumn>? source = null)
         {
             var cols = new List<ITableColumn>(50);
-            var type = typeof(TModel);
-            var attrModel = type.GetCustomAttribute<AutoGenerateClassAttribute>();
-            var props = type.GetProperties();
+            Type type = typeof(TModel);
+            AutoGenerateClassAttribute? attrModel;
+            PropertyInfo[] props;
+            //是否是动态类型
+            var isCustomType = typeof(TModel).IsAssignableTo(typeof(IDynamicType));
+            if (isCustomType)
+            {
+                attrModel = DynamicPropertyRegistry.GetTypeAttribute(type);
+                props = DynamicPropertyRegistry.GetProperties(type);
+            }
+            else
+            {
+                attrModel = type.GetCustomAttribute<AutoGenerateClassAttribute>();
+                props = type.GetProperties();
+            }
+
             foreach (var prop in props)
             {
                 ITableColumn? tc;

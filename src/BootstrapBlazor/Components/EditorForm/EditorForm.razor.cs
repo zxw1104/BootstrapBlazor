@@ -222,17 +222,34 @@ namespace BootstrapBlazor.Components
                 var displayName = item.GetDisplayName() ?? Utility.GetDisplayName(Model, fieldName);
 
                 // FieldValue
-                var valueInvoker = GetPropertyValueLambdaCache.GetOrAdd((typeof(TModel), fieldName), key => LambdaExtensions.GetPropertyValueLambda<TModel, object?>(Model, key.FieldName).Compile());
-                var fieldValue = valueInvoker.Invoke(Model);
+                object? fieldValue;
+                LambdaExpression? valueExpression=null;
+                if (Model is IDynamicType cType)
+                {
+                    fieldValue = cType.GetValue(fieldName);
+                    var tDelegate = typeof(Func<>).MakeGenericType(fieldType);
+                    //调用方法 取值
+                    //var getValueExp= Expression.Call(Expression.Constant(Model), cType.GetType().GetMethod(nameof(IDynamicType.GetValue)),Expression.Constant(fieldName));
+                    //将Object?类型 转为特定类型
+                    //var convertExp= Expression.Convert(getValueExp, fieldType);
+                    //valueExpression = Expression.Lambda(tDelegate, convertExp);
+                }
+                else
+                {
+                    var valueInvoker = GetPropertyValueLambdaCache.GetOrAdd((typeof(TModel), fieldName), key => LambdaExtensions.GetPropertyValueLambda<TModel, object?>(Model, key.FieldName).Compile());
+                    fieldValue = valueInvoker.Invoke(Model);
+
+                    // ValueExpression
+                    var body = Expression.Property(Expression.Constant(Model), typeof(TModel), fieldName);
+                    var tDelegate = typeof(Func<>).MakeGenericType(fieldType);
+                    valueExpression = Expression.Lambda(tDelegate, body);
+                }
+              
 
                 // ValueChanged
                 var valueChangedInvoker = CreateLambda(fieldType).Compile();
                 var fieldValueChanged = valueChangedInvoker(Model, fieldName);
 
-                // ValueExpression
-                var body = Expression.Property(Expression.Constant(Model), typeof(TModel), fieldName);
-                var tDelegate = typeof(Func<>).MakeGenericType(fieldType);
-                var valueExpression = Expression.Lambda(tDelegate, body);
 
                 if (IsDisplay)
                 {
@@ -240,7 +257,11 @@ namespace BootstrapBlazor.Components
                     builder.AddAttribute(1, "DisplayText", displayName);
                     builder.AddAttribute(2, "Value", fieldValue);
                     builder.AddAttribute(3, "ValueChanged", fieldValueChanged);
-                    builder.AddAttribute(4, "ValueExpression", valueExpression);
+                    if (valueExpression!=null)
+                    {
+                        builder.AddAttribute(4, "ValueExpression", valueExpression);
+                    }
+                
                     builder.AddAttribute(5, "ShowLabel", ShowLabel ?? true);
                     builder.CloseComponent();
                 }
@@ -371,8 +392,15 @@ namespace BootstrapBlazor.Components
             {
                 if (model != null)
                 {
-                    var invoker = SetPropertyValueLambdaCache.GetOrAdd((typeof(TModel), fieldName), key => LambdaExtensions.SetPropertyValueLambda<TModel, object?>(model, key.FieldName).Compile());
-                    invoker.Invoke(model, t);
+                    if (model is IDynamicType cType)
+                    {
+                        cType.SetValue(fieldName, t);
+                    }
+                    else
+                    {
+                        var invoker = SetPropertyValueLambdaCache.GetOrAdd((typeof(TModel), fieldName), key => LambdaExtensions.SetPropertyValueLambda<TModel, object?>(model, key.FieldName).Compile());
+                        invoker.Invoke(model, t);
+                    }
                 }
             });
         }

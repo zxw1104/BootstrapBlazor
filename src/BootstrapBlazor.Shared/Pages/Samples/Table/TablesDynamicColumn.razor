@@ -1,0 +1,20 @@
+﻿@page "/tables/dynamic"
+
+<h3>Table 表格</h3>
+
+<h4>支持动态添加列，删除列，默认最后一列不可删除</h4>
+
+<Button Text="添加列" OnClick="AddColumn"></Button>
+<Button Text="删除最后一列" OnClick="DeleteLastColumn"></Button>
+
+<Block Title="动态列生成" Introduction="高级的表格展示用法。">
+    <Table @ref="table" TItem="DynamicUser"
+           AutoGenerateColumns="true"
+           ShowDefaultButtons="true"
+           ShowToolbar="true"
+           ShowAddButton="true"
+           ShowDeleteButton="true"
+           ShowEditButton="true"
+           DataService="@DataService" UseInjectDataService="true" IsMultipleSelect="true">
+    </Table>
+</Block>
