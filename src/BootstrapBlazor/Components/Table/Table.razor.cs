@@ -506,23 +506,8 @@ namespace BootstrapBlazor.Components
 
                 ScreenSize = await RetrieveWidth();
 
-                // 初始化列
-                if (AutoGenerateColumns)
-                {
-                    var cols = InternalTableColumn.GetProperties<TItem>(Columns);
-                    Columns.Clear();
-                    Columns.AddRange(cols);
-                }
+                ReGenerateColumn();
 
-                ColumnVisibles = Columns.Select(i => new ColumnVisibleItem { FieldName = i.GetFieldName(), Visible = i.Visible }).ToList();
-
-                // set default sortName
-                var col = Columns.FirstOrDefault(i => i.Sortable && i.DefaultSort);
-                if (col != null)
-                {
-                    SortName = col.GetFieldName();
-                    SortOrder = col.DefaultSortOrder;
-                }
                 await QueryAsync();
                 IsRendered = true;
             }
@@ -554,6 +539,34 @@ namespace BootstrapBlazor.Components
                     StateHasChanged();
                     _loop = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 重新生成列，并设置列是否显示以及默认排序
+        /// TODO:此方法可以优化，如果发现列配置没有改变，则无需重复执行此方法
+        /// 在此Issus前，Table不支持动态添加列，此方法只有在首次Render才会执行，
+        /// 但是现在需要增加动态列，因此，每次渲染都需要检查是否需要重新生成列
+        /// https://gitee.com/LongbowEnterprise/BootstrapBlazor/issues/I3UISL
+        /// </summary>
+        public void ReGenerateColumn()
+        {
+            // 初始化列
+            if (AutoGenerateColumns)
+            {
+                var cols = InternalTableColumn.GetProperties<TItem>(Columns);
+                Columns.Clear();
+                Columns.AddRange(cols);
+            }
+
+            ColumnVisibles = Columns.Select(i => new ColumnVisibleItem { FieldName = i.GetFieldName(), Visible = i.Visible }).ToList();
+
+            // set default sortName
+            var col = Columns.FirstOrDefault(i => i.Sortable && i.DefaultSort);
+            if (col != null)
+            {
+                SortName = col.GetFieldName();
+                SortOrder = col.DefaultSortOrder;
             }
         }
 

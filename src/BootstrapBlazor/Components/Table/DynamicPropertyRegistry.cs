@@ -19,6 +19,7 @@ namespace BootstrapBlazor.Components
     {
         private static Dictionary<Type, List<PropertyInfo>> typePropDic = new Dictionary<Type, List<PropertyInfo>>();
         private static Dictionary<Type, AutoGenerateClassAttribute> classAttrDic = new Dictionary<Type, AutoGenerateClassAttribute>();
+
         #region 注册
         /// <summary>
         /// 给指定类型，添加动态属性
@@ -33,6 +34,20 @@ namespace BootstrapBlazor.Components
                 typePropDic[type] = new List<PropertyInfo>();
             }
             typePropDic[type].Add(info);
+        }
+
+        /// <summary>
+        /// 给指定类型，删除动态属性
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="info"></param>
+        public static void RemoveProperty(Type type, PropertyInfo info)
+        {
+            if (!typePropDic.ContainsKey(type))
+            {
+                return;
+            }
+            typePropDic[type].Remove(info);
         }
         /// <summary>
         /// 注册 AutoGenerateClassAttribute
@@ -76,17 +91,32 @@ namespace BootstrapBlazor.Components
         /// 根据属性名称，获取属性值
         /// </summary>
         /// <param name="propName"></param>
-        /// <param name="dynamicType"></param>
         /// <returns></returns>
         object? GetValue(string propName);
-
+        /// <summary>
+        /// 根据属性名称，设置属性值
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <param name="value"></param>
         void SetValue(string propName, object value);
-
+        /// <summary>
+        /// 从另一个动态类型拷贝属性值到当前对象上
+        /// </summary>
+        /// <param name="other"></param>
         void CopyFrom(IDynamicType other);
     }
 
+    /// <summary>
+    /// 动态属性信息
+    /// </summary>
     public class DynamicPropertyInfo : PropertyInfo
     {
+        /// <summary>
+        /// 构造动态属性
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="propType"></param>
+        /// <param name="attributes"></param>
         public DynamicPropertyInfo(string name, Type propType, Attribute[] attributes)
         {
             this.name = name;
