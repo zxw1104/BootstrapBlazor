@@ -56,6 +56,11 @@
     "ShowBarUsageText": "显示左侧 Bar",
     "IntroText4": "作为 <code>Tip</code> 使用"
   },
+  "BootstrapBlazor.Shared.Pages.DateTimePickers": {
+    "SubmitText": "保存",
+    "ModelValidateValue": "属性",
+    "ModelValidateValue.Required": "{0}为必填项"
+  },
   "BootstrapBlazor.Shared.Pages.Selects": {
     "PlaceHolder": "未选择"
   },
@@ -301,5 +306,9 @@
     "Left": "左对齐",
     "Center": "居中",
     "Right": "右对齐"
+  },
+  "BootstrapBlazor.Shared.Pages.Table.TablesDetailRow": {
+    "DetailTextTrue": "关闭明细行",
+    "DetailTextFalse": "开启明细行"
   }
 }

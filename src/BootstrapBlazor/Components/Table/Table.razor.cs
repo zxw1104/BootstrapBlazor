@@ -11,8 +11,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -56,7 +54,7 @@ namespace BootstrapBlazor.Components
         protected string? GetRowClassString(TItem item, string? css = null) => CssBuilder.Default(css)
             .AddClass(SetRowClassFormatter?.Invoke(item))
             .AddClass("active", CheckActive(item))
-            .AddClass("is-master", DetailRowTemplate != null)
+            .AddClass("is-master", ShowDetails())
             .AddClass("is-click", ClickToSelect)
             .AddClass("is-dblclick", DoubleClickToEdit)
             .Build();
@@ -132,13 +130,29 @@ namespace BootstrapBlazor.Components
         public Func<TItem, Task<IEnumerable<TItem>>>? OnTreeExpand { get; set; }
 
         /// <summary>
+        /// 获得/设置 是否有子节点回调方法 默认为 null 用于未提供 <see cref="HasChildrenColumnName"/> 列名时使用
+        /// </summary>
+        [Parameter]
+        public Func<TItem, bool>? HasChildrenCallback { get; set; }
+
+        /// <summary>
         /// 获得/设置 缩进大小 默认为 16 单位 px
         /// </summary>
         [Parameter]
         public int IndentSize { get; set; } = 16;
 
+        /// <summary>
+        /// 获得/设置 是否显示明细行 默认为 null 为空时使用 <see cref="DetailRowTemplate" /> 进行逻辑判断
+        /// </summary>
+        [Parameter]
+        public bool? IsDetails { get; set; }
+
         [NotNull]
         private string? NotSetOnTreeExpandErrorMessage { get; set; }
+
+        private bool ShowDetails() => IsDetails == null
+            ? DetailRowTemplate != null
+            : IsDetails.Value && DetailRowTemplate != null;
 
         private string GetIndentSize(TItem item)
         {
@@ -266,12 +280,19 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         private bool CheckTreeChildren(TItem item)
         {
-            var invoker = GetPropertyCache.GetOrAdd((typeof(TItem), HasChildrenColumnName), key => LambdaExtensions.GetPropertyValueLambda<TItem, object>(item, key.PropertyName).Compile());
-            var v = invoker.Invoke(item);
             var ret = false;
-            if (v is bool b)
+            if (HasChildrenCallback != null)
             {
-                ret = b;
+                ret = HasChildrenCallback(item);
+            }
+            else
+            {
+                var invoker = GetPropertyCache.GetOrAdd((typeof(TItem), HasChildrenColumnName), key => LambdaExtensions.GetPropertyValueLambda<TItem, object>(item, key.PropertyName).Compile());
+                var v = invoker.Invoke(item);
+                if (v is bool b)
+                {
+                    ret = b;
+                }
             }
             return ret;
         }
@@ -303,7 +324,7 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 明细行集合用于数据懒加载
         /// </summary>
-        protected List<TItem> DetailRows { get; set; } = new List<TItem>();
+        protected List<TItem> DetailRows { get; } = new List<TItem>();
 
         /// <summary>
         /// 获得/设置 可过滤表格列集合
@@ -327,7 +348,7 @@ namespace BootstrapBlazor.Components
         public bool UseInjectDataService { get; set; }
 
         /// <summary>
-        /// 获得/设置 明细行模板
+        /// 获得/设置 明细行模板 <see cref="IsDetails" />
         /// </summary>
         [Parameter]
         public RenderFragment<TItem>? DetailRowTemplate { get; set; }
@@ -437,7 +458,7 @@ namespace BootstrapBlazor.Components
         public string ChildrenColumnName { get; set; } = "Children";
 
         /// <summary>
-        /// 获得设置 树形数据模式子项字段是否有子节点属性名称 默认为 HasChildren
+        /// 获得设置 树形数据模式子项字段是否有子节点属性名称 默认为 HasChildren 无法提供时请设置 <see cref="HasChildrenCallback"/> 回调方法
         /// </summary>
         [Parameter]
         public string HasChildrenColumnName { get; set; } = "HasChildren";
@@ -692,7 +713,9 @@ namespace BootstrapBlazor.Components
         private static ConcurrentDictionary<(Type Type, string PropertyName), Func<TItem, object?>> GetPropertyCache { get; } = new();
         #endregion
 
-        private RenderFragment RenderCell(ITableColumn col) => builder => builder.CreateComponentByFieldType(this, col, EditModel);
+        private RenderFragment RenderCell(ITableColumn col) => col.EditTemplate == null
+            ? builder => builder.CreateComponentByFieldType(this, col, EditModel)
+            : col.EditTemplate.Invoke(EditModel);
 
         /// <summary>
         /// Dispose 方法

@@ -529,6 +529,7 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
+                    IsUpdate = true,
                     Text = Localizer["TableDetail"],
                     Url = "tables/detail"
                 },
@@ -633,6 +634,7 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
+                    IsUpdate = true,
                     Text = Localizer["Dialog"],
                     Url = "dialogs"
                 },
