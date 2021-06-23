@@ -175,14 +175,10 @@ namespace BootstrapBlazor.Components
             if (item != null)
             {
                 var type = item.GetType();
-                if (typeof(ICloneable).IsAssignableFrom(type))
+                if (item is ICloneable cloneable)
                 {
-                    var clv = type.GetMethod("Clone")?.Invoke(item, null);
-                    if (clv != null)
-                    {
-                        ret = (TModel)clv;
-                        return ret;
-                    }
+                    ret = (TModel)cloneable.Clone();
+                    return ret;
                 }
                 if (type.IsClass)
                 {
