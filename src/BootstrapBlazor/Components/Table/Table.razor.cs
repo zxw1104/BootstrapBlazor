@@ -600,6 +600,10 @@ namespace BootstrapBlazor.Components
                 dataTableAdapter = new DataTableAdapter(DataTable);
                 Columns.Clear();
                 Columns.AddRange(dataTableAdapter.GetColumns());
+
+                DataService = (IDataService<TItem>?)(new DataTableDataService(dataTableAdapter));
+
+                UseInjectDataService = true;
             }
 
             ColumnVisibles = Columns.Select(i => new ColumnVisibleItem { FieldName = i.GetFieldName(), Visible = i.Visible }).ToList();
@@ -787,6 +791,11 @@ namespace BootstrapBlazor.Components
             }
         }
 
+        public DataRowAdapter GetNewRow()
+        {
+            return new DataRowAdapter(Table.NewRow(), tableTypeKey);
+        }
+
         public List<T> GetItems<T>()
             where T : class, new()
         {
@@ -808,38 +817,46 @@ namespace BootstrapBlazor.Components
             }
             return cols;
         }
+
+        public void RemoveRows(IEnumerable<DataRowAdapter> rows)
+        {
+            foreach (var item in rows)
+            {
+                Table.Rows.Remove(item.Row);
+            }
+        }
+
+        public void Add(DataRowAdapter row)
+        {
+            Table.Rows.Add(row.Row);
+        }
     }
 
     public class DataRowAdapter : IDynamicType
     {
-        private readonly DataRow row;
+        public DataRow Row { get; }
         private readonly string typeKey;
 
         public DataRowAdapter()
         {
-
+           
         }
 
         public DataRowAdapter(DataRow row, string typeKey)
         {
-            this.row = row;
+            this.Row = row;
             this.typeKey = typeKey;
         }
         public object Clone()
         {
-            var copyRow = new Dictionary<string, object>();
-            foreach (DataColumn item in row.Table.Columns)
-            {
-                copyRow.Add(item.ColumnName, row[item.ColumnName]);
-            }
-            return copyRow;
+            throw new NotImplementedException("DataRowAdapter不支持Clone,编辑时，使用BeginEdit方法即可进入编辑状态，从而避免了Clone");
         }
 
         public void CopyFrom(IDynamicType other)
         {
-            foreach (DataColumn item in row.Table.Columns)
+            foreach (DataColumn item in Row.Table.Columns)
             {
-                row[item.ColumnName] = other.GetValue(item.ColumnName);
+                Row[item.ColumnName] = other.GetValue(item.ColumnName);
             }
         }
 
@@ -850,12 +867,84 @@ namespace BootstrapBlazor.Components
 
         public object? GetValue(string propName)
         {
-            return row[propName];
+            return Row[propName];
         }
 
         public void SetValue(string propName, object value)
         {
-            row[propName] = value;
+            Row[propName] = value;
+        }
+    }
+
+    public class DataTableDataService : IDataService_V2<DataRowAdapter>, IDataService<DataRowAdapter>
+    {
+        private readonly DataTableAdapter dataTableAdapter;
+
+        public DataTableDataService(DataTableAdapter dataTableAdapter)
+        {
+            this.dataTableAdapter = dataTableAdapter;
+        }
+
+        public Task<bool> AddAsync(DataRowAdapter adapter)
+        {
+            throw new NotImplementedException("DataTable无需执行此方法");
+        }
+
+        public Task CancelAsync(DataRowAdapter row)
+        {
+            row.Row.CancelEdit();
+            return Task.CompletedTask;
+        }
+
+        public Task<DataRowAdapter> CreateDefault()
+        {
+            var newRow = dataTableAdapter.GetNewRow();
+            //必须根据列的类型初始化Row中的值，否则所有值都是DBNUll
+            foreach (DataColumn col in dataTableAdapter.Table.Columns)
+            {
+                if (col.DataType.IsValueType)
+                {
+                    newRow.Row[col.ColumnName] = Activator.CreateInstance(col.DataType);
+                }
+                else
+                {
+                    newRow.Row[col.ColumnName] = string.Empty;
+                }
+              
+            }
+            return Task.FromResult(newRow);
+        }
+
+        public Task<bool> DeleteAsync(IEnumerable<DataRowAdapter> models)
+        {
+            dataTableAdapter.RemoveRows(models);
+            return Task.FromResult(true);
+        }
+
+        public Task EditAsync(DataRowAdapter model)
+        {
+            model.Row.BeginEdit();
+            return Task.CompletedTask;
+        }
+
+        public Task<QueryData<DataRowAdapter>> QueryAsync(QueryPageOptions option)
+        {
+            var tableRows = dataTableAdapter.GetItems<DataRowAdapter>();
+            return Task.FromResult(new QueryData<DataRowAdapter>() { Items = tableRows, TotalCount = tableRows.Count });
+        }
+
+        public Task<bool> SaveAsync(DataRowAdapter model)
+        {
+            //Detached分离，表示是新增操作
+            if (model.Row.RowState== DataRowState.Detached)
+            {
+                dataTableAdapter.Add(model);
+            }
+            else
+            {
+                model.Row.AcceptChanges();
+            }
+            return Task.FromResult(true);
         }
     }
 }

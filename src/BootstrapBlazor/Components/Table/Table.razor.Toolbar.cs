@@ -198,8 +198,16 @@ namespace BootstrapBlazor.Components
                 }
                 else if (UseInjectDataService)
                 {
-                    EditModel = new TItem();
-                    await GetDataService().AddAsync(EditModel);
+                    var dataService = GetDataService();
+                    if (dataService is IDataService_V2<TItem> serviceV2)
+                    {
+                        EditModel =await serviceV2.CreateDefault();
+                    }
+                    else
+                    {
+                        EditModel = new TItem();
+                        await GetDataService().AddAsync(EditModel);
+                    }
                 }
                 else
                 {
@@ -249,10 +257,19 @@ namespace BootstrapBlazor.Components
                     {
                         await OnEditAsync(SelectedItems[0]);
                     }
-                    if (UseInjectDataService && GetDataService() is IEntityFrameworkCoreDataService ef)
+                    if (UseInjectDataService)
                     {
-                        EditModel = SelectedItems[0];
-                        await ef.EditAsync(EditModel);
+                        var dataService = GetDataService();
+                        if (dataService is IEntityFrameworkCoreDataService ef)
+                        {
+                            EditModel = SelectedItems[0];
+                            await ef.EditAsync(EditModel);
+                        }
+                        else if (dataService is IDataService_V2<TItem> v2)
+                        {
+                            EditModel = SelectedItems[0];
+                            await v2.EditAsync(EditModel);
+                        }
                     }
                     else
                     {
@@ -411,12 +428,21 @@ namespace BootstrapBlazor.Components
             DialogBodyTemplate = EditTemplate,
             OnCloseAsync = async () =>
             {
-                if (UseInjectDataService && GetDataService() is IEntityFrameworkCoreDataService ef)
+                if (UseInjectDataService)
                 {
-                    // EFCore
-                    await ToggleLoading(true);
-                    await ef.CancelAsync();
-                    await ToggleLoading(false);
+                    var dataService = GetDataService();
+                    if (dataService is IEntityFrameworkCoreDataService ef)
+                    {
+                        // EFCore
+                        await ToggleLoading(true);
+                        await ef.CancelAsync();
+                        await ToggleLoading(false);
+                    }
+                    else if (dataService is IDataService_V2<TItem> v2)
+                    {
+                        await v2.CancelAsync(EditModel);
+                    }
+                  
                 }
             },
             OnSaveAsync = async context =>

@@ -334,11 +334,18 @@ namespace BootstrapBlazor.Components
         private static object? GenerateValue(object model, string fieldName)
         {
             // FieldValue
-            var valueInvoker = GetPropertyValueLambdaCache.GetOrAdd(
+            if (model is IDynamicType dTypeModel)
+            {
+                return dTypeModel.GetValue(fieldName);
+            }
+            else
+            {
+                var valueInvoker = GetPropertyValueLambdaCache.GetOrAdd(
                 key: (model.GetType(), fieldName),
                 valueFactory: key => LambdaExtensions.GetPropertyValueLambda<object, object?>(model, key.FieldName).Compile()
             );
-            return valueInvoker.Invoke(model);
+                return valueInvoker.Invoke(model);
+            }
         }
 
         private static object? GenerateValueChanged(ComponentBase component, object model, string fieldName, Type fieldType)
@@ -350,10 +357,17 @@ namespace BootstrapBlazor.Components
 
         private static object GenerateValueExpression(object model, string fieldName, Type fieldType)
         {
-            // ValueExpression
-            var body = Expression.Property(Expression.Constant(model), model.GetType(), fieldName);
-            var tDelegate = typeof(Func<>).MakeGenericType(fieldType);
-            return Expression.Lambda(tDelegate, body);
+            if (model is IDynamicType)
+            {
+                return null;
+            }
+            else
+            {
+                // ValueExpression
+                var body = Expression.Property(Expression.Constant(model), model.GetType(), fieldName);
+                var tDelegate = typeof(Func<>).MakeGenericType(fieldType);
+                return Expression.Lambda(tDelegate, body);
+            }
         }
 
         /// <summary>
@@ -491,8 +505,15 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         private static EventCallback<TType> CreateCallback<TType>(ComponentBase component, object model, string fieldName) => EventCallback.Factory.Create<TType>(component, t =>
         {
-            var invoker = SetPropertyValueLambdaCache.GetOrAdd((typeof(object), fieldName), key => LambdaExtensions.SetPropertyValueLambda<object, object?>(model, key.FieldName).Compile());
-            invoker.Invoke(model, t);
+            if (model is IDynamicType cType)
+            {
+                cType.SetValue(fieldName, t);
+            }
+            else
+            {
+                var invoker = SetPropertyValueLambdaCache.GetOrAdd((typeof(object), fieldName), key => LambdaExtensions.SetPropertyValueLambda<object, object?>(model, key.FieldName).Compile());
+                invoker.Invoke(model, t);
+            }
         });
 
         private static Expression<Func<ComponentBase, object, string, object>> CreateLambda(Type fieldType)

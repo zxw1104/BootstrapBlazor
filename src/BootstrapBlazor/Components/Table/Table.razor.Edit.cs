@@ -327,12 +327,8 @@ namespace BootstrapBlazor.Components
             }
             else if (UseInjectDataService)
             {
+                var dataService = GetDataService();
                 queryData = await GetDataService().QueryAsync(queryOption);
-            }
-            else if (useDataTable)
-            {
-                var tableRows = dataTableAdapter.GetItems<TItem>();
-                queryData = new QueryData<TItem>() {  Items = tableRows, TotalCount= tableRows.Count };
             }
 
             if (queryData != null)

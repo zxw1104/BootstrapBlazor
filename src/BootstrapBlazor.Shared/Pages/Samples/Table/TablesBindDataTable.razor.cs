@@ -20,8 +20,5 @@ namespace BootstrapBlazor.Shared.Pages.Samples.Table
         {
             
         }
-
-       
-
     }
 }
