@@ -947,4 +947,87 @@ namespace BootstrapBlazor.Components
             return Task.FromResult(true);
         }
     }
+
+    ///// <summary>
+    ///// Uniquely identifies a single field that can be edited. This may correspond to a property on a
+    ///// model object, or can be any other named value.
+    ///// </summary>
+    //public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
+    //{
+    //    /// <summary>
+    //    /// Initializes a new instance of the <see cref="T:Microsoft.AspNetCore.Components.Forms.FieldIdentifier" /> structure.
+    //    /// </summary>
+    //    /// <param name="accessor">An expression that identifies an object member.</param>
+    //    /// <typeparam name="TField">The field <see cref="T:System.Type" />.</typeparam>
+    //    // Token: 0x0600002C RID: 44 RVA: 0x00002798 File Offset: 0x00000998
+    //    public static FieldIdentifier Create<TField>(Expression<Func<TField>> accessor)
+    //    {
+    //        if (accessor == null)
+    //        {
+    //            throw new ArgumentNullException("accessor");
+    //        }
+    //        object model;
+    //        string fieldName;
+    //        FieldIdentifier.ParseAccessor<TField>(accessor, out model, out fieldName);
+    //        return new FieldIdentifier(model, fieldName);
+    //    }
+
+    //    /// <summary>
+    //    /// Initializes a new instance of the <see cref="T:Microsoft.AspNetCore.Components.Forms.FieldIdentifier" /> structure.
+    //    /// </summary>
+    //    /// <param name="model">The object that owns the field.</param>
+    //    /// <param name="fieldName">The name of the editable field.</param>
+    //    public FieldIdentifier(object model, string fieldName)
+    //    {
+    //        if (model == null)
+    //        {
+    //            throw new ArgumentNullException("model");
+    //        }
+    //        if (model.GetType().IsValueType)
+    //        {
+    //            throw new ArgumentException("The model must be a reference-typed object.", "model");
+    //        }
+    //        this.Model = model;
+    //        if (fieldName == null)
+    //        {
+    //            throw new ArgumentNullException("fieldName");
+    //        }
+    //        this.FieldName = fieldName;
+    //    }
+
+    //    /// <summary>
+    //    /// Gets the object that owns the editable field.
+    //    /// </summary>
+    //    public object Model { get; }
+
+    //    /// <summary>
+    //    /// Gets the name of the editable field.
+    //    /// </summary>
+     
+    //    public string FieldName { get; }
+
+
+    //    public override int GetHashCode()
+    //    {
+    //        int hashCode = RuntimeHelpers.GetHashCode(this.Model);
+    //        int hashCode2 = StringComparer.Ordinal.GetHashCode(this.FieldName);
+    //        return new ValueTuple<int, int>(hashCode, hashCode2).GetHashCode();
+    //    }
+
+    
+    //    public override bool Equals(object obj)
+    //    {
+    //        if (obj is FieldIdentifier)
+    //        {
+    //            FieldIdentifier otherIdentifier = (FieldIdentifier)obj;
+    //            return this.Equals(otherIdentifier);
+    //        }
+    //        return false;
+    //    }
+
+    //    public bool Equals(FieldIdentifier otherIdentifier)
+    //    {
+    //        return otherIdentifier.Model == this.Model && string.Equals(otherIdentifier.FieldName, this.FieldName, StringComparison.Ordinal);
+    //    }
+    //}
 }
