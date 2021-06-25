@@ -17,23 +17,24 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public class DynamicPropertyRegistry
     {
-        private static Dictionary<Type, List<PropertyInfo>> typePropDic = new Dictionary<Type, List<PropertyInfo>>();
-        private static Dictionary<Type, AutoGenerateClassAttribute> classAttrDic = new Dictionary<Type, AutoGenerateClassAttribute>();
+        private static Dictionary<string, List<PropertyInfo>> typePropDic = new();
+        private static Dictionary<string, AutoGenerateClassAttribute> classAttrDic = new();
+        private static Dictionary<Type, string> typeKeyDic = new();
 
         #region 注册
         /// <summary>
         /// 给指定类型，添加动态属性
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="typeKey"></param>
         /// <param name="info"></param>
 
-        public static void AddProperty(Type type, PropertyInfo info)
+        public static void AddProperty(string typeKey, PropertyInfo info)
         {
-            if (!typePropDic.ContainsKey(type))
+            if (!typePropDic.ContainsKey(typeKey))
             {
-                typePropDic[type] = new List<PropertyInfo>();
+                typePropDic[typeKey] = new List<PropertyInfo>();
             }
-            typePropDic[type].Add(info);
+            typePropDic[typeKey].Add(info);
         }
 
         /// <summary>
@@ -41,22 +42,22 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <param name="type"></param>
         /// <param name="info"></param>
-        public static void RemoveProperty(Type type, PropertyInfo info)
+        public static void RemoveProperty(string typeKey, PropertyInfo info)
         {
-            if (!typePropDic.ContainsKey(type))
+            if (!typePropDic.ContainsKey(typeKey))
             {
                 return;
             }
-            typePropDic[type].Remove(info);
+            typePropDic[typeKey].Remove(info);
         }
         /// <summary>
         /// 注册 AutoGenerateClassAttribute
         /// </summary>
         /// <param name="type"></param>
         /// <param name="info"></param>
-        public static void AddAutoGenerateClassAttribute(Type type, AutoGenerateClassAttribute info)
+        public static void AddAutoGenerateClassAttribute(string typeKey, AutoGenerateClassAttribute info)
         {
-            classAttrDic[type] = info;
+            classAttrDic[typeKey] = info;
         }
         #endregion
 
@@ -65,18 +66,33 @@ namespace BootstrapBlazor.Components
         /// 获取指定了类型的所有属性信息
         /// </summary>
         /// <returns></returns>
-        public static PropertyInfo[] GetProperties(Type type)
+        public static PropertyInfo[] GetProperties(string typeKey)
         {
-            return typePropDic[type].ToArray();
+            return typePropDic[typeKey].ToArray();
         }
         /// <summary>
         /// 获取类型上面的 AutoGenerateClassAttribute
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static AutoGenerateClassAttribute GetTypeAttribute(Type type)
+        public static AutoGenerateClassAttribute GetTypeAttribute(string typeKey)
         {
-            return classAttrDic[type];
+            return classAttrDic[typeKey];
+        }
+
+        /// <summary>
+        /// 注册类型的 字符串唯一标识
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="typeKey"></param>
+        public static void RegistTypeKey(Type type, string typeKey)
+        {
+            typeKeyDic[type] = typeKey;
+        }
+
+        public static string GetTypeKey(Type type)
+        {
+            return typeKeyDic[type];
         }
         #endregion
 
@@ -85,7 +101,7 @@ namespace BootstrapBlazor.Components
     /// <summary>
     /// 编辑的时候，会调用Clone方法，设置临时对象
     /// </summary>
-    public interface IDynamicType: ICloneable
+    public interface IDynamicType : ICloneable
     {
         /// <summary>
         /// 根据属性名称，获取属性值
@@ -104,6 +120,8 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <param name="other"></param>
         void CopyFrom(IDynamicType other);
+
+        string GetTypeKey();
     }
 
     /// <summary>
@@ -123,9 +141,9 @@ namespace BootstrapBlazor.Components
             this.propertyType = propType;
             this.attributes = attributes;
         }
-        public override PropertyAttributes Attributes =>  PropertyAttributes.None;
+        public override PropertyAttributes Attributes => PropertyAttributes.None;
 
-        public override bool CanRead =>true;
+        public override bool CanRead => true;
 
         public override bool CanWrite => true;
 
@@ -186,7 +204,7 @@ namespace BootstrapBlazor.Components
 
         public override void SetValue(object? obj, object? value, BindingFlags invokeAttr, Binder? binder, object?[]? index, CultureInfo? culture)
         {
-           
+
         }
     }
 }

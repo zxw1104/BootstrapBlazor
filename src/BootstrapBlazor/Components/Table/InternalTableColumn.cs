@@ -120,11 +120,12 @@ namespace BootstrapBlazor.Components
             AutoGenerateClassAttribute? attrModel;
             PropertyInfo[] props;
             //是否是动态类型
-            var isCustomType = typeof(TModel).IsAssignableTo(typeof(IDynamicType));
+            var isCustomType = type.IsAssignableTo(typeof(IDynamicType));
             if (isCustomType)
             {
-                attrModel = DynamicPropertyRegistry.GetTypeAttribute(type);
-                props = DynamicPropertyRegistry.GetProperties(type);
+                var typeKey = DynamicPropertyRegistry.GetTypeKey(type);
+                attrModel = DynamicPropertyRegistry.GetTypeAttribute(typeKey);
+                props = DynamicPropertyRegistry.GetProperties(typeKey);
             }
             else
             {

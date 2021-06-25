@@ -23,6 +23,8 @@ namespace BootstrapBlazor.Shared.Pages.Table
 
         private Table<DynamicUser> table;
         static int propIndex = 1;
+
+        private string userTypeKey = DynamicUser.userTypeKey;
         /// <summary>
         /// 添加列
         /// </summary>
@@ -38,7 +40,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 MyDataService.AllUser.ForEach(user => user.AddProperty(newPropertyName, newPropertyDefaultValue));
 
                 //将动态属性注册全局动态属性注册中心
-                DynamicPropertyRegistry.AddProperty(typeof(DynamicUser), new DynamicPropertyInfo(newPropertyName, typeof(string), new Attribute[] { new AutoGenerateColumnAttribute() { Order = propIndex + 10, Filterable = true, Searchable = true, Text = $"动态属性{propIndex}-字符串类型" } }));
+                DynamicPropertyRegistry.AddProperty(userTypeKey, new DynamicPropertyInfo(newPropertyName, typeof(string), new Attribute[] { new AutoGenerateColumnAttribute() { Order = propIndex + 10, Filterable = true, Searchable = true, Text = $"动态属性{propIndex}-字符串类型" } }));
                 propIndex++;
             }
             else
@@ -51,7 +53,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 MyDataService.AllUser.ForEach(user => user.AddProperty(newPropertyName, newPropertyDefaultValue));
 
                 //将动态属性注册全局动态属性注册中心
-                DynamicPropertyRegistry.AddProperty(typeof(DynamicUser), new DynamicPropertyInfo(newPropertyName, typeof(int), new Attribute[] { new AutoGenerateColumnAttribute() { Order = propIndex + 10, Filterable = true, Searchable = true, Text = $"动态属性{propIndex}-int类型" } }));
+                DynamicPropertyRegistry.AddProperty(userTypeKey, new DynamicPropertyInfo(newPropertyName, typeof(int), new Attribute[] { new AutoGenerateColumnAttribute() { Order = propIndex + 10, Filterable = true, Searchable = true, Text = $"动态属性{propIndex}-int类型" } }));
                 propIndex++;
             }
             //手动通知Table，更新列信息
@@ -65,9 +67,9 @@ namespace BootstrapBlazor.Shared.Pages.Table
         /// </summary>
         public void DeleteLastColumn()
         {
-            var props = DynamicPropertyRegistry.GetProperties(typeof(DynamicUser));
+            var props = DynamicPropertyRegistry.GetProperties(userTypeKey);
 
-            if (props.Length>1)
+            if (props.Length > 1)
             {
                 var lastProperty = props.Last();
                 var propName = lastProperty.Name;
@@ -76,9 +78,9 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 MyDataService.AllUser.ForEach(user => user.RemoveProperty(propName));
 
                 //将动态属性注册全局动态属性注册中心
-                DynamicPropertyRegistry.RemoveProperty(typeof(DynamicUser), lastProperty);
+                DynamicPropertyRegistry.RemoveProperty(userTypeKey, lastProperty);
             }
-           
+
 
             //手动通知Table，更新列信息
             table.ReGenerateColumn();
@@ -93,15 +95,19 @@ namespace BootstrapBlazor.Shared.Pages.Table
     /// </summary>
     public class DynamicUser : IDynamicType
     {
+        public static string userTypeKey;
+
         static DynamicUser()
         {
-            var type = typeof(DynamicUser);
+
+            userTypeKey = typeof(DynamicUser).FullName;
+            DynamicPropertyRegistry.RegistTypeKey(typeof(DynamicUser), userTypeKey);
             //添加类型Attribute定义
-            DynamicPropertyRegistry.AddAutoGenerateClassAttribute(type, new AutoGenerateClassAttribute());
+            DynamicPropertyRegistry.AddAutoGenerateClassAttribute(userTypeKey, new AutoGenerateClassAttribute());
 
             //添加属性Attribute定义
-            DynamicPropertyRegistry.AddProperty(type, new DynamicPropertyInfo("Name", typeof(string), new Attribute[] { new AutoGenerateColumnAttribute() { Order = 1, Filterable = true, Searchable = true, Text = "名称" } }));
-            DynamicPropertyRegistry.AddProperty(type, new DynamicPropertyInfo("Age", typeof(int), new Attribute[] { new AutoGenerateColumnAttribute() { Order = 2, Filterable = true, Searchable = true, Text = "年龄" } }));
+            DynamicPropertyRegistry.AddProperty(userTypeKey, new DynamicPropertyInfo("Name", typeof(string), new Attribute[] { new AutoGenerateColumnAttribute() { Order = 1, Filterable = true, Searchable = true, Text = "名称" } }));
+            DynamicPropertyRegistry.AddProperty(userTypeKey, new DynamicPropertyInfo("Age", typeof(int), new Attribute[] { new AutoGenerateColumnAttribute() { Order = 2, Filterable = true, Searchable = true, Text = "年龄" } }));
         }
         private Dictionary<string, object?> propDic = new Dictionary<string, object?>();
 
@@ -122,14 +128,14 @@ namespace BootstrapBlazor.Shared.Pages.Table
         public DynamicUser()
         {
             //从注册中心获取当前对象有哪些动态属性
-            var props = DynamicPropertyRegistry.GetProperties(typeof(DynamicUser));
+            var props = DynamicPropertyRegistry.GetProperties(userTypeKey);
             propDic.Add("Name", $"张三--{i++}");
             propDic.Add("Age", i + 10);
             Id = i++;
             foreach (DynamicPropertyInfo p in props)
             {
-                var targetType= p.PropertyType;
-                var defaultValue= targetType.IsValueType ? Activator.CreateInstance(targetType) : null;
+                var targetType = p.PropertyType;
+                var defaultValue = targetType.IsValueType ? Activator.CreateInstance(targetType) : null;
                 propDic[p.Name] = defaultValue;
             }
         }
@@ -216,6 +222,11 @@ namespace BootstrapBlazor.Shared.Pages.Table
             {
                 propDic[item.Key] = other.GetValue(item.Key);
             }
+        }
+
+        public string GetTypeKey()
+        {
+            return userTypeKey;
         }
     }
 

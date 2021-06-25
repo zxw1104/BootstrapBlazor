@@ -8,6 +8,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -377,6 +378,17 @@ namespace BootstrapBlazor.Components
         [Parameter]
         public IEnumerable<TItem> Items { get; set; } = Enumerable.Empty<TItem>();
 
+        [Parameter]
+        public DataTable DataTable { get; set; }
+
+        private bool useDataTable
+        {
+            get
+            {
+                return DataTable != null;
+            }
+        }
+
         /// <summary>
         /// 获得/设置 表格组件大小 默认为 Normal 正常模式
         /// </summary>
@@ -564,6 +576,8 @@ namespace BootstrapBlazor.Components
             }
         }
 
+        private DataTableAdapter dataTableAdapter;
+
         /// <summary>
         /// 重新生成列，并设置列是否显示以及默认排序
         /// TODO:此方法可以优化，如果发现列配置没有改变，则无需重复执行此方法
@@ -579,6 +593,13 @@ namespace BootstrapBlazor.Components
                 var cols = InternalTableColumn.GetProperties<TItem>(Columns);
                 Columns.Clear();
                 Columns.AddRange(cols);
+            }
+
+            if (useDataTable)
+            {
+                dataTableAdapter = new DataTableAdapter(DataTable);
+                Columns.Clear();
+                Columns.AddRange(dataTableAdapter.GetColumns());
             }
 
             ColumnVisibles = Columns.Select(i => new ColumnVisibleItem { FieldName = i.GetFieldName(), Visible = i.Visible }).ToList();
@@ -741,6 +762,100 @@ namespace BootstrapBlazor.Components
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+    }
+
+    public class DataTableAdapter
+    {
+        public DataTable Table { get; set; }
+
+        private string tableTypeKey;
+
+        public DataTableAdapter(DataTable table)
+        {
+            Table = table;
+            tableTypeKey = $"DataTable_{Table.GetHashCode()}";
+            RegistDynamicProperty();
+        }
+
+        public void RegistDynamicProperty()
+        {
+            int orderIndex = 1;
+            foreach (DataColumn item in Table.Columns)
+            {
+                DynamicPropertyRegistry.AddProperty(tableTypeKey, new DynamicPropertyInfo(item.ColumnName, item.DataType, new Attribute[] { new AutoGenerateColumnAttribute() { Order = orderIndex++, Filterable = true, Searchable = true, Text = item.ColumnName } }));
+            }
+        }
+
+        public List<T> GetItems<T>()
+            where T : class, new()
+        {
+            List<T> list = new List<T>(Table.Rows.Count);
+            foreach (DataRow item in Table.Rows)
+            {
+                list.Add(new DataRowAdapter(item, tableTypeKey) as T);
+            }
+            return list;
+        }
+
+        public IEnumerable<ITableColumn> GetColumns()
+        {
+            var cols = new List<ITableColumn>();
+            foreach (DataColumn col in Table.Columns)
+            {
+                var tc = new InternalTableColumn(col.ColumnName, col.DataType, col.ColumnName);
+                cols.Add(tc);
+            }
+            return cols;
+        }
+    }
+
+    public class DataRowAdapter : IDynamicType
+    {
+        private readonly DataRow row;
+        private readonly string typeKey;
+
+        public DataRowAdapter()
+        {
+
+        }
+
+        public DataRowAdapter(DataRow row, string typeKey)
+        {
+            this.row = row;
+            this.typeKey = typeKey;
+        }
+        public object Clone()
+        {
+            var copyRow = new Dictionary<string, object>();
+            foreach (DataColumn item in row.Table.Columns)
+            {
+                copyRow.Add(item.ColumnName, row[item.ColumnName]);
+            }
+            return copyRow;
+        }
+
+        public void CopyFrom(IDynamicType other)
+        {
+            foreach (DataColumn item in row.Table.Columns)
+            {
+                row[item.ColumnName] = other.GetValue(item.ColumnName);
+            }
+        }
+
+        public string GetTypeKey()
+        {
+            return typeKey;
+        }
+
+        public object? GetValue(string propName)
+        {
+            return row[propName];
+        }
+
+        public void SetValue(string propName, object value)
+        {
+            row[propName] = value;
         }
     }
 }

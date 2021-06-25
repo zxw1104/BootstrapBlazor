@@ -1,0 +1,34 @@
+﻿@page "/tables/datatable"
+
+@using System.Data
+<h3>Table 表格</h3>
+
+<h4>绑定DataTable</h4>
+
+<Block Title="绑定DataTable" Introduction="基础的表格展示用法。">
+    <Table TItem="DataRowAdapter" DataTable="@dataTable"
+           ShowDefaultButtons="true"
+           ShowToolbar="true"
+           ShowAddButton="true"
+           ShowDeleteButton="true"
+           ShowEditButton="true">
+    </Table>
+</Block>
+
+@code{
+    private DataTable dataTable;
+
+    protected override Task OnInitializedAsync()
+    {
+        dataTable = new DataTable();
+        dataTable.Columns.Add(new DataColumn("int类型列", typeof(int)));
+        dataTable.Columns.Add(new DataColumn("string类型列", typeof(string)));
+        dataTable.Columns.Add(new DataColumn("DateTime类型列", typeof(DateTime)));
+
+        for (int i = 0; i < 10; i++)
+        {
+            dataTable.LoadDataRow(new object?[] { i, $"string{i}", DateTime.Now.AddDays(i) }, true);
+        }
+        return base.OnInitializedAsync();
+    }
+}

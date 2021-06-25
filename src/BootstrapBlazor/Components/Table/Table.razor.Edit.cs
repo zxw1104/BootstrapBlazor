@@ -329,10 +329,23 @@ namespace BootstrapBlazor.Components
             {
                 queryData = await GetDataService().QueryAsync(queryOption);
             }
+            else if (useDataTable)
+            {
+                var tableRows = dataTableAdapter.GetItems<TItem>();
+                queryData = new QueryData<TItem>() {  Items = tableRows, TotalCount= tableRows.Count };
+            }
 
             if (queryData != null)
             {
-                Items = queryData.Items.ToList();
+                //如果是Ilist，就不用ToList了
+                if (queryData.Items is IList<TItem>)
+                {
+                    Items = queryData.Items;
+                }
+                else
+                {
+                    Items = queryData.Items.ToList();
+                }
                 if (IsTree)
                 {
                     KeySet.Clear();
