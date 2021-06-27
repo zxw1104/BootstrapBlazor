@@ -4,9 +4,9 @@
 @if (Model != null)
 {
     <CascadingValue Value="this">
-        <EditForm Model="@Model" @attributes="@AdditionalAttributes" id="@Id" OnValidSubmit="@OnValidSubmitForm" OnInvalidSubmit="@OnInvalidSubmit">
+        <BootstrapBlazor.Components.EditForm Model="@Model" @attributes="@AdditionalAttributes" id="@Id" OnValidSubmit="@OnValidSubmitForm" OnInvalidSubmit="@OnInvalidSubmit">
             <BootstrapBlazorDataAnnotationsValidator />
             @ChildContent
-        </EditForm>
+        </BootstrapBlazor.Components.EditForm>
     </CascadingValue>
 }

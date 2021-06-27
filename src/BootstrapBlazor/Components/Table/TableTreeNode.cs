@@ -19,14 +19,14 @@ namespace BootstrapBlazor.Components
     {
         private static readonly Lazy<Func<TItem, object?>> GetKeyFunc = new(() =>
         {
-            var property = typeof(TItem).GetProperties().FirstOrDefault(p => p.IsDefined(typeof(KeyAttribute)));
+            var property = TypeInfoHelper.GetProperties(typeof(TItem)).FirstOrDefault(p => p.IsDefined(typeof(KeyAttribute)));
             if (property == null)
             {
                 return _ => null;
             }
             HasKey = true;
             var param = Expression.Parameter(typeof(TItem));
-            var body = Expression.Property(param, property);
+            var body = LambdaExtensions.GetItemPropertyValueExp(param, property);
             return Expression.Lambda<Func<TItem, object>>(Expression.Convert(body, typeof(object)), param).Compile();
         });
 

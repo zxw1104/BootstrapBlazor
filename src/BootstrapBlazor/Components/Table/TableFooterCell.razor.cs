@@ -163,8 +163,8 @@ namespace BootstrapBlazor.Components
             {
                 throw new InvalidOperationException();
             }
-
-            var fieldExpression = Expression.Property(p1, propertyInfo);
+            //Expression.Property(p1, propertyInfo);
+            var fieldExpression = LambdaExtensions.GetItemPropertyValueExp(p1, propertyInfo);
             return Expression.Lambda<Func<TModel, TValue>>(fieldExpression, p1).Compile();
         }
 

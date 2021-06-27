@@ -772,28 +772,42 @@ namespace BootstrapBlazor.Components
     public class DataTableAdapter
     {
         public DataTable Table { get; set; }
+        public string TableTypeKey { get; set; }
 
-        private string tableTypeKey;
 
         public DataTableAdapter(DataTable table)
         {
             Table = table;
-            tableTypeKey = $"DataTable_{Table.GetHashCode()}";
+            TableTypeKey = $"DataTable_{Table.GetHashCode()}";
             RegistDynamicProperty();
         }
 
         public void RegistDynamicProperty()
         {
             int orderIndex = 1;
+            DynamicPropertyRegistry.RegistTypeKey(typeof(DataRowAdapter), TableTypeKey);
             foreach (DataColumn item in Table.Columns)
             {
-                DynamicPropertyRegistry.AddProperty(tableTypeKey, new DynamicPropertyInfo(item.ColumnName, item.DataType, new Attribute[] { new AutoGenerateColumnAttribute() { Order = orderIndex++, Filterable = true, Searchable = true, Text = item.ColumnName } }));
+                DynamicPropertyRegistry.AddProperty(TableTypeKey, new DynamicPropertyInfo(item.ColumnName, item.DataType, new Attribute[] { new AutoGenerateColumnAttribute() { Order = orderIndex++, Filterable = true, Searchable = true, Text = item.ColumnName } }));
             }
         }
 
-        public DataRowAdapter GetNewRow()
+        public DataRow GetNewRow()
         {
-            return new DataRowAdapter(Table.NewRow(), tableTypeKey);
+            var newRow= Table.NewRow();
+            foreach (DataColumn col in Table.Columns)
+            {
+                if (col.DataType.IsValueType)
+                {
+                    newRow[col.ColumnName] = Activator.CreateInstance(col.DataType);
+                }
+                else
+                {
+                    newRow[col.ColumnName] = string.Empty;
+                }
+
+            }
+            return newRow;
         }
 
         public List<T> GetItems<T>()
@@ -802,7 +816,7 @@ namespace BootstrapBlazor.Components
             List<T> list = new List<T>(Table.Rows.Count);
             foreach (DataRow item in Table.Rows)
             {
-                list.Add(new DataRowAdapter(item, tableTypeKey) as T);
+                list.Add(new DataRowAdapter(item, TableTypeKey) as T);
             }
             return list;
         }
@@ -834,18 +848,16 @@ namespace BootstrapBlazor.Components
 
     public class DataRowAdapter : IDynamicType
     {
-        public DataRow Row { get; }
-        private readonly string typeKey;
-
+        public DataRow Row { get; set; }
+        public string TypeKey { get; set; }
         public DataRowAdapter()
         {
-           
-        }
 
+        }
         public DataRowAdapter(DataRow row, string typeKey)
         {
             this.Row = row;
-            this.typeKey = typeKey;
+            this.TypeKey = typeKey;
         }
         public object Clone()
         {
@@ -862,7 +874,7 @@ namespace BootstrapBlazor.Components
 
         public string GetTypeKey()
         {
-            return typeKey;
+            return TypeKey;
         }
 
         public object? GetValue(string propName)
@@ -887,32 +899,15 @@ namespace BootstrapBlazor.Components
 
         public Task<bool> AddAsync(DataRowAdapter adapter)
         {
-            throw new NotImplementedException("DataTable无需执行此方法");
+            adapter.Row = dataTableAdapter.GetNewRow();
+            adapter.TypeKey = dataTableAdapter.TableTypeKey;
+            return Task.FromResult(true);
         }
 
         public Task CancelAsync(DataRowAdapter row)
         {
             row.Row.CancelEdit();
             return Task.CompletedTask;
-        }
-
-        public Task<DataRowAdapter> CreateDefault()
-        {
-            var newRow = dataTableAdapter.GetNewRow();
-            //必须根据列的类型初始化Row中的值，否则所有值都是DBNUll
-            foreach (DataColumn col in dataTableAdapter.Table.Columns)
-            {
-                if (col.DataType.IsValueType)
-                {
-                    newRow.Row[col.ColumnName] = Activator.CreateInstance(col.DataType);
-                }
-                else
-                {
-                    newRow.Row[col.ColumnName] = string.Empty;
-                }
-              
-            }
-            return Task.FromResult(newRow);
         }
 
         public Task<bool> DeleteAsync(IEnumerable<DataRowAdapter> models)
@@ -947,87 +942,4 @@ namespace BootstrapBlazor.Components
             return Task.FromResult(true);
         }
     }
-
-    ///// <summary>
-    ///// Uniquely identifies a single field that can be edited. This may correspond to a property on a
-    ///// model object, or can be any other named value.
-    ///// </summary>
-    //public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
-    //{
-    //    /// <summary>
-    //    /// Initializes a new instance of the <see cref="T:Microsoft.AspNetCore.Components.Forms.FieldIdentifier" /> structure.
-    //    /// </summary>
-    //    /// <param name="accessor">An expression that identifies an object member.</param>
-    //    /// <typeparam name="TField">The field <see cref="T:System.Type" />.</typeparam>
-    //    // Token: 0x0600002C RID: 44 RVA: 0x00002798 File Offset: 0x00000998
-    //    public static FieldIdentifier Create<TField>(Expression<Func<TField>> accessor)
-    //    {
-    //        if (accessor == null)
-    //        {
-    //            throw new ArgumentNullException("accessor");
-    //        }
-    //        object model;
-    //        string fieldName;
-    //        FieldIdentifier.ParseAccessor<TField>(accessor, out model, out fieldName);
-    //        return new FieldIdentifier(model, fieldName);
-    //    }
-
-    //    /// <summary>
-    //    /// Initializes a new instance of the <see cref="T:Microsoft.AspNetCore.Components.Forms.FieldIdentifier" /> structure.
-    //    /// </summary>
-    //    /// <param name="model">The object that owns the field.</param>
-    //    /// <param name="fieldName">The name of the editable field.</param>
-    //    public FieldIdentifier(object model, string fieldName)
-    //    {
-    //        if (model == null)
-    //        {
-    //            throw new ArgumentNullException("model");
-    //        }
-    //        if (model.GetType().IsValueType)
-    //        {
-    //            throw new ArgumentException("The model must be a reference-typed object.", "model");
-    //        }
-    //        this.Model = model;
-    //        if (fieldName == null)
-    //        {
-    //            throw new ArgumentNullException("fieldName");
-    //        }
-    //        this.FieldName = fieldName;
-    //    }
-
-    //    /// <summary>
-    //    /// Gets the object that owns the editable field.
-    //    /// </summary>
-    //    public object Model { get; }
-
-    //    /// <summary>
-    //    /// Gets the name of the editable field.
-    //    /// </summary>
-     
-    //    public string FieldName { get; }
-
-
-    //    public override int GetHashCode()
-    //    {
-    //        int hashCode = RuntimeHelpers.GetHashCode(this.Model);
-    //        int hashCode2 = StringComparer.Ordinal.GetHashCode(this.FieldName);
-    //        return new ValueTuple<int, int>(hashCode, hashCode2).GetHashCode();
-    //    }
-
-    
-    //    public override bool Equals(object obj)
-    //    {
-    //        if (obj is FieldIdentifier)
-    //        {
-    //            FieldIdentifier otherIdentifier = (FieldIdentifier)obj;
-    //            return this.Equals(otherIdentifier);
-    //        }
-    //        return false;
-    //    }
-
-    //    public bool Equals(FieldIdentifier otherIdentifier)
-    //    {
-    //        return otherIdentifier.Model == this.Model && string.Equals(otherIdentifier.FieldName, this.FieldName, StringComparison.Ordinal);
-    //    }
-    //}
 }

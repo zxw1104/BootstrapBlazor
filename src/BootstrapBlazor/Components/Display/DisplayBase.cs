@@ -3,7 +3,6 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -20,10 +19,7 @@ namespace BootstrapBlazor.Components
         /// </summary>
         protected bool IsShowLabel { get; set; }
 
-        /// <summary>
-        /// Gets the <see cref="FieldIdentifier"/> for the bound value.
-        /// </summary>
-        protected FieldIdentifier? FieldIdentifier { get; set; }
+      
 
         /// <summary>
         /// 获得/设置 泛型参数 TValue 可为空类型 Type 实例，为空时表示类型不可为空
@@ -54,6 +50,11 @@ namespace BootstrapBlazor.Components
         public Expression<Func<TValue>>? ValueExpression { get; set; }
 
         /// <summary>
+        /// Gets the <see cref="FieldIdentifier"/> for the bound value.
+        /// </summary>
+        [Parameter]
+        public FieldIdentifier? FieldIdentifier { get; set; }
+        /// <summary>
         /// 获得/设置 是否显示前置标签 默认值为 null 为空时默认不显示标签
         /// </summary>
         [Parameter]
@@ -75,11 +76,6 @@ namespace BootstrapBlazor.Components
             parameters.SetParameterProperties(this);
 
             NullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
-
-            if (ValueExpression != null)
-            {
-                FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression);
-            }
 
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.Empty);

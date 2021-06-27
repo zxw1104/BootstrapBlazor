@@ -102,8 +102,7 @@ namespace BootstrapBlazor.Components
             // 处理 Required 标签
             if (EditContext != null && FieldIdentifier != null)
             {
-                var pi = FieldIdentifier.Value.Model.GetType()
-                    .GetProperties()
+                var pi = TypeInfoHelper.GetProperties(FieldIdentifier.Value.Model)
                     .Where(p => p.Name == FieldIdentifier.Value.FieldName)
                     .FirstOrDefault();
                 if (pi != null)

@@ -252,25 +252,31 @@ namespace BootstrapBlazor.Components
         protected override void OnInitialized()
         {
             Table?.Columns.Add(this);
+
             if (FieldExpression != null)
             {
-                _fieldIdentifier = FieldIdentifier.Create(FieldExpression);
+                FieldIdentifier = BootstrapBlazor.Components.FieldIdentifier.Create(FieldExpression);
             }
 
             // 获取模型属性定义类型
             PropertyType = typeof(TType);
         }
 
-        private FieldIdentifier? _fieldIdentifier;
+
+        /// <summary>
+        /// Gets the <see cref="FieldIdentifier"/> for the bound value.
+        /// </summary>
+        [Parameter]
+        public FieldIdentifier? FieldIdentifier { get; set; }
         /// <summary>
         /// 获取绑定字段显示名称方法
         /// </summary>
-        public string GetDisplayName() => Text ?? _fieldIdentifier?.GetDisplayName() ?? "";
+        public string GetDisplayName() => Text ?? FieldIdentifier?.GetDisplayName() ?? "";
 
         /// <summary>
         /// 获取绑定字段信息方法
         /// </summary>
-        public string GetFieldName() => _fieldIdentifier?.FieldName ?? "";
+        public string GetFieldName() => FieldIdentifier?.FieldName ?? "";
 
         private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), Func<object, TType>> GetPropertyCache = new();
     }

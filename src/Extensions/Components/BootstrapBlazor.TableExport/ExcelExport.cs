@@ -1,4 +1,4 @@
-// Copyright (c) Argo Zhang (argo@163.com). All rights reserved.
+﻿// Copyright (c) Argo Zhang (argo@163.com). All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
@@ -30,7 +30,7 @@ namespace BootstrapBlazor.Components
             foreach (var item in items)
             {
                 var x = 1;
-                foreach (var pi in item.GetType().GetProperties())
+                foreach (var pi in item.GetProperties())
                 {
                     if (!cols.Any(col => col.GetFieldName() == pi.Name)) continue;
 

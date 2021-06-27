@@ -114,26 +114,28 @@ namespace BootstrapBlazor.Components
         {
             base.OnInitialized();
 
-            EditorItems?.Add(this);
-            if (FieldExpression != null)
+            if (FieldExpression!=null)
             {
-                _fieldIdentifier = FieldIdentifier.Create(FieldExpression);
+                FieldIdentifier = BootstrapBlazor.Components.FieldIdentifier.Create(FieldExpression);
             }
+            EditorItems?.Add(this);
 
             // 获取模型属性定义类型
             PropertyType = typeof(TValue);
         }
 
-        private FieldIdentifier? _fieldIdentifier;
+        [Parameter]
+        public FieldIdentifier? FieldIdentifier { get; set; }
+
         /// <summary>
         /// 获取绑定字段显示名称方法
         /// </summary>
-        public string GetDisplayName() => Text ?? _fieldIdentifier?.GetDisplayName() ?? string.Empty;
+        public string GetDisplayName() => Text ?? FieldIdentifier?.GetDisplayName() ?? string.Empty;
 
         /// <summary>
         /// 获取绑定字段信息方法
         /// </summary>
-        public string GetFieldName() => _fieldIdentifier?.FieldName ?? string.Empty;
+        public string GetFieldName() => FieldIdentifier?.FieldName ?? string.Empty;
 
         /// <summary>
         /// 获得指定泛型的 IEditorItem 集合

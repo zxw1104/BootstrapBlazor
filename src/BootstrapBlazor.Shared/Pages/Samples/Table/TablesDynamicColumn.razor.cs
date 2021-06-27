@@ -6,7 +6,9 @@ using BootstrapBlazor.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,41 +21,44 @@ namespace BootstrapBlazor.Shared.Pages.Table
     /// </summary>
     public partial class TablesDynamicColumn
     {
+        /// <summary>
+        /// 数据服务
+        /// </summary>
         public MyDataService DataService { get; set; } = new MyDataService();
 
         private Table<DynamicUser> table;
         static int propIndex = 1;
 
-        private string userTypeKey = DynamicUser.userTypeKey;
+        private List<string> properties = new List<string>();
         /// <summary>
         /// 添加列
         /// </summary>
         public void AddColumn()
         {
+            //动态属性名称
+            var newPropertyName = $"动态属性-{propIndex}";
+
+            //把属性名保存起来，便于后面动态移除属性
+            properties.Add(newPropertyName);
             if (propIndex % 2 == 0)
             {
-                //动态属性名称
-                var newPropertyName = $"DynamicProperty-{propIndex}";
-                var newPropertyDefaultValue = $"默认值{propIndex}";
+                DynamicUser.dynamicObjectBuilder.AddProperty(newPropertyName,
+                    typeof(string),
+                    new Attribute[] {
+                        //必填
+                        new RequiredAttribute(),
+                        new AutoGenerateColumnAttribute()
+                        { Order = propIndex + 10,Text = $"动态属性{propIndex}-字符串类型" }});
 
-                //为当前表格中的所有对象添加动态属性
-                MyDataService.AllUser.ForEach(user => user.AddProperty(newPropertyName, newPropertyDefaultValue));
-
-                //将动态属性注册全局动态属性注册中心
-                DynamicPropertyRegistry.AddProperty(userTypeKey, new DynamicPropertyInfo(newPropertyName, typeof(string), new Attribute[] { new AutoGenerateColumnAttribute() { Order = propIndex + 10, Filterable = true, Searchable = true, Text = $"动态属性{propIndex}-字符串类型" } }));
                 propIndex++;
             }
             else
             {
-                //动态属性名称
-                var newPropertyName = $"DynamicProperty-{propIndex}";
-                var newPropertyDefaultValue = 1;
-
-                //为当前表格中的所有对象添加动态属性
-                MyDataService.AllUser.ForEach(user => user.AddProperty(newPropertyName, newPropertyDefaultValue));
-
                 //将动态属性注册全局动态属性注册中心
-                DynamicPropertyRegistry.AddProperty(userTypeKey, new DynamicPropertyInfo(newPropertyName, typeof(int), new Attribute[] { new AutoGenerateColumnAttribute() { Order = propIndex + 10, Filterable = true, Searchable = true, Text = $"动态属性{propIndex}-int类型" } }));
+                DynamicUser.dynamicObjectBuilder.AddProperty(newPropertyName, typeof(int),
+                    new Attribute[] { new AutoGenerateColumnAttribute() {
+                        Order = propIndex + 10,
+                        Text = $"动态属性{propIndex}-int类型" }});
                 propIndex++;
             }
             //手动通知Table，更新列信息
@@ -67,20 +72,13 @@ namespace BootstrapBlazor.Shared.Pages.Table
         /// </summary>
         public void DeleteLastColumn()
         {
-            var props = DynamicPropertyRegistry.GetProperties(userTypeKey);
-
-            if (props.Length > 1)
+            if (properties.Count > 1)
             {
-                var lastProperty = props.Last();
-                var propName = lastProperty.Name;
+                var propName = properties.Last();
 
-                //为当前表格中的所有对象添加动态属性
-                MyDataService.AllUser.ForEach(user => user.RemoveProperty(propName));
-
+                DynamicUser.dynamicObjectBuilder.RemoveProperty(propName);
                 //将动态属性注册全局动态属性注册中心
-                DynamicPropertyRegistry.RemoveProperty(userTypeKey, lastProperty);
             }
-
 
             //手动通知Table，更新列信息
             table.ReGenerateColumn();
@@ -95,27 +93,46 @@ namespace BootstrapBlazor.Shared.Pages.Table
     /// </summary>
     public class DynamicUser : IDynamicType
     {
-        public static string userTypeKey;
+        public static string userTypeKey { get; }
+        public static Type type { get; }
+        public static DynamicObjectBuilder dynamicObjectBuilder { get; }
+
+
 
         static DynamicUser()
         {
+            type = typeof(DynamicUser);
+            userTypeKey = type.FullName!;
 
-            userTypeKey = typeof(DynamicUser).FullName;
-            DynamicPropertyRegistry.RegistTypeKey(typeof(DynamicUser), userTypeKey);
-            //添加类型Attribute定义
-            DynamicPropertyRegistry.AddAutoGenerateClassAttribute(userTypeKey, new AutoGenerateClassAttribute());
-
-            //添加属性Attribute定义
-            DynamicPropertyRegistry.AddProperty(userTypeKey, new DynamicPropertyInfo("Name", typeof(string), new Attribute[] { new AutoGenerateColumnAttribute() { Order = 1, Filterable = true, Searchable = true, Text = "名称" } }));
-            DynamicPropertyRegistry.AddProperty(userTypeKey, new DynamicPropertyInfo("Age", typeof(int), new Attribute[] { new AutoGenerateColumnAttribute() { Order = 2, Filterable = true, Searchable = true, Text = "年龄" } }));
+            //定义动态对象拥有的属性
+            dynamicObjectBuilder =
+                new DynamicObjectBuilder(type, userTypeKey)
+                .AddClassAttribute(new AutoGenerateClassAttribute
+                {
+                    Filterable = true,
+                    Searchable = true
+                })
+                .AddProperty("Name", typeof(string), new Attribute[] {
+                    new AutoGenerateColumnAttribute() {
+                        Order = 1,
+                        Text = "名称" },
+                    new RequiredAttribute(),
+                    new StringLengthAttribute(5)
+                })
+                .AddProperty("Age", typeof(int), new Attribute[] {
+                    new AutoGenerateColumnAttribute() {
+                        Order = 2,
+                        Searchable = false,
+                        Text = "年龄" }
+                });
         }
-        private Dictionary<string, object?> propDic = new Dictionary<string, object?>();
+        private ConcurrentDictionary<string, object?> propDic = new();
 
         /// <summary>
         /// 动态类型实体
         /// </summary>
         /// <param name="propDic"></param>
-        public DynamicUser(Dictionary<string, object?> propDic)
+        public DynamicUser(ConcurrentDictionary<string, object?> propDic)
         {
             this.propDic = propDic;
         }
@@ -127,36 +144,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
         /// </summary>
         public DynamicUser()
         {
-            //从注册中心获取当前对象有哪些动态属性
-            var props = DynamicPropertyRegistry.GetProperties(userTypeKey);
-            propDic.Add("Name", $"张三--{i++}");
-            propDic.Add("Age", i + 10);
-            Id = i++;
-            foreach (DynamicPropertyInfo p in props)
-            {
-                var targetType = p.PropertyType;
-                var defaultValue = targetType.IsValueType ? Activator.CreateInstance(targetType) : null;
-                propDic[p.Name] = defaultValue;
-            }
-        }
-
-        /// <summary>
-        /// 给当前对象添加一个动态属性
-        /// </summary>
-        public void AddProperty(string propName, object defaultValue)
-        {
-            propDic.Add(propName, defaultValue);
-        }
-        /// <summary>
-        /// 删除一个属性
-        /// </summary>
-        /// <param name="propName"></param>
-        public void RemoveProperty(string propName)
-        {
-            if (propDic.ContainsKey(propName))
-            {
-                propDic.Remove(propName);
-            }
+            dynamicObjectBuilder.SetDefaultValues(this);
         }
 
         /// <summary>
@@ -171,11 +159,13 @@ namespace BootstrapBlazor.Shared.Pages.Table
         /// <returns></returns>
         public object? GetValue(string propName)
         {
-            if (propDic.ContainsKey(propName))
+            //如果属性不存在，则添加属性默认值
+            //当在运行时动态添加属性时，就会出现属性不存在的情况
+            if (!propDic.ContainsKey(propName))
             {
-                return propDic[propName];
+                propDic[propName] = dynamicObjectBuilder.GetPropertyDefaultValue(propName);
             }
-            return $"属性不存在,{propName}";
+            return propDic[propName];
         }
         /// <summary>
         /// 当前对象是否是创建时的临时对象
@@ -208,7 +198,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
         /// <returns></returns>
         public object Clone()
         {
-            Dictionary<string, object?> newPropDic = new Dictionary<string, object?>();
+            ConcurrentDictionary<string, object?> newPropDic = new();
             foreach (var item in propDic)
             {
                 newPropDic[item.Key] = item.Value;
@@ -216,21 +206,19 @@ namespace BootstrapBlazor.Shared.Pages.Table
             return new DynamicUser(newPropDic) { Id = this.Id };
         }
 
-        public void CopyFrom(IDynamicType other)
-        {
-            foreach (var item in propDic)
-            {
-                propDic[item.Key] = other.GetValue(item.Key);
-            }
-        }
-
+        /// <summary>
+        /// 获取类型Key
+        /// </summary>
+        /// <returns></returns>
         public string GetTypeKey()
         {
             return userTypeKey;
         }
     }
 
-
+    /// <summary>
+    /// 
+    /// </summary>
     public class MyDataService : IDataService<DynamicUser>
     {
         static MyDataService()
@@ -240,13 +228,24 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 AllUser.Add(new DynamicUser().SetName(DateTime.Now.ToString()));
             }
         }
+
         public static List<DynamicUser> AllUser = new List<DynamicUser>();
+        /// <summary>
+        /// 点击新建按钮时触发
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public Task<bool> AddAsync(DynamicUser model)
         {
+            //设置对象为临时对象，在保存时，会使用此标记判断对象是新增还是更新
             model.IsTemp = true;
             return Task.FromResult(true);
         }
-
+        /// <summary>
+        /// 删除
+        /// </summary>
+        /// <param name="models"></param>
+        /// <returns></returns>
         public Task<bool> DeleteAsync(IEnumerable<DynamicUser> models)
         {
             foreach (var item in models)
@@ -255,12 +254,20 @@ namespace BootstrapBlazor.Shared.Pages.Table
             }
             return Task.FromResult(true);
         }
-
+        /// <summary>
+        /// 查询
+        /// </summary>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public Task<QueryData<DynamicUser>> QueryAsync(QueryPageOptions option)
         {
             return Task.FromResult(new QueryData<DynamicUser> { Items = AllUser });
         }
-
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public Task<bool> SaveAsync(DynamicUser model)
         {
             //临时对象 保存 就是新增操作

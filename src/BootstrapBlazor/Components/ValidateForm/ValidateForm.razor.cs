@@ -157,7 +157,7 @@ namespace BootstrapBlazor.Components
             {
                 modelType = modelTypeInfo;
                 fieldName = propName;
-                var propertyInfo = modelType.GetProperties()
+                var propertyInfo = TypeInfoHelper.GetProperties(modelType)
                     .Where(p => p.Name == propName)
                     .FirstOrDefault();
                 if (propertyInfo == null)
@@ -202,7 +202,7 @@ namespace BootstrapBlazor.Components
                     if (!validator.IsDisabled && !validator.SkipValidate)
                     {
                         var messages = new List<ValidationResult>();
-                        var pi = key.ModelType.GetProperties().Where(p => p.Name == key.FieldName).FirstOrDefault();
+                        var pi = TypeInfoHelper.GetProperties(key.ModelType).Where(p => p.Name == key.FieldName).FirstOrDefault();
                         if (pi != null)
                         {
                             var propertyValidateContext = new ValidationContext(fieldIdentifier.Model)
@@ -238,7 +238,7 @@ namespace BootstrapBlazor.Components
                 if (validator != null && !validator.IsDisabled && !validator.SkipValidate)
                 {
                     var fieldName = fieldIdentifier.FieldName;
-                    var pi = fieldIdentifier.Model.GetType().GetProperties().Where(p => p.Name == fieldName).FirstOrDefault();
+                    var pi = TypeInfoHelper.GetProperties(fieldIdentifier.Model).Where(p => p.Name == fieldName).FirstOrDefault();
                     if (pi != null)
                     {
                         var propertyValue = LambdaExtensions.GetPropertyValue(fieldIdentifier.Model, fieldIdentifier.FieldName);

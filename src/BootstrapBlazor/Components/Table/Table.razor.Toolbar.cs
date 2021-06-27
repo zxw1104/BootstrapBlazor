@@ -198,16 +198,8 @@ namespace BootstrapBlazor.Components
                 }
                 else if (UseInjectDataService)
                 {
-                    var dataService = GetDataService();
-                    if (dataService is IDataService_V2<TItem> serviceV2)
-                    {
-                        EditModel =await serviceV2.CreateDefault();
-                    }
-                    else
-                    {
-                        EditModel = new TItem();
-                        await GetDataService().AddAsync(EditModel);
-                    }
+                    EditModel = new TItem();
+                    await GetDataService().AddAsync(EditModel);
                 }
                 else
                 {
@@ -442,7 +434,7 @@ namespace BootstrapBlazor.Components
                     {
                         await v2.CancelAsync(EditModel);
                     }
-                  
+
                 }
             },
             OnSaveAsync = async context =>

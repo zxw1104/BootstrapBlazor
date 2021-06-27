@@ -43,12 +43,6 @@ namespace BootstrapBlazor.Components
 
     public interface IDataService_V2<TModel> : IDataService<TModel> where TModel : class, new()
     {
-        /// <summary>
-        /// 用户点击新建时，执行此方法来创建默认新建的对象
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        Task<TModel> CreateDefault();
 
         /// <summary>
         /// 用户在新建或编辑对话框中，点击取消按钮时，执行此方法
