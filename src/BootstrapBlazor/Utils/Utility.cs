@@ -160,7 +160,7 @@ namespace BootstrapBlazor.Components
         public static void Reset<TModel>(TModel source) where TModel : class, new()
         {
             var v = new TModel();
-            foreach (var pi in  TypeInfoHelper.GetProperties(source).Where(p => p.CanWrite))
+            foreach (var pi in TypeInfoHelper.GetProperties(source).Where(p => p.CanWrite))
             {
                 var pinfo = TypeInfoHelper.GetProperties(v).Where(p => p.Name == pi.Name).FirstOrDefault();
                 if (pinfo != null)
@@ -194,17 +194,13 @@ namespace BootstrapBlazor.Components
                         var valType = ret?.GetType();
                         if (valType != null)
                         {
-                            var v = f.GetValue(item);
-                            valType.GetField(f.Name)?.SetValue(ret, v);
-                        };
-                        foreach (var p in TypeInfoHelper.GetProperties(type))
-                        {
-                            if (p.CanWrite)
+                            // 20200608 tian_teng@outlook.com 支持字段和只读属性
+                            foreach (var f in type.GetFields())
                             {
                                 var v = f.GetValue(item);
                                 valType.GetField(f.Name)?.SetValue(ret, v);
                             };
-                            foreach (var p in type.GetProperties())
+                            foreach (var p in TypeInfoHelper.GetProperties(type))
                             {
                                 if (p.CanWrite)
                                 {
@@ -239,14 +235,14 @@ namespace BootstrapBlazor.Components
                         var v = f.GetValue(source);
                         valType.GetField(f.Name)?.SetValue(destination, v);
                     });
-                     TypeInfoHelper.GetProperties(type).ToList().ForEach(p =>
-                    {
-                        if (p.CanWrite)
-                        {
-                            var v = p.GetValue(source);
-                            valType.GetProperty(p.Name)?.SetValue(destination, v);
-                        }
-                    });
+                    TypeInfoHelper.GetProperties(type).ToList().ForEach(p =>
+                   {
+                       if (p.CanWrite)
+                       {
+                           var v = p.GetValue(source);
+                           valType.GetProperty(p.Name)?.SetValue(destination, v);
+                       }
+                   });
                 }
             }
         }
@@ -290,8 +286,8 @@ namespace BootstrapBlazor.Components
             builder.AddAttribute(2, "Value", fieldValue);
             builder.AddAttribute(3, "ValueChanged", fieldValueChanged);
 
-            SetValueExpressionOrFieldIdentifierInfo(builder, 4, model,fieldName);
-           
+            SetValueExpressionOrFieldIdentifierInfo(builder, 4, model, fieldName);
+
             builder.AddAttribute(5, "ShowLabel", showLabel ?? true);
             builder.CloseComponent();
         }
@@ -301,11 +297,11 @@ namespace BootstrapBlazor.Components
         /// <param name="builder"></param>
         /// <param name="seq"></param>
         /// <param name="exp"></param>
-        private static void SetValueExpressionOrFieldIdentifierInfo(RenderTreeBuilder builder,int seq, object obj,string fieldName)
+        private static void SetValueExpressionOrFieldIdentifierInfo(RenderTreeBuilder builder, int seq, object obj, string fieldName)
         {
-            builder.AddAttribute(seq, "FieldIdentifier", new FieldIdentifier(obj,fieldName));
+            builder.AddAttribute(seq, "FieldIdentifier", new FieldIdentifier(obj, fieldName));
         }
-        
+
         /// <summary>
         /// RenderTreeBuilder 扩展方法，通过指定模型与属性生成编辑组件
         /// </summary>
@@ -331,7 +327,7 @@ namespace BootstrapBlazor.Components
             builder.AddAttribute(2, "Value", fieldValue);
             builder.AddAttribute(3, "ValueChanged", fieldValueChanged);
             //builder.AddAttribute(4, "ValueExpression", valueExpression);
-            SetValueExpressionOrFieldIdentifierInfo(builder,4,model,fieldName);
+            SetValueExpressionOrFieldIdentifierInfo(builder, 4, model, fieldName);
             builder.AddAttribute(5, "IsDisabled", item.Readonly);
             if (IsCheckboxList(fieldType) && item.Data != null)
             {
