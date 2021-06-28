@@ -340,12 +340,20 @@ namespace BootstrapBlazor.Components
 
         private static object? GenerateValue(object model, string fieldName)
         {
-            // FieldValue
-            var valueInvoker = GetPropertyValueLambdaCache.GetOrAdd(
-                key: (model.GetType(), fieldName),
-                valueFactory: key => LambdaExtensions.GetPropertyValueLambda<object, object?>(model, key.FieldName).Compile()
-            );
-            return valueInvoker.Invoke(model);
+            object? ret = null;
+            if (model is IDynamicObject dynamicObject)
+            {
+                ret = dynamicObject.GetValue(fieldName);
+            }
+            else
+            {
+                var valueInvoker = GetPropertyValueLambdaCache.GetOrAdd(
+                    key: (model.GetType(), fieldName),
+                    valueFactory: key => LambdaExtensions.GetPropertyValueLambda<object, object?>(model, key.FieldName).Compile()
+                );
+                ret = valueInvoker.Invoke(model);
+            }
+            return ret;
         }
 
         private static object? GenerateValueChanged(ComponentBase component, object model, string fieldName, Type fieldType)
@@ -499,8 +507,15 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         private static EventCallback<TType> CreateCallback<TType>(ComponentBase component, object model, string fieldName) => EventCallback.Factory.Create<TType>(component, t =>
         {
-            var invoker = SetPropertyValueLambdaCache.GetOrAdd((typeof(object), fieldName), key => LambdaExtensions.SetPropertyValueLambda<object, object?>(model, key.FieldName).Compile());
-            invoker.Invoke(model, t);
+            if (model is IDynamicObject dynamicObject)
+            {
+                dynamicObject.SetValue(fieldName, t);
+            }
+            else
+            {
+                var invoker = SetPropertyValueLambdaCache.GetOrAdd((typeof(object), fieldName), key => LambdaExtensions.SetPropertyValueLambda<object, object?>(model, key.FieldName).Compile());
+                invoker.Invoke(model, t);
+            }
         });
 
         private static Expression<Func<ComponentBase, object, string, object>> CreateLambda(Type fieldType)
