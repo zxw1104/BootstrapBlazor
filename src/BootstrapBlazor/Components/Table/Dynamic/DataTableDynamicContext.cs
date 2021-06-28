@@ -63,6 +63,7 @@ namespace BootstrapBlazor.Components
             if (DataTable == null) throw new NullReferenceException();
 
             var row = DataTable.NewRow();
+            SetDefaultValue(row);
             DynamicObject item = new DataTableDynamicObject()
             {
                 Row = row
@@ -105,6 +106,25 @@ namespace BootstrapBlazor.Components
                 }
             }
             return Task.FromResult(true);
+        }
+
+        private void SetDefaultValue(DataRow row)
+        {
+            foreach (DataColumn col in row.Table.Columns)
+            {
+                var defaultValue = col.DefaultValue;
+                if (defaultValue == null || defaultValue == DBNull.Value)
+                {
+                    // TODO: 完善所有数据类型
+                    defaultValue = col.DataType.Name switch
+                    {
+                        nameof(DateTime) => DateTime.Now,
+                        nameof(Int32) => 0,
+                        _ => ""
+                    };
+                    row[col] = defaultValue;
+                }
+            }
         }
     }
 }
