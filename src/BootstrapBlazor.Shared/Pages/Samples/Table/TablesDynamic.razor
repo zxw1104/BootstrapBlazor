@@ -9,6 +9,8 @@
 </Block>
 
 <Block Title="动态列生成" Introduction="高级的表格展示用法">
-    <Table TItem="DynamicObject" DynamicContext="DataTableDynamicContext" ShowToolbar="true"
+    <Table TItem="DynamicObject" DynamicContext="DataTableDynamicContext"
+           IsMultipleSelect="true" IsBordered="true" IsStriped="true"
+           ShowToolbar="true" ShowExtendButtons="true"
            OnAddAsync="OnAddAsync" OnSaveAsync="OnSaveAsync" OnDeleteAsync="OnDeleteAsync" />
 </Block>
