@@ -245,23 +245,16 @@ namespace BootstrapBlazor.Components
                 if (SelectedItems.Count == 1)
                 {
                     await ToggleLoading(true);
+
                     if (OnEditAsync != null)
                     {
                         await OnEditAsync(SelectedItems[0]);
                     }
-                    if (UseInjectDataService)
+
+                    if (UseInjectDataService && GetDataService() is IEntityFrameworkCoreDataService ef)
                     {
-                        var dataService = GetDataService();
-                        if (dataService is IEntityFrameworkCoreDataService ef)
-                        {
-                            EditModel = SelectedItems[0];
-                            await ef.EditAsync(EditModel);
-                        }
-                        else if (dataService is IDataService_V2<TItem> v2)
-                        {
-                            EditModel = SelectedItems[0];
-                            await v2.EditAsync(EditModel);
-                        }
+                        EditModel = SelectedItems[0];
+                        await ef.EditAsync(EditModel);
                     }
                     else
                     {
@@ -427,14 +420,9 @@ namespace BootstrapBlazor.Components
                     {
                         // EFCore
                         await ToggleLoading(true);
-                        await ef.CancelAsync();
+                        await ef.CancelAsync(EditModel);
                         await ToggleLoading(false);
                     }
-                    else if (dataService is IDataService_V2<TItem> v2)
-                    {
-                        await v2.CancelAsync(EditModel);
-                    }
-
                 }
             },
             OnSaveAsync = async context =>

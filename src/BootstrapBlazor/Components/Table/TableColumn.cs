@@ -255,7 +255,7 @@ namespace BootstrapBlazor.Components
 
             if (FieldExpression != null)
             {
-                FieldIdentifier = BootstrapBlazor.Components.FieldIdentifier.Create(FieldExpression);
+                FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(FieldExpression);
             }
 
             // 获取模型属性定义类型

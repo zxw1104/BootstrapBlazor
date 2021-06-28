@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using EditContext = BootstrapBlazor.Components.EditContext;
 
 namespace BootstrapBlazor.Shared.Pages
 {

@@ -116,7 +116,7 @@ namespace BootstrapBlazor.Components
 
             if (FieldExpression!=null)
             {
-                FieldIdentifier = BootstrapBlazor.Components.FieldIdentifier.Create(FieldExpression);
+                FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(FieldExpression);
             }
             EditorItems?.Add(this);
 

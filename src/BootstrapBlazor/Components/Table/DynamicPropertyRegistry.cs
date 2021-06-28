@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -151,6 +152,58 @@ namespace BootstrapBlazor.Components
         }
     }
 
+    public abstract class BaseDynamicType : IDynamicType
+    {
+        /// <summary>
+        /// 创建当前对象的新实例，Clone方法会调用此方法
+        /// </summary>
+        /// <returns></returns>
+        public abstract BaseDynamicType New();
+
+        /// <summary>
+        /// 创建当前对象的副本
+        /// </summary>
+        /// <returns></returns>
+        public object Clone()
+        {
+            var obj = New();
+            var props = TypeInfoHelper.GetProperties(this);
+
+            foreach (var p in props)
+            {
+                obj.SetValue(p.Name, this.GetValue(p.Name));
+            }
+            return obj;
+            
+        }
+
+        public abstract void Configuration(DynamicObjectBuilder builder);
+        
+        /// <summary>
+        /// 获取类型Key
+        /// </summary>
+        /// <returns></returns>
+        public string GetTypeKey()
+        {
+            return $"{this.GetType().FullName}_{this.GetHashCode()}";
+        }
+
+        /// <summary>
+        /// 根据属性名，获取属性值
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+
+        public abstract object? GetValue(string propName);
+
+        /// <summary>
+        /// 根据属性名，设置属性名
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <param name="value"></param>
+        public abstract void SetValue(string propName, object value);
+       
+    }
 
     /// <summary>
     /// 动态对象基础接口
@@ -175,6 +228,11 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <returns></returns>
         string GetTypeKey();
+
+        /// <summary>
+        /// 配置动态属性
+        /// </summary>
+        //void Configuration(DynamicObjectBuilder builder);
     }
 
     /// <summary>
@@ -232,7 +290,7 @@ namespace BootstrapBlazor.Components
     /// <summary>
     /// 动态属性信息
     /// </summary>
-    public class DynamicPropertyInfo : PropertyInfo
+    class DynamicPropertyInfo : PropertyInfo
     {
         /// <summary>
         /// 构造动态属性
@@ -403,5 +461,4 @@ namespace BootstrapBlazor.Components
             return defaultValue;
         }
     }
-
 }

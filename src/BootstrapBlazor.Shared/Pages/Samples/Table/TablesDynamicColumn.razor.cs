@@ -93,20 +93,18 @@ namespace BootstrapBlazor.Shared.Pages.Table
     /// </summary>
     public class DynamicUser : IDynamicType
     {
-        public static string userTypeKey { get; }
-        public static Type type { get; }
+        public static string UserTypeKey { get; }
+        public static Type Type { get; }
         public static DynamicObjectBuilder dynamicObjectBuilder { get; }
-
-
 
         static DynamicUser()
         {
-            type = typeof(DynamicUser);
-            userTypeKey = type.FullName!;
+            Type = typeof(DynamicUser);
+            UserTypeKey = Type.FullName!;
 
             //定义动态对象拥有的属性
             dynamicObjectBuilder =
-                new DynamicObjectBuilder(type, userTypeKey)
+                new DynamicObjectBuilder(Type, UserTypeKey)
                 .AddClassAttribute(new AutoGenerateClassAttribute
                 {
                     Filterable = true,
@@ -126,6 +124,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
                         Text = "年龄" }
                 });
         }
+
         private ConcurrentDictionary<string, object?> propDic = new();
 
         /// <summary>
@@ -137,7 +136,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
             this.propDic = propDic;
         }
 
-        static int i = 1;
+        static int userId = 1;
 
         /// <summary>
         /// 生成一个默认动态用户，用户点击添加按钮时，使用此构造函数，创建默认对象
@@ -145,6 +144,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
         public DynamicUser()
         {
             dynamicObjectBuilder.SetDefaultValues(this);
+            Id = userId++;
         }
 
         /// <summary>
@@ -212,7 +212,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
         /// <returns></returns>
         public string GetTypeKey()
         {
-            return userTypeKey;
+            return UserTypeKey;
         }
     }
 
@@ -225,7 +225,9 @@ namespace BootstrapBlazor.Shared.Pages.Table
         {
             for (int i = 0; i < 10; i++)
             {
-                AllUser.Add(new DynamicUser().SetName(DateTime.Now.ToString()));
+                var user = new DynamicUser();
+                user.SetName($"user {i}");
+                AllUser.Add(user);
             }
         }
 
@@ -279,9 +281,15 @@ namespace BootstrapBlazor.Shared.Pages.Table
             }
             else
             {
-                //编辑 直接替换对象
-                var index = AllUser.FindIndex(p => p.Id == model.Id);
-                AllUser[index] = model;
+                //编辑
+                var oldModel = AllUser.First(p => p.Id == model.Id);
+
+                //获取动态类型所有的属性
+                var props = TypeInfoHelper.GetProperties(oldModel);
+                foreach (var p in props)
+                {
+                    oldModel.SetValue(p.Name, model.GetValue(p.Name));
+                }
             }
             return Task.FromResult(true);
         }

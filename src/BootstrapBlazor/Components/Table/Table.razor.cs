@@ -769,11 +769,13 @@ namespace BootstrapBlazor.Components
         }
     }
 
-    public class DataTableAdapter
+    /// <summary>
+    /// DataTable动态类型适配器
+    /// </summary>
+    internal class DataTableAdapter
     {
         public DataTable Table { get; set; }
         public string TableTypeKey { get; set; }
-
 
         public DataTableAdapter(DataTable table)
         {
@@ -792,9 +794,9 @@ namespace BootstrapBlazor.Components
             }
         }
 
-        public DataRow GetNewRow()
+        public DataRowAdapter CreateNew()
         {
-            var newRow= Table.NewRow();
+            var newRow = Table.NewRow();
             foreach (DataColumn col in Table.Columns)
             {
                 if (col.DataType.IsValueType)
@@ -807,16 +809,15 @@ namespace BootstrapBlazor.Components
                 }
 
             }
-            return newRow;
+            return new DataRowAdapter(newRow, TableTypeKey);
         }
 
-        public List<T> GetItems<T>()
-            where T : class, new()
+        public List<DataRowAdapter> GetItems()
         {
-            List<T> list = new List<T>(Table.Rows.Count);
+            var list = new List<DataRowAdapter>(Table.Rows.Count);
             foreach (DataRow item in Table.Rows)
             {
-                list.Add(new DataRowAdapter(item, TableTypeKey) as T);
+                list.Add(new DataRowAdapter(item, TableTypeKey));
             }
             return list;
         }
@@ -832,7 +833,7 @@ namespace BootstrapBlazor.Components
             return cols;
         }
 
-        public void RemoveRows(IEnumerable<DataRowAdapter> rows)
+        public void Remove(IEnumerable<DataRowAdapter> rows)
         {
             foreach (var item in rows)
             {
@@ -850,6 +851,9 @@ namespace BootstrapBlazor.Components
     {
         public DataRow Row { get; set; }
         public string TypeKey { get; set; }
+        /// <summary>
+        /// 默认构造函数，点击新建时，使用此构造函数，创建空对象
+        /// </summary>
         public DataRowAdapter()
         {
 
@@ -859,17 +863,13 @@ namespace BootstrapBlazor.Components
             this.Row = row;
             this.TypeKey = typeKey;
         }
+        /// <summary>
+        /// 编辑时，调用此方法
+        /// </summary>
+        /// <returns></returns>
         public object Clone()
         {
-            throw new NotImplementedException("DataRowAdapter不支持Clone,编辑时，使用BeginEdit方法即可进入编辑状态，从而避免了Clone");
-        }
-
-        public void CopyFrom(IDynamicType other)
-        {
-            foreach (DataColumn item in Row.Table.Columns)
-            {
-                Row[item.ColumnName] = other.GetValue(item.ColumnName);
-            }
+            throw new Exception("不会调用此方法");
         }
 
         public string GetTypeKey()
@@ -888,50 +888,54 @@ namespace BootstrapBlazor.Components
         }
     }
 
-    public class DataTableDataService : IDataService_V2<DataRowAdapter>, IDataService<DataRowAdapter>
+    internal class DataTableDataService : IEntityFrameworkCoreDataService, IDataService<DataRowAdapter>
     {
         private readonly DataTableAdapter dataTableAdapter;
 
-        public DataTableDataService(DataTableAdapter dataTableAdapter)
+        internal DataTableDataService(DataTableAdapter dataTableAdapter)
         {
             this.dataTableAdapter = dataTableAdapter;
         }
 
         public Task<bool> AddAsync(DataRowAdapter adapter)
         {
-            adapter.Row = dataTableAdapter.GetNewRow();
+            adapter.Row = dataTableAdapter.CreateNew().Row;
             adapter.TypeKey = dataTableAdapter.TableTypeKey;
             return Task.FromResult(true);
         }
-
-        public Task CancelAsync(DataRowAdapter row)
+        public Task CancelAsync(object model)
         {
-            row.Row.CancelEdit();
+            (model as DataRowAdapter).Row.CancelEdit();
             return Task.CompletedTask;
+        }
+
+        public Task CancelAsync()
+        {
+           return Task.CompletedTask;
         }
 
         public Task<bool> DeleteAsync(IEnumerable<DataRowAdapter> models)
         {
-            dataTableAdapter.RemoveRows(models);
+            dataTableAdapter.Remove(models);
             return Task.FromResult(true);
         }
 
-        public Task EditAsync(DataRowAdapter model)
+        public Task EditAsync(object model)
         {
-            model.Row.BeginEdit();
+            (model as DataRowAdapter).Row.BeginEdit();
             return Task.CompletedTask;
         }
 
         public Task<QueryData<DataRowAdapter>> QueryAsync(QueryPageOptions option)
         {
-            var tableRows = dataTableAdapter.GetItems<DataRowAdapter>();
+            var tableRows = dataTableAdapter.GetItems();
             return Task.FromResult(new QueryData<DataRowAdapter>() { Items = tableRows, TotalCount = tableRows.Count });
         }
 
         public Task<bool> SaveAsync(DataRowAdapter model)
         {
             //Detached分离，表示是新增操作
-            if (model.Row.RowState== DataRowState.Detached)
+            if (model.Row.RowState == DataRowState.Detached)
             {
                 dataTableAdapter.Add(model);
             }
