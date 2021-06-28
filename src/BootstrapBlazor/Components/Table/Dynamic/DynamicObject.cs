@@ -13,7 +13,7 @@ namespace BootstrapBlazor.Components
         /// 
         /// </summary>
         /// <returns></returns>
-        public virtual object Clone() => new DynamicObject();
+        public virtual object Clone() => Utility.Clone(this);
 
         /// <summary>
         /// 
