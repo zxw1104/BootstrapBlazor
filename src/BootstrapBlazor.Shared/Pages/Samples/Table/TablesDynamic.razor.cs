@@ -7,8 +7,10 @@ using BootstrapBlazor.Shared.Pages.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Shared.Pages.Table
 {
@@ -54,5 +56,11 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 UserData.Rows.Add(f.DateTime, f.Name, f.Count);
             });
         }
+
+        private Task<DynamicObject> OnAddAsync() => DataTableDynamicContext.AddAsync();
+
+        private Task<bool> OnSaveAsync(DynamicObject item) => DataTableDynamicContext.SaveAsync(item);
+
+        private Task<bool> OnDeleteAsync(IEnumerable<DynamicObject> items) => DataTableDynamicContext.DeleteAsync(items);
     }
 }
