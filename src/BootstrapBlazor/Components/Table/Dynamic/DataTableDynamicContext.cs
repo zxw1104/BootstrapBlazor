@@ -77,7 +77,15 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public Task<bool> SaveAsync(DynamicObject item)
         {
-            DataTable?.AcceptChanges();
+            if (item is DataTableDynamicObject dynamicObject)
+            {
+                var row = dynamicObject.Row;
+                if (row != null)
+                {
+                    DataTable?.Rows.InsertAt(row, 0);
+                    DataTable?.AcceptChanges();
+                }
+            }
             return Task.FromResult(true);
         }
 
