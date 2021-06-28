@@ -181,20 +181,18 @@ namespace BootstrapBlazor.Components
             var ret = item;
             if (item != null)
             {
-                var type = item.GetType();
                 if (item is ICloneable cloneable)
                 {
                     ret = (TModel)cloneable.Clone();
-                    return ret;
                 }
-                if (type.IsClass)
+                else
                 {
-                    ret = Activator.CreateInstance<TModel>();
-                    var valType = ret?.GetType();
-                    if (valType != null)
+                    var type = item.GetType();
+                    if (type.IsClass)
                     {
-                        // 20200608 tian_teng@outlook.com 支持字段和只读属性
-                        foreach (var f in type.GetFields())
+                        ret = Activator.CreateInstance<TModel>();
+                        var valType = ret?.GetType();
+                        if (valType != null)
                         {
                             var v = f.GetValue(item);
                             valType.GetField(f.Name)?.SetValue(ret, v);
@@ -203,10 +201,18 @@ namespace BootstrapBlazor.Components
                         {
                             if (p.CanWrite)
                             {
-                                var v = p.GetValue(item);
-                                valType.GetProperty(p.Name)?.SetValue(ret, v);
-                            }
-                        };
+                                var v = f.GetValue(item);
+                                valType.GetField(f.Name)?.SetValue(ret, v);
+                            };
+                            foreach (var p in type.GetProperties())
+                            {
+                                if (p.CanWrite)
+                                {
+                                    var v = p.GetValue(item);
+                                    valType.GetProperty(p.Name)?.SetValue(ret, v);
+                                }
+                            };
+                        }
                     }
                 }
             }
@@ -245,6 +251,7 @@ namespace BootstrapBlazor.Components
             }
         }
 
+        #region
         /// <summary>
         /// 通过指定 Model 获得 IEditorItem 集合方法
         /// </summary>
@@ -339,6 +346,10 @@ namespace BootstrapBlazor.Components
                 builder.AddAttribute(9, nameof(Select<SelectedItem>.ValueChanged), fieldValueChanged);
                 builder.AddAttribute(10, nameof(Select<SelectedItem>.ValueExpression), valueExpression);
                 builder.AddAttribute(11, nameof(Select<SelectedItem>.SkipValidate), false);
+            }
+            else if (IsValidatableComponent(componentType))
+            {
+                builder.AddAttribute(11, nameof(IEditorItem.SkipValidate), item.SkipValidate);
             }
 
             builder.AddMultipleAttributes(12, CreateMultipleAttributes(fieldType, model, fieldName, item, showLabel, placeholder));
@@ -448,6 +459,8 @@ namespace BootstrapBlazor.Components
             return type.IsAssignableTo(typeof(IEnumerable<string>));
         }
 
+        private static bool IsValidatableComponent(Type componentType) => componentType.GetProperties().FirstOrDefault(p => p.Name == nameof(IEditorItem.SkipValidate)) != null;
+
         /// <summary>
         /// 通过模型与指定数据类型生成组件参数集合
         /// </summary>
@@ -510,7 +523,6 @@ namespace BootstrapBlazor.Components
             return ret;
         }
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -542,6 +554,7 @@ namespace BootstrapBlazor.Components
 
             return Expression.Lambda<Func<ComponentBase, object, string, object>>(Expression.Convert(body, typeof(object)), exp_p1, exp_p2, exp_p3);
         }
+        #endregion
 
         #region Format
         private static readonly ConcurrentDictionary<Type, Func<object, string, IFormatProvider?, string>> FormatLambdaCache = new();
