@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components
 {
@@ -50,6 +52,51 @@ namespace BootstrapBlazor.Components
                 }
             }
             return ret;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Task<DynamicObject> AddAsync()
+        {
+            if (DataTable == null) throw new NullReferenceException();
+
+            var row = DataTable.NewRow();
+            DynamicObject item = new DataTableDynamicObject()
+            {
+                Row = row
+            };
+            return Task.FromResult(item);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public Task<bool> SaveAsync(DynamicObject item)
+        {
+            DataTable?.AcceptChanges();
+            return Task.FromResult(true);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public Task<bool> DeleteAsync(IEnumerable<DynamicObject> items)
+        {
+            foreach (var item in items)
+            {
+                var row = ((DataTableDynamicObject)item).Row;
+                if (row != null)
+                {
+                    DataTable?.Rows.Remove(row);
+                }
+            }
+            return Task.FromResult(true);
         }
     }
 }
