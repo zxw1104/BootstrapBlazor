@@ -20,10 +20,7 @@ namespace BootstrapBlazor.Components
         /// Clone 方法
         /// </summary>
         /// <returns></returns>
-        public override object Clone()
-        {
-            throw new System.NotImplementedException();
-        }
+        public override object Clone() => Utility.Clone(this);
 
         /// <summary>
         /// 
