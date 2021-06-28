@@ -306,7 +306,7 @@ namespace BootstrapBlazor.Components
 
             var fieldValue = GenerateValue(model, fieldName);
             var fieldValueChanged = GenerateValueChanged(component, model, fieldName, fieldType);
-            var valueExpression = GenerateValueExpression(model, fieldName, fieldType);
+            var valueExpression = model is IDynamicObject ? null : GenerateValueExpression(model, fieldName, fieldType);
 
             var componentType = item.ComponentType ?? GenerateComponentType(fieldType, item.Rows != 0);
             builder.OpenComponent(0, componentType);
