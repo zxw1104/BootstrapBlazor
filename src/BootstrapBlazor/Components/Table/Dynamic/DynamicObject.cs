@@ -25,7 +25,7 @@ namespace BootstrapBlazor.Components
         /// <param name="value"></param>
         public virtual void SetValue(string propertyName, object? value)
         {
-            var invoker = LambdaExtensions.SetPropertyValueLambda(this, propertyName).Compile();
+            var invoker = LambdaExtensions.SetPropertyValueLambda<object, object?>(this, propertyName).Compile();
             invoker(this, value);
         }
     }

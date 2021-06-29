@@ -49,7 +49,7 @@ namespace BootstrapBlazor.Components
                 var dynamicObject = Activator.CreateInstance(DynamicObjectType)!;
                 foreach (DataColumn col in DataTable.Columns)
                 {
-                    var invoker = SetPropertyCache.GetOrAdd((dynamicObject.GetType(), col.ColumnName), key => LambdaExtensions.SetPropertyValueLambda(dynamicObject, col.ColumnName).Compile());
+                    var invoker = SetPropertyCache.GetOrAdd((dynamicObject.GetType(), col.ColumnName), key => LambdaExtensions.SetPropertyValueLambda<object, object?>(dynamicObject, col.ColumnName).Compile());
                     invoker.Invoke(dynamicObject, row[col]);
                 }
                 if (dynamicObject is IDynamicObject d)
