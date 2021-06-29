@@ -19,60 +19,35 @@ namespace BootstrapBlazor.Components
     /// </summary>
     internal class DynamicPropertyRegistry
     {
-        //private  Dictionary<string, Dictionary<string, PropertyInfo>> typePropDic = new();
-        //private  Dictionary<string, List<Attribute>> classAttrDic = new();
-        //private  Dictionary<Type, string> typeKeyDic = new();
-
         private Dictionary<string, PropertyInfo> props = new();
         private HashSet<Attribute> classAttrs = new();
         public Type TypeInfo { get; set; }
         #region 注册
         /// <summary>
-        /// 给指定类型，添加动态属性
+        /// 添加动态属性
         /// </summary>
         /// <param name="typeKey"></param>
         /// <param name="info"></param>
-
-        //public  void AddProperty(string typeKey, PropertyInfo info)
-        //{
-        //    if (!typePropDic.ContainsKey(typeKey))
-        //    {
-        //        typePropDic[typeKey] = new();
-        //    }
-        //    typePropDic[typeKey][info.Name] = info;
-        //}
-
         public void AddProperty(PropertyInfo info)
         {
             props.Add(info.Name, info);
         }
 
+        /// <summary>
+        /// 根据属性名，判断属性是否存在
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <returns></returns>
         public bool IsPropertyExist(string propName)
         {
            return props.ContainsKey(propName);
         }
 
         /// <summary>
-        /// 给指定类型，删除动态属性
+        /// 删除动态属性
         /// </summary>
         /// <param name="type"></param>
         /// <param name="info"></param>
-        //public  void RemoveProperty(string typeKey, PropertyInfo info)
-        //{
-        //    if (!typePropDic.ContainsKey(typeKey))
-        //    {
-        //        return;
-        //    }
-        //    if (typePropDic[typeKey].ContainsKey(info.Name))
-        //    {
-        //        typePropDic[typeKey].Remove(info.Name);
-        //    }
-        //    else
-        //    {
-        //        throw new NotFoundPropertyException(typeKey, info.Name);
-        //    }
-
-        //}
         public bool RemoveProperty(PropertyInfo info)
         {
             if (props.ContainsKey(info.Name))
@@ -86,27 +61,16 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <param name="type"></param>
         /// <param name="info"></param>
-        //public void AddClassAttribute(string typeKey, Attribute info)
-        //{
-        //    if (!classAttrDic.ContainsKey(typeKey))
-        //    {
-        //        classAttrDic[typeKey] = new List<Attribute>();
-        //    }
-        //    classAttrDic[typeKey].Add(info);
-        //}
         public void AddClassAttribute(Attribute info)
         {
             classAttrs.Add(info);
         }
 
-        //public void RemoveClassAttribute(string typeKey, Attribute info)
-        //{
-        //    if (!classAttrDic.ContainsKey(typeKey))
-        //    {
-        //        return;
-        //    }
-        //    classAttrDic[typeKey].Remove(info);
-        //}
+        /// <summary>
+        /// 移除 AutoGenerateClassAttribute
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
         public bool RemoveClassAttribute(Attribute info)
         {
             return classAttrs.Remove(info);
@@ -123,7 +87,6 @@ namespace BootstrapBlazor.Components
         {
             return props.Values.ToArray();
         }
-
         /// <summary>
         /// 获取指定类型的指定属性
         /// </summary>
@@ -132,22 +95,12 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public PropertyInfo GetProperty(string propName)
         {
-            if (CheckPropertyExist(propName))
+            if (IsPropertyExist(propName))
             {
                 return props[propName];
             }
             throw new NotFoundPropertyException(TypeInfo.FullName, propName);
         }
-
-        private bool CheckPropertyExist(string propName)
-        {
-            if (!props.ContainsKey(propName))
-            {
-                return false;
-            }
-            return true;
-        }
-
         /// <summary>
         /// 获取类型上面的 所有特性
         /// </summary>
