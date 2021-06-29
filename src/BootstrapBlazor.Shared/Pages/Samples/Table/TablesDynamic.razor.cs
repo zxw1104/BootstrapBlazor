@@ -39,10 +39,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
             InitDataTable();
 
             // 初始化动态类型上下文实例
-            DataTableDynamicContext = new DataTableDynamicContext()
-            {
-                DataTable = UserData
-            };
+            DataTableDynamicContext = new DataTableDynamicContext(UserData);
         }
 
         private void InitDataTable()

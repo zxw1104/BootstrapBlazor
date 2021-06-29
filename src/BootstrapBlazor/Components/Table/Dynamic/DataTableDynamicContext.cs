@@ -3,8 +3,10 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,7 +20,22 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得/设置 相关联的 DataTable 实例
         /// </summary>
+        [NotNull]
         public DataTable? DataTable { get; set; }
+
+        private Type DynamicObjectType { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="table"></param>
+        public DataTableDynamicContext(DataTable table)
+        {
+            DataTable = table;
+
+            var cols = GetColumns();
+            DynamicObjectType = EmitHelper.CreateDynamicObjectByName($"BootstrapBlazor_{nameof(DataTableDynamicContext)}_{GetHashCode()}", cols.Cast<IEditorItem>());
+        }
 
         /// <summary>
         /// GetItems 方法
@@ -26,16 +43,24 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public override IEnumerable<IDynamicObject> GetItems()
         {
-            var ret = new List<DataTableDynamicObject>();
-            if (DataTable != null)
+            var ret = new List<IDynamicObject>();
+            foreach (DataRow row in DataTable.Rows)
             {
-                foreach (DataRow row in DataTable.Rows)
+                var dynamicObject = Activator.CreateInstance(DynamicObjectType)!;
+                foreach (DataColumn col in DataTable.Columns)
                 {
-                    ret.Add(new DataTableDynamicObject() { Row = row });
+                    var invoker = SetPropertyCache.GetOrAdd((dynamicObject.GetType(), col.ColumnName), key => LambdaExtensions.SetPropertyValueLambda(dynamicObject, col.ColumnName).Compile());
+                    invoker.Invoke(dynamicObject, row[col]);
+                }
+                if (dynamicObject is IDynamicObject d)
+                {
+                    ret.Add(d);
                 }
             }
-            return ret.Cast<IDynamicObject>();
+            return ret;
         }
+
+        private static ConcurrentDictionary<(Type, string), Action<object, object>> SetPropertyCache { get; } = new();
 
         /// <summary>
         /// 获得列信息方法
@@ -44,12 +69,9 @@ namespace BootstrapBlazor.Components
         public override IEnumerable<ITableColumn> GetColumns()
         {
             var ret = new List<InternalTableColumn>();
-            if (DataTable != null)
+            foreach (DataColumn col in DataTable.Columns)
             {
-                foreach (DataColumn col in DataTable.Columns)
-                {
-                    ret.Add(new InternalTableColumn(col.ColumnName, col.DataType, col.ColumnName));
-                }
+                ret.Add(new InternalTableColumn(col.ColumnName, col.DataType, col.ColumnName));
             }
             return ret;
         }
@@ -60,15 +82,8 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public Task<DynamicObject> AddAsync()
         {
-            if (DataTable == null) throw new NullReferenceException();
-
-            var row = DataTable.NewRow();
-            SetDefaultValue(row);
-            DynamicObject item = new DataTableDynamicObject()
-            {
-                Row = row
-            };
-            return Task.FromResult(item);
+            var dynamicObject = Activator.CreateInstance(DynamicObjectType) as DynamicObject;
+            return Task.FromResult(dynamicObject!);
         }
 
         /// <summary>

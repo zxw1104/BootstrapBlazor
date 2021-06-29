@@ -19,17 +19,7 @@ namespace BootstrapBlazor.Components
         /// </summary>
         public static Type? CreateTypeByName(string typeName, IEnumerable<IEditorItem> cols)
         {
-            // specify a new assembly name
-            var assemblyName = new AssemblyName("BootstrapBlazor_DynamicAssembly");
-
-            // create assembly builder
-            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndCollect);
-
-            // create module builder
-            var moduleBuilder = assemblyBuilder.DefineDynamicModule("BootstrapBlazor_DynamicAssembly_Module");
-
-            // create type builder for a class
-            var typeBuilder = moduleBuilder.DefineType(typeName, TypeAttributes.Public);
+            var typeBuilder = CreateTypeBuilderByName(typeName, cols);
 
             foreach (var col in cols)
             {
@@ -37,6 +27,36 @@ namespace BootstrapBlazor.Components
             }
 
             return typeBuilder.CreateType();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="typeName"></param>
+        /// <param name="cols"></param>
+        /// <returns></returns>
+        public static Type CreateDynamicObjectByName(string typeName, IEnumerable<IEditorItem> cols)
+        {
+            var typeBuilder = CreateTypeBuilderByName(typeName, cols);
+
+            foreach (var col in cols)
+            {
+                typeBuilder.CreateProperty(col);
+            }
+
+            return typeBuilder.CreateType()!;
+        }
+
+        /// <summary>
+        /// 通过 ITableColumn 创建动态类
+        /// </summary>
+        private static TypeBuilder CreateTypeBuilderByName(string typeName, IEnumerable<IEditorItem> cols)
+        {
+            var assemblyName = new AssemblyName("BootstrapBlazor_DynamicAssembly");
+            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndCollect);
+            var moduleBuilder = assemblyBuilder.DefineDynamicModule("BootstrapBlazor_DynamicAssembly_Module");
+            var typeBuilder = moduleBuilder.DefineType(typeName, TypeAttributes.Public, typeof(DynamicObject));
+            return typeBuilder;
         }
 
         private static void CreateProperty(this TypeBuilder typeBuilder, IEditorItem col)

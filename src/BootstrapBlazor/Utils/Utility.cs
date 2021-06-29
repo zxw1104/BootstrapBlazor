@@ -49,6 +49,8 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public static string GetDisplayName(Type modelType, string fieldName)
         {
+            if (modelType.Assembly.IsDynamic) return fieldName;
+
             var cacheKey = (CultureInfoName: CultureInfo.CurrentUICulture.Name, Type: modelType, FieldName: fieldName);
             if (!DisplayNameCache.TryGetValue(cacheKey, out var dn))
             {
@@ -109,6 +111,8 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public static string? GetPlaceHolder(Type modelType, string fieldName)
         {
+            if (modelType.Assembly.IsDynamic) return "";
+
             var cacheKey = (Type: modelType, FieldName: fieldName);
             if (!PlaceHolderCache.TryGetValue(cacheKey, out var placeHolder))
             {
@@ -189,7 +193,7 @@ namespace BootstrapBlazor.Components
                     var type = item.GetType();
                     if (type.IsClass)
                     {
-                        ret = Activator.CreateInstance<TModel>();
+                        ret = (TModel)Activator.CreateInstance(type)!;
                         var valType = ret?.GetType();
                         if (valType != null)
                         {
@@ -246,7 +250,7 @@ namespace BootstrapBlazor.Components
             }
         }
 
-        #region
+        #region GenerateColumns
         /// <summary>
         /// 通过指定 Model 获得 IEditorItem 集合方法
         /// </summary>
@@ -306,7 +310,7 @@ namespace BootstrapBlazor.Components
 
             var fieldValue = GenerateValue(model, fieldName);
             var fieldValueChanged = GenerateValueChanged(component, model, fieldName, fieldType);
-            var valueExpression = model is IDynamicObject ? null : GenerateValueExpression(model, fieldName, fieldType);
+            var valueExpression = GenerateValueExpression(model, fieldName, fieldType);
 
             var componentType = item.ComponentType ?? GenerateComponentType(fieldType, item.Rows != 0);
             builder.OpenComponent(0, componentType);

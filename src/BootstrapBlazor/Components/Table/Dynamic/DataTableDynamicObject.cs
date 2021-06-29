@@ -12,12 +12,6 @@ namespace BootstrapBlazor.Components
     internal class DataTableDynamicObject : DynamicObject
     {
         /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public override object Clone() => new DataTableDynamicObject() { Row = Row };
-
-        /// <summary>
         /// 获得/设置 DataRow 实例
         /// </summary>
         public DataRow? Row { get; set; }

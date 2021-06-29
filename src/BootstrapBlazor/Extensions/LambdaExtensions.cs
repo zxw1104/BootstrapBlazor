@@ -382,6 +382,34 @@ namespace System.Linq
             return Expression.Lambda<Action<TModel, TValue>>(body, param_p1, param_p2);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static Expression<Action<object, object?>> SetPropertyValueLambda(object model, string name)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            var p = model.GetType().GetProperties().FirstOrDefault(p => p.Name == name);
+            if (p == null)
+            {
+                throw new InvalidOperationException($"类型 {model.GetType().Name} 未找到 {name} 属性，无法设置其值");
+            }
+
+            var param_p1 = Expression.Parameter(typeof(object));
+            var param_p2 = Expression.Parameter(typeof(object));
+
+            //获取设置属性的值的方法
+            var mi = p.GetSetMethod(true);
+            var body = Expression.Call(Expression.Convert(param_p1, model.GetType()), mi!, Expression.Convert(param_p2, p.PropertyType));
+            return Expression.Lambda<Action<object, object?>>(body, param_p1, param_p2);
+        }
+
         private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), Func<object, object>> PropertyValueInvokerCache = new();
 
         /// <summary>
