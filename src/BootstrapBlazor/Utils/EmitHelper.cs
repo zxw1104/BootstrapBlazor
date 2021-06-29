@@ -17,9 +17,9 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 通过 ITableColumn 创建动态类
         /// </summary>
-        public static Type? CreateTypeByName(string typeName, IEnumerable<IEditorItem> cols)
+        public static Type? CreateTypeByName(string typeName, IEnumerable<IEditorItem> cols, Type? parent = null)
         {
-            var typeBuilder = CreateTypeBuilderByName(typeName, cols);
+            var typeBuilder = CreateTypeBuilderByName(typeName, parent);
 
             foreach (var col in cols)
             {
@@ -29,33 +29,12 @@ namespace BootstrapBlazor.Components
             return typeBuilder.CreateType();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="typeName"></param>
-        /// <param name="cols"></param>
-        /// <returns></returns>
-        public static Type CreateDynamicObjectByName(string typeName, IEnumerable<IEditorItem> cols)
-        {
-            var typeBuilder = CreateTypeBuilderByName(typeName, cols);
-
-            foreach (var col in cols)
-            {
-                typeBuilder.CreateProperty(col);
-            }
-
-            return typeBuilder.CreateType()!;
-        }
-
-        /// <summary>
-        /// 通过 ITableColumn 创建动态类
-        /// </summary>
-        private static TypeBuilder CreateTypeBuilderByName(string typeName, IEnumerable<IEditorItem> cols)
+        private static TypeBuilder CreateTypeBuilderByName(string typeName, Type? parent = null)
         {
             var assemblyName = new AssemblyName("BootstrapBlazor_DynamicAssembly");
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndCollect);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule("BootstrapBlazor_DynamicAssembly_Module");
-            var typeBuilder = moduleBuilder.DefineType(typeName, TypeAttributes.Public, typeof(DynamicObject));
+            var typeBuilder = moduleBuilder.DefineType(typeName, TypeAttributes.Public, parent);
             return typeBuilder;
         }
 

@@ -6,6 +6,7 @@ using BootstrapBlazor.Components;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace UnitTest.Emit
@@ -15,15 +16,22 @@ namespace UnitTest.Emit
         [Fact]
         public void CreateType_Ok()
         {
-            var t = EmitHelper.CreateTypeByName("Test", new Foo[]
+            var cols = new Foo[]
             {
                 new("Id", typeof(int)),
                 new("Name", typeof(string))
-            });
+            };
 
-            Assert.NotNull(t);
+            // 创建动态类型基类是 DynamicObject
+            var instanceType = EmitHelper.CreateTypeByName("Test", cols, typeof(DynamicObject));
+            Assert.Equal(typeof(DynamicObject), instanceType.BaseType);
 
-            var instance = Activator.CreateInstance(t);
+            // 创建动态类型实例
+            var instance = Activator.CreateInstance(instanceType);
+            Assert.NotNull(instance);
+
+            var properties = instance.GetType().GetProperties().Select(p => p.Name);
+            Assert.True(cols.Select(c => c.FieldName).SequenceEqual(properties));
         }
 
         private class Foo : IEditorItem
