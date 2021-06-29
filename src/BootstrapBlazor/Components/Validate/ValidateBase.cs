@@ -276,8 +276,6 @@ namespace BootstrapBlazor.Components
                 }
             }
 
-            // TODO: Emit create Model
-
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.Empty);
         }
