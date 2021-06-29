@@ -19,10 +19,13 @@ namespace BootstrapBlazor.Components
     /// </summary>
     internal class DynamicPropertyRegistry
     {
-        private static Dictionary<string, Dictionary<string, PropertyInfo>> typePropDic = new();
-        private static Dictionary<string, List<Attribute>> classAttrDic = new();
-        private static Dictionary<Type, string> typeKeyDic = new();
+        //private  Dictionary<string, Dictionary<string, PropertyInfo>> typePropDic = new();
+        //private  Dictionary<string, List<Attribute>> classAttrDic = new();
+        //private  Dictionary<Type, string> typeKeyDic = new();
 
+        private Dictionary<string, PropertyInfo> props = new();
+        private HashSet<Attribute> classAttrs = new();
+        public Type TypeInfo { get; set; }
         #region 注册
         /// <summary>
         /// 给指定类型，添加动态属性
@@ -30,13 +33,23 @@ namespace BootstrapBlazor.Components
         /// <param name="typeKey"></param>
         /// <param name="info"></param>
 
-        public static void AddProperty(string typeKey, PropertyInfo info)
+        //public  void AddProperty(string typeKey, PropertyInfo info)
+        //{
+        //    if (!typePropDic.ContainsKey(typeKey))
+        //    {
+        //        typePropDic[typeKey] = new();
+        //    }
+        //    typePropDic[typeKey][info.Name] = info;
+        //}
+
+        public void AddProperty(PropertyInfo info)
         {
-            if (!typePropDic.ContainsKey(typeKey))
-            {
-                typePropDic[typeKey] = new();
-            }
-            typePropDic[typeKey][info.Name] = info;
+            props.Add(info.Name, info);
+        }
+
+        public bool IsPropertyExist(string propName)
+        {
+           return props.ContainsKey(propName);
         }
 
         /// <summary>
@@ -44,43 +57,59 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <param name="type"></param>
         /// <param name="info"></param>
-        public static void RemoveProperty(string typeKey, PropertyInfo info)
-        {
-            if (!typePropDic.ContainsKey(typeKey))
-            {
-                return;
-            }
-            if (typePropDic[typeKey].ContainsKey(info.Name))
-            {
-                typePropDic[typeKey].Remove(info.Name);
-            }
-            else
-            {
-                throw new NotFoundPropertyException(typeKey, info.Name);
-            }
+        //public  void RemoveProperty(string typeKey, PropertyInfo info)
+        //{
+        //    if (!typePropDic.ContainsKey(typeKey))
+        //    {
+        //        return;
+        //    }
+        //    if (typePropDic[typeKey].ContainsKey(info.Name))
+        //    {
+        //        typePropDic[typeKey].Remove(info.Name);
+        //    }
+        //    else
+        //    {
+        //        throw new NotFoundPropertyException(typeKey, info.Name);
+        //    }
 
+        //}
+        public bool RemoveProperty(PropertyInfo info)
+        {
+            if (props.ContainsKey(info.Name))
+            {
+                return props.Remove(info.Name);
+            }
+            throw new NotFoundPropertyException(TypeInfo.FullName, info.Name);
         }
         /// <summary>
         /// 注册 AutoGenerateClassAttribute
         /// </summary>
         /// <param name="type"></param>
         /// <param name="info"></param>
-        public static void AddClassAttribute(string typeKey, Attribute info)
+        //public void AddClassAttribute(string typeKey, Attribute info)
+        //{
+        //    if (!classAttrDic.ContainsKey(typeKey))
+        //    {
+        //        classAttrDic[typeKey] = new List<Attribute>();
+        //    }
+        //    classAttrDic[typeKey].Add(info);
+        //}
+        public void AddClassAttribute(Attribute info)
         {
-            if (!classAttrDic.ContainsKey(typeKey))
-            {
-                classAttrDic[typeKey] = new List<Attribute>();
-            }
-            classAttrDic[typeKey].Add(info);
+            classAttrs.Add(info);
         }
 
-        public static void RemoveClassAttribute(string typeKey, Attribute info)
+        //public void RemoveClassAttribute(string typeKey, Attribute info)
+        //{
+        //    if (!classAttrDic.ContainsKey(typeKey))
+        //    {
+        //        return;
+        //    }
+        //    classAttrDic[typeKey].Remove(info);
+        //}
+        public bool RemoveClassAttribute(Attribute info)
         {
-            if (!classAttrDic.ContainsKey(typeKey))
-            {
-                return;
-            }
-            classAttrDic[typeKey].Remove(info);
+            return classAttrs.Remove(info);
         }
 
         #endregion
@@ -90,9 +119,9 @@ namespace BootstrapBlazor.Components
         /// 获取指定了类型的所有属性信息
         /// </summary>
         /// <returns></returns>
-        public static PropertyInfo[] GetProperties(string typeKey)
+        public PropertyInfo[] GetProperties()
         {
-            return typePropDic[typeKey].Values.ToArray();
+            return props.Values.ToArray();
         }
 
         /// <summary>
@@ -101,9 +130,22 @@ namespace BootstrapBlazor.Components
         /// <param name="typeKey">类型key</param>
         /// <param name="propName">属性名称</param>
         /// <returns></returns>
-        public static PropertyInfo GetProperty(string typeKey, string propName)
+        public PropertyInfo GetProperty(string propName)
         {
-            return typePropDic[typeKey][propName];
+            if (CheckPropertyExist(propName))
+            {
+                return props[propName];
+            }
+            throw new NotFoundPropertyException(TypeInfo.FullName, propName);
+        }
+
+        private bool CheckPropertyExist(string propName)
+        {
+            if (!props.ContainsKey(propName))
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -111,28 +153,9 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <param name="type">类型key</param>
         /// <returns></returns>
-        public static List<Attribute> GetClasseAttributes(string typeKey)
+        public List<Attribute> GetClasseAttributes()
         {
-            return classAttrDic[typeKey];
-        }
-
-        /// <summary>
-        /// 注册类型的 字符串唯一标识
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="typeKey"></param>
-        public static void RegistTypeKey(Type type, string typeKey)
-        {
-            typeKeyDic[type] = typeKey;
-        }
-        /// <summary>
-        /// 获取类型对应的字符串Key
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static string GetTypeKey(Type type)
-        {
-            return typeKeyDic[type];
+            return classAttrs.ToList();
         }
         #endregion
     }
@@ -150,59 +173,6 @@ namespace BootstrapBlazor.Components
         public NotFoundPropertyException(string typeKey, string propName) : base($"在动态类型{typeKey}上，未找到{propName}属性")
         {
         }
-    }
-
-    public abstract class BaseDynamicType : IDynamicType
-    {
-        /// <summary>
-        /// 创建当前对象的新实例，Clone方法会调用此方法
-        /// </summary>
-        /// <returns></returns>
-        public abstract BaseDynamicType New();
-
-        /// <summary>
-        /// 创建当前对象的副本
-        /// </summary>
-        /// <returns></returns>
-        public object Clone()
-        {
-            var obj = New();
-            var props = TypeInfoHelper.GetProperties(this);
-
-            foreach (var p in props)
-            {
-                obj.SetValue(p.Name, this.GetValue(p.Name));
-            }
-            return obj;
-            
-        }
-
-        public abstract void Configuration(DynamicObjectBuilder builder);
-        
-        /// <summary>
-        /// 获取类型Key
-        /// </summary>
-        /// <returns></returns>
-        public string GetTypeKey()
-        {
-            return $"{this.GetType().FullName}_{this.GetHashCode()}";
-        }
-
-        /// <summary>
-        /// 根据属性名，获取属性值
-        /// </summary>
-        /// <param name="propName"></param>
-        /// <returns></returns>
-
-        public abstract object? GetValue(string propName);
-
-        /// <summary>
-        /// 根据属性名，设置属性名
-        /// </summary>
-        /// <param name="propName"></param>
-        /// <param name="value"></param>
-        public abstract void SetValue(string propName, object value);
-       
     }
 
     /// <summary>
@@ -224,15 +194,9 @@ namespace BootstrapBlazor.Components
         void SetValue(string propName, object value);
 
         /// <summary>
-        /// 获取类型对应的Key
+        /// 获取动态Builder对象
         /// </summary>
-        /// <returns></returns>
-        string GetTypeKey();
-
-        /// <summary>
-        /// 配置动态属性
-        /// </summary>
-        //void Configuration(DynamicObjectBuilder builder);
+        DynamicObjectBuilder GetBuilder();
     }
 
     /// <summary>
@@ -247,19 +211,23 @@ namespace BootstrapBlazor.Components
         {
             if (IsDynamicType(type))
             {
-                var typeKey = DynamicPropertyRegistry.GetTypeKey(type);
-                return DynamicPropertyRegistry.GetClasseAttributes(typeKey).OfType<T>().FirstOrDefault();
+                throw new Exception("逻辑有bug，动态类型不应该通过类型获取属性信息");
             }
             else
             {
                 return type.GetCustomAttribute<T>();
             }
         }
+        /// <summary>
+        /// 获取当前对象的属性定义
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public static PropertyInfo[] GetProperties(object model)
         {
             if (model is IDynamicType dType)
             {
-                return DynamicPropertyRegistry.GetProperties(dType.GetTypeKey());
+                return dType.GetBuilder().GetProperties();
             }
             else
             {
@@ -267,17 +235,20 @@ namespace BootstrapBlazor.Components
             }
         }
 
+        /// <summary>
+        /// 动态类型，不提供根据类型，查询属性定义的方法，因为可能同一个类型，对应多个 不同的属性
+        ///
+        /// 之前所有需要通过类型获取属性定义的 地方，都要改为 根据 DynamicObjectBuilder获取 属性定义
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static PropertyInfo[] GetProperties(Type type)
         {
             if (IsDynamicType(type))
             {
-                var typeKey = DynamicPropertyRegistry.GetTypeKey(type);
-                return DynamicPropertyRegistry.GetProperties(typeKey);
+                throw new Exception("逻辑有bug，动态类型不应该通过类型获取属性信息");
             }
-            else
-            {
-                return type.GetProperties();
-            }
+            return type.GetProperties();
         }
 
         public static bool IsDynamicType(Type type)
@@ -302,7 +273,14 @@ namespace BootstrapBlazor.Components
         {
             this.name = name;
             this.propertyType = propType;
-            this.attributes = attributes;
+            if (attributes==null)
+            {
+                this.attributes = Array.Empty<Attribute>();
+            }
+            else
+            {
+                this.attributes = attributes;
+            }
         }
         public override PropertyAttributes Attributes => PropertyAttributes.None;
 
@@ -376,19 +354,38 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public class DynamicObjectBuilder
     {
-        private string typeKey;
-        private Type type;
+        //private string typeKey;
+        //private Type type;
+        private DynamicPropertyRegistry dynamicPropertyRegistry = new DynamicPropertyRegistry();
 
+        /// <summary>
+        /// 用户手动触发更新属性定义会执行此委托
+        /// 对于Table组件，应该将此委托触发重新生成列
+        /// </summary>
+        internal Action? RefreshProperty;
+
+        /// <summary>
+        /// 刷新表格列
+        /// </summary>
+        public void RefreshTableColumn()
+        {
+            RefreshProperty?.Invoke();
+        }
+        public Type ObjectType
+        {
+            get
+            {
+                return dynamicPropertyRegistry.TypeInfo;
+            }
+        }
         /// <summary>
         /// 创建构造器实例
         /// </summary>
         /// <param name="type">动态类型的Type</param>
         /// <param name="typeKey">动态类型的字符串唯一标识</param>
-        public DynamicObjectBuilder(Type type, string typeKey)
+        public DynamicObjectBuilder(Type type)
         {
-            this.typeKey = typeKey;
-            this.type = type;
-            DynamicPropertyRegistry.RegistTypeKey(type, typeKey);
+            dynamicPropertyRegistry.TypeInfo = type;
         }
 
         /// <summary>
@@ -399,7 +396,7 @@ namespace BootstrapBlazor.Components
         /// <param name="attributes">属性的Attribute</param>
         public DynamicObjectBuilder AddProperty(string name, Type propType, Attribute[] attributes)
         {
-            DynamicPropertyRegistry.AddProperty(typeKey, new DynamicPropertyInfo(name, propType, attributes));
+            dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(name, propType, attributes));
             return this;
         }
 
@@ -410,8 +407,8 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public DynamicObjectBuilder RemoveProperty(string name)
         {
-            var property = DynamicPropertyRegistry.GetProperty(typeKey, name);
-            DynamicPropertyRegistry.RemoveProperty(typeKey, property);
+            var property = dynamicPropertyRegistry.GetProperty(name);
+            dynamicPropertyRegistry.RemoveProperty(property);
             return this;
         }
 
@@ -422,7 +419,7 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public DynamicObjectBuilder AddClassAttribute(Attribute attribute)
         {
-            DynamicPropertyRegistry.AddClassAttribute(typeKey, attribute);
+            dynamicPropertyRegistry.AddClassAttribute(attribute);
             return this;
         }
 
@@ -434,7 +431,7 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public void SetDefaultValues<T>(T obj) where T : IDynamicType, new()
         {
-            var props = DynamicPropertyRegistry.GetProperties(typeKey);
+            var props = dynamicPropertyRegistry.GetProperties();
             foreach (DynamicPropertyInfo p in props)
             {
                 var targetType = p.PropertyType;
@@ -451,14 +448,54 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public object? GetPropertyDefaultValue(string propName)
         {
-            var targetType = DynamicPropertyRegistry.GetProperty(typeKey, propName).PropertyType;
+            var targetType = dynamicPropertyRegistry.GetProperty(propName).PropertyType;
             return GetDefaultValue(targetType);
         }
 
         private static object? GetDefaultValue(Type targetType)
         {
-            var defaultValue = targetType.IsValueType ? Activator.CreateInstance(targetType) : null;
+            var defaultValue = targetType.IsValueType ? Activator.CreateInstance(targetType) : string.Empty;
             return defaultValue;
+        }
+
+        /// <summary>
+        /// 获取指定了类型的所有属性信息
+        /// </summary>
+        /// <returns></returns>
+        public PropertyInfo[] GetProperties()
+        {
+            return dynamicPropertyRegistry.GetProperties();
+        }
+
+        /// <summary>
+        /// 获取指定类型的指定属性
+        /// </summary>
+        /// <param name="typeKey">类型key</param>
+        /// <param name="propName">属性名称</param>
+        /// <returns></returns>
+        public PropertyInfo GetProperty(string propName)
+        {
+            return dynamicPropertyRegistry.GetProperty(propName);
+        }
+
+        /// <summary>
+        /// 获取类型上面的 所有特性
+        /// </summary>
+        /// <param name="type">类型key</param>
+        /// <returns></returns>
+        public List<Attribute> GetClasseAttributes()
+        {
+            return dynamicPropertyRegistry.GetClasseAttributes();
+        }
+
+        /// <summary>
+        /// 判断指定属性是否存在
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+        public bool IsPropertyExist(string propName)
+        {
+            return dynamicPropertyRegistry.IsPropertyExist(propName);
         }
     }
 }

@@ -3,32 +3,23 @@
 @using System.Data
 <h3>Table 表格</h3>
 
-<h4>绑定DataTable</h4>
-
-<Block Title="绑定DataTable" Introduction="基础的表格展示用法。">
-    <Table TItem="DataRowAdapter" DataTable="@dataTable"
-           ShowDefaultButtons="true"
-           ShowToolbar="true"
-           ShowAddButton="true"
-           ShowDeleteButton="true" IsMultipleSelect="true"
-           ShowEditButton="true">
+<Block Title="绑定DataTable" Introduction="仅显示DataTable中的数据">
+    <Table TItem="DataRowAdapter" DataTable="@dataTable1">
     </Table>
 </Block>
 
-@code{
-    private DataTable dataTable;
 
-    protected override Task OnInitializedAsync()
-    {
-        dataTable = new DataTable();
-        dataTable.Columns.Add(new DataColumn("int类型列", typeof(int)));
-        dataTable.Columns.Add(new DataColumn("string类型列", typeof(string)));
-        dataTable.Columns.Add(new DataColumn("DateTime类型列", typeof(DateTime)));
+<h4>支持动态添加列，删除列，默认最后一列不可删除</h4>
 
-        for (int i = 0; i < 10; i++)
-        {
-            dataTable.LoadDataRow(new object?[] { i, $"string{i}", DateTime.Now.AddDays(i) }, true);
-        }
-        return base.OnInitializedAsync();
-    }
-}
+<Block Title="绑定DataTable" Introduction="使用自定义适配器，控制列的显示，属性的验证规则等，同时支持动态添加和删除列，以及对DataTable的增删改操作">
+    <Table TItem="DataRowAdapter" DataTable="@dataTable2" DataTableAdapter="@customDataTableAdapter"
+           ShowToolbar="true"
+           ShowAddButton="true"
+           ShowDeleteButton="true" ClickToSelect="true"
+           ShowEditButton="true">
+        <TableToolbarTemplate>
+            <TableToolbarButton TItem="DataRowAdapter" Color="Color.Primary" Icon="fa fa-fw fa-edit" Text="添加列" OnClickCallback="@AddColumn" />
+            <TableToolbarButton TItem="DataRowAdapter" Color="Color.Success" Icon="fa fa-fw fa-edit" Text="删除列" OnClickCallback="@DeleteLastColumn" />
+        </TableToolbarTemplate>
+    </Table>
+</Block>

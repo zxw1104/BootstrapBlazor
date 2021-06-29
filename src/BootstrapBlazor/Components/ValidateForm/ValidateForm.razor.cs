@@ -202,7 +202,7 @@ namespace BootstrapBlazor.Components
                     if (!validator.IsDisabled && !validator.SkipValidate)
                     {
                         var messages = new List<ValidationResult>();
-                        var pi = TypeInfoHelper.GetProperties(key.ModelType).Where(p => p.Name == key.FieldName).FirstOrDefault();
+                        var pi = TypeInfoHelper.GetProperties(fieldIdentifier.Model).Where(p => p.Name == key.FieldName).FirstOrDefault();
                         if (pi != null)
                         {
                             var propertyValidateContext = new ValidationContext(fieldIdentifier.Model)

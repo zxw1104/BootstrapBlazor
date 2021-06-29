@@ -125,6 +125,23 @@ namespace BootstrapBlazor.Components
 
             var props = TypeInfoHelper.GetProperties(type);
             var attrModel = TypeInfoHelper.GetTypeAttribute<AutoGenerateClassAttribute>(type);
+
+            return GetPropertiesCore(type, props, attrModel, source);
+        }
+
+        public static IEnumerable<ITableColumn> GetProperties(DynamicObjectBuilder builder)
+        {
+            var cols = new List<ITableColumn>(50);
+
+            var props = builder.GetProperties();
+            var attrModel = builder.GetClasseAttributes().OfType<AutoGenerateClassAttribute>().FirstOrDefault();
+
+            return GetPropertiesCore(builder.ObjectType, props, attrModel, null);
+        }
+
+        private static IEnumerable<ITableColumn> GetPropertiesCore(Type type,PropertyInfo[] props,AutoGenerateClassAttribute attrModel, IEnumerable<ITableColumn>? source = null)
+        {
+            var cols = new List<ITableColumn>(50);
             foreach (var prop in props)
             {
                 ITableColumn? tc;

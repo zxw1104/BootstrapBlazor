@@ -26,41 +26,33 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public static class Utility
     {
-        private static ConcurrentDictionary<(string CultureInfoName, Type ModelType, string FieldName), string> DisplayNameCache { get; } = new();
-        private static ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo> PropertyInfoCache { get; } = new();
-        private static ConcurrentDictionary<(Type ModelType, string FieldName), string> PlaceHolderCache { get; } = new();
+        private static ConcurrentDictionary<(string CultureInfoName, object Model, string FieldName), string> DisplayNameCache { get; } = new();
+        private static ConcurrentDictionary<(object Model, string FieldName), PropertyInfo> PropertyInfoCache { get; } = new();
+        private static ConcurrentDictionary<(object Model, string FieldName), string> PlaceHolderCache { get; } = new();
 
         private static ConcurrentDictionary<(Type ModelType, string FieldName), Func<object, object?>> GetPropertyValueLambdaCache { get; } = new();
 
         private static ConcurrentDictionary<(Type ModelType, string FieldName), Action<object, object?>> SetPropertyValueLambdaCache { get; } = new();
 
         /// <summary>
-        /// 获取资源文件中 DisplayAttribute/DisplayNameAttribute 标签名称方法
-        /// </summary>
-        /// <param name="model">模型实例</param>
-        /// <param name="fieldName">字段名称</param>
-        /// <returns></returns>
-        public static string GetDisplayName(object model, string fieldName) => GetDisplayName(model.GetType(), fieldName);
-
-        /// <summary>
         /// 获取显示名称方法
         /// </summary>
-        /// <param name="modelType">模型类型</param>
+        /// <param name="model">模型类型</param>
         /// <param name="fieldName">字段名称</param>
         /// <returns></returns>
-        public static string GetDisplayName(Type modelType, string fieldName)
+        public static string GetDisplayName(object model, string fieldName)
         {
-            var cacheKey = (CultureInfoName: CultureInfo.CurrentUICulture.Name, Type: modelType, FieldName: fieldName);
+            var cacheKey = (CultureInfoName: CultureInfo.CurrentUICulture.Name, Model: model, FieldName: fieldName);
             if (!DisplayNameCache.TryGetValue(cacheKey, out var dn))
             {
                 // 显示名称为空时通过资源文件查找 FieldName 项
-                var localizer = JsonStringLocalizerFactory.CreateLocalizer(cacheKey.Type);
+                var localizer = JsonStringLocalizerFactory.CreateLocalizer(cacheKey.Model.GetType());
                 var stringLocalizer = localizer?[fieldName];
                 if (stringLocalizer != null && !stringLocalizer.ResourceNotFound)
                 {
                     dn = stringLocalizer.Value;
                 }
-                else if (TryGetProperty(cacheKey.Type, cacheKey.FieldName, out var propertyInfo))
+                else if (TryGetProperty(cacheKey.Model, cacheKey.FieldName, out var propertyInfo))
                 {
                     // 回退查找 Display 标签
                     dn = propertyInfo.GetCustomAttribute<DisplayAttribute>()?.Name
@@ -94,33 +86,27 @@ namespace BootstrapBlazor.Components
             return dn ?? cacheKey.FieldName;
         }
 
-        /// <summary>
-        /// 获取 PlaceHolder 方法
-        /// </summary>
-        /// <param name="model">模型实例</param>
-        /// <param name="fieldName">字段名称</param>
-        /// <returns></returns>
-        public static string? GetPlaceHolder(object model, string fieldName) => GetPlaceHolder(model.GetType(), fieldName);
 
         /// <summary>
         /// 获取 PlaceHolder 方法
         /// </summary>
-        /// <param name="modelType">模型类型</param>
+        /// <param name="model">模型类型</param>
         /// <param name="fieldName">字段名称</param>
         /// <returns></returns>
-        public static string? GetPlaceHolder(Type modelType, string fieldName)
+        public static string? GetPlaceHolder(object model, string fieldName)
         {
-            var cacheKey = (Type: modelType, FieldName: fieldName);
+            var cacheKey = (Type: model, FieldName: fieldName);
             if (!PlaceHolderCache.TryGetValue(cacheKey, out var placeHolder))
             {
+                var type = model.GetType();
                 // 通过资源文件查找 FieldName 项
-                var localizer = JsonStringLocalizerFactory.CreateLocalizer(cacheKey.Type);
+                var localizer = JsonStringLocalizerFactory.CreateLocalizer(type);
                 var stringLocalizer = localizer?[$"{fieldName}.PlaceHolder"];
                 if (stringLocalizer != null && !stringLocalizer.ResourceNotFound)
                 {
                     placeHolder = stringLocalizer.Value;
                 }
-                else if (Utility.TryGetProperty(cacheKey.Type, cacheKey.FieldName, out var propertyInfo))
+                else if (Utility.TryGetProperty(type, cacheKey.FieldName, out var propertyInfo))
                 {
                     var placeHolderAttribute = propertyInfo.GetCustomAttribute<PlaceHolderAttribute>();
                     if (placeHolderAttribute != null)
@@ -137,9 +123,9 @@ namespace BootstrapBlazor.Components
             return placeHolder;
         }
 
-        private static bool TryGetProperty(Type modelType, string fieldName, [NotNullWhen(true)] out PropertyInfo? propertyInfo)
+        private static bool TryGetProperty(object model, string fieldName, [NotNullWhen(true)] out PropertyInfo? propertyInfo)
         {
-            var cacheKey = (ModelType: modelType, FieldName: fieldName);
+            var cacheKey = (ModelType: model, FieldName: fieldName);
             if (!PropertyInfoCache.TryGetValue(cacheKey, out propertyInfo))
             {
                 // Validator.TryValidateProperty 只能对 Public 属性生效
@@ -200,7 +186,7 @@ namespace BootstrapBlazor.Components
                                 var v = f.GetValue(item);
                                 valType.GetField(f.Name)?.SetValue(ret, v);
                             };
-                            foreach (var p in TypeInfoHelper.GetProperties(type))
+                            foreach (var p in TypeInfoHelper.GetProperties(item))
                             {
                                 if (p.CanWrite)
                                 {
@@ -235,7 +221,7 @@ namespace BootstrapBlazor.Components
                         var v = f.GetValue(source);
                         valType.GetField(f.Name)?.SetValue(destination, v);
                     });
-                    TypeInfoHelper.GetProperties(type).ToList().ForEach(p =>
+                    TypeInfoHelper.GetProperties(source).ToList().ForEach(p =>
                    {
                        if (p.CanWrite)
                        {

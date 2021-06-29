@@ -26,14 +26,13 @@ namespace BootstrapBlazor.Shared.Pages.Table
         /// </summary>
         public MyDataService DataService { get; set; } = new MyDataService();
 
-        private Table<DynamicUser> table;
         static int propIndex = 1;
 
         private List<string> properties = new List<string>();
         /// <summary>
         /// 添加列
         /// </summary>
-        public void AddColumn()
+        public Task AddColumn(IEnumerable<DynamicUser> items)
         {
             //动态属性名称
             var newPropertyName = $"动态属性-{propIndex}";
@@ -62,29 +61,33 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 propIndex++;
             }
             //手动通知Table，更新列信息
-            table.ReGenerateColumn();
+            DynamicUser.dynamicObjectBuilder.RefreshTableColumn();
 
             //重新渲染组件
             StateHasChanged();
+            return Task.CompletedTask;
+
         }
         /// <summary>
         /// 删除最后一列
         /// </summary>
-        public void DeleteLastColumn()
+        public Task DeleteLastColumn(IEnumerable<DynamicUser> items)
         {
-            if (properties.Count > 1)
+            if (properties.Count > 0)
             {
                 var propName = properties.Last();
+                properties.Remove(propName);
 
                 DynamicUser.dynamicObjectBuilder.RemoveProperty(propName);
                 //将动态属性注册全局动态属性注册中心
             }
 
             //手动通知Table，更新列信息
-            table.ReGenerateColumn();
+            DynamicUser.dynamicObjectBuilder.RefreshTableColumn();
 
             //重新渲染组件
             StateHasChanged();
+            return Task.CompletedTask;
         }
     }
 
@@ -93,18 +96,13 @@ namespace BootstrapBlazor.Shared.Pages.Table
     /// </summary>
     public class DynamicUser : IDynamicType
     {
-        public static string UserTypeKey { get; }
-        public static Type Type { get; }
-        public static DynamicObjectBuilder dynamicObjectBuilder { get; }
+        public static DynamicObjectBuilder dynamicObjectBuilder { get; set; }
 
         static DynamicUser()
         {
-            Type = typeof(DynamicUser);
-            UserTypeKey = Type.FullName!;
-
             //定义动态对象拥有的属性
             dynamicObjectBuilder =
-                new DynamicObjectBuilder(Type, UserTypeKey)
+                new DynamicObjectBuilder(typeof(DynamicUser))
                 .AddClassAttribute(new AutoGenerateClassAttribute
                 {
                     Filterable = true,
@@ -123,18 +121,12 @@ namespace BootstrapBlazor.Shared.Pages.Table
                         Searchable = false,
                         Text = "年龄" }
                 });
+
         }
 
         private ConcurrentDictionary<string, object?> propDic = new();
 
-        /// <summary>
-        /// 动态类型实体
-        /// </summary>
-        /// <param name="propDic"></param>
-        public DynamicUser(ConcurrentDictionary<string, object?> propDic)
-        {
-            this.propDic = propDic;
-        }
+
 
         static int userId = 1;
 
@@ -192,27 +184,22 @@ namespace BootstrapBlazor.Shared.Pages.Table
             propDic[propName] = value;
         }
 
-        /// <summary>
-        /// 编辑时 调用Clone
-        /// </summary>
-        /// <returns></returns>
-        public object Clone()
+
+        public DynamicObjectBuilder GetBuilder()
         {
-            ConcurrentDictionary<string, object?> newPropDic = new();
-            foreach (var item in propDic)
-            {
-                newPropDic[item.Key] = item.Value;
-            }
-            return new DynamicUser(newPropDic) { Id = this.Id };
+            return dynamicObjectBuilder;
         }
 
-        /// <summary>
-        /// 获取类型Key
-        /// </summary>
-        /// <returns></returns>
-        public string GetTypeKey()
+        public object Clone()
         {
-            return UserTypeKey;
+            var obj = new DynamicUser();
+            var props = TypeInfoHelper.GetProperties(this);
+            obj.Id = this.Id;
+            foreach (var p in props)
+            {
+                obj.SetValue(p.Name, GetValue(p.Name));
+            }
+            return obj;
         }
     }
 
