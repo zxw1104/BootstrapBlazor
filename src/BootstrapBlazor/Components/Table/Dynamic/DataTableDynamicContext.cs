@@ -34,7 +34,7 @@ namespace BootstrapBlazor.Components
             DataTable = table;
 
             var cols = GetColumns();
-            DynamicObjectType = EmitHelper.CreateDynamicObjectByName($"BootstrapBlazor_{nameof(DataTableDynamicContext)}_{GetHashCode()}", cols.Cast<IEditorItem>());
+            DynamicObjectType = EmitHelper.CreateTypeByName($"BootstrapBlazor_{nameof(DataTableDynamicContext)}_{GetHashCode()}", cols.Cast<IEditorItem>(), typeof(DynamicObject))!;
         }
 
         /// <summary>
