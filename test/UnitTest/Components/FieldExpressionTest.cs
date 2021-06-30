@@ -61,20 +61,32 @@ namespace UnitTest.Components
         [Fact]
         public void PropertyPath_Test()
         {
-            var apple = new DynamicApple ();
+            var apple = new DynamicApple();
+            string name = "name";
+            apple.Name = name;
             User user = new User { Age = 1, DynamicApple = apple };
 
-            Expression<Func<object>> exp = () => user.DynamicApple.GetValue(nameof(Apple.Name));
+            Expression<Func<object>> exp1 = () => user.DynamicApple.Name;
+            Expression<Func<object>> exp2 = () => user.DynamicApple.GetValue(nameof(Apple.Name));
 
-            ParseAccessor(exp,out object model, out string field);
+            ParseAccessor(exp1, out object model1, out string field1);
 
-            Assert.Equal(apple, model);
-            Assert.Equal(nameof(Apple.Name), field);
+
+            Assert.Equal(apple, model1);
+            Assert.Equal(nameof(Apple.Name), field1);
+            Assert.Equal(name, exp1.Compile().Invoke());
+
+
+            ParseAccessor(exp2, out object model2, out string field2);
+            Assert.Equal(apple, model2);
+            Assert.Equal(nameof(Apple.Name), field2);
+            Assert.Equal("ok", exp2.Compile().Invoke());
         }
         private static void ParseAccessor<T>(Expression<Func<T>> accessor, out object model, out string fieldName)
         {
             var accessorBody = accessor.Body;
-
+            model = null;
+            fieldName = null;
             // Unwrap casts to object
             if (accessorBody is UnaryExpression unaryExpression
                 && unaryExpression.NodeType == ExpressionType.Convert
@@ -85,51 +97,63 @@ namespace UnitTest.Components
 
             if (!(accessorBody is MemberExpression memberExpression))
             {
-                throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
-            }
-
-            // Identify the field name. We don't mind whether it's a property or field, or even something else.
-            fieldName = memberExpression.Member.Name;
-
-            // Get a reference to the model object
-            // i.e., given an value like "(something).MemberName", determine the runtime value of "(something)",
-            if (memberExpression.Expression is ConstantExpression constantExpression)
-            {
-                if (constantExpression.Value is null)
+                //throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
+                if (accessorBody is MethodCallExpression methodCall)
                 {
-                    throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                    var arg = (methodCall.Arguments[0] as ConstantExpression).Value.ToString();
+                    var obj = methodCall.Object;
+                    model = GetModelFromExp(obj);
+                    fieldName = arg;
                 }
-                model = constantExpression.Value;
-            }
-            else if (memberExpression.Expression != null)
-            {
-                // It would be great to cache this somehow, but it's unclear there's a reasonable way to do
-                // so, given that it embeds captured values such as "this". We could consider special-casing
-                // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
-                // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
-                var modelLambda = Expression.Lambda(memberExpression.Expression);
-                var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
-                var result = modelLambdaCompiled();
-                if (result is null)
-                {
-                    throw new ArgumentException("The provided expression must evaluate to a non-null value.");
-                }
-                model = result;
             }
             else
             {
-                throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
+                // Identify the field name. We don't mind whether it's a property or field, or even something else.
+                fieldName = memberExpression.Member.Name;
+
+                // Get a reference to the model object
+                // i.e., given an value like "(something).MemberName", determine the runtime value of "(something)",
+                if (memberExpression.Expression is ConstantExpression constantExpression)
+                {
+                    if (constantExpression.Value is null)
+                    {
+                        throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                    }
+                    model = constantExpression.Value;
+                }
+                else if (memberExpression.Expression != null)
+                {
+                    model= GetModelFromExp(memberExpression.Expression);
+                }
+                else
+                {
+                    throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
+                }
             }
         }
+
+        private static object GetModelFromExp(Expression exp)
+        {
+            var modelLambda = Expression.Lambda(exp);
+            var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
+            var result = modelLambdaCompiled();
+            if (result is null)
+            {
+                throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+            }
+            return result;
+        }
     }
+
 
     public class Apple
     {
         public string Name { get; set; }
     }
 
-    public class DynamicApple: IDynamicType
+    public class DynamicApple : IDynamicType
     {
+        public string Name { get; set; }
         public object Clone()
         {
             throw new NotImplementedException();
@@ -143,6 +167,11 @@ namespace UnitTest.Components
         public object GetValue(string propName)
         {
             return "ok";
+        }
+
+        public bool IsDynamicProperty(string propName)
+        {
+            throw new NotImplementedException();
         }
 
         public void SetValue(string propName, object value)
@@ -175,6 +204,11 @@ namespace UnitTest.Components
         public object GetValue(string propName)
         {
             return "Ok";
+        }
+
+        public bool IsDynamicProperty(string propName)
+        {
+            throw new NotImplementedException();
         }
 
         public void SetValue(string propName, object value)
