@@ -138,24 +138,33 @@ namespace System.Linq
             Expression<Func<TItem, bool>> ret = t => true;
             if (!string.IsNullOrEmpty(filter.FieldKey) && filter.FieldValue != null)
             {
-                var prop = TypeInfoHelper.GetProperties(typeof(TItem))
-                    .Where(p => p.Name == filter.FieldKey)
-                    .FirstOrDefault();
-                if (prop != null)
+                var p = Expression.Parameter(typeof(TItem));
+                if (!TypeInfoHelper.IsDynamicType(typeof(TItem)))
                 {
-                    var p = Expression.Parameter(typeof(TItem));
-                    //var fieldExpression = Expression.Property(p, prop);
-                    var fieldExpression = GetItemPropertyValueExp(p, prop);
-                    Expression eq = fieldExpression;
-
-                    // 可为空类型转化为具体类型
-                    if (prop.PropertyType.IsGenericType &&
-                        prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    var prop = TypeInfoHelper.GetProperties(typeof(TItem))
+                  .Where(p => p.Name == filter.FieldKey)
+                  .FirstOrDefault();
+                    if (prop != null)
                     {
-                        eq = Expression.Convert(fieldExpression, prop.PropertyType.GenericTypeArguments[0]);
+                        //var fieldExpression = Expression.Property(p, prop);
+                        var fieldExpression = GetItemPropertyValueExp(p, prop);
+                        Expression eq = fieldExpression;
+
+                        // 可为空类型转化为具体类型
+                        if (prop.PropertyType.IsGenericType &&
+                            prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                        {
+                            eq = Expression.Convert(fieldExpression, prop.PropertyType.GenericTypeArguments[0]);
+                        }
+                        eq = filter.GetExpression(eq);
+                        ret = Expression.Lambda<Func<TItem, bool>>(eq, p);
                     }
-                    eq = filter.GetExpression(eq);
-                    ret = Expression.Lambda<Func<TItem, bool>>(eq, p);
+                }
+                else
+                {
+                    //在表达式里面拼接表达式
+                    Expression<Func<IDynamicType,object>> e = t=> t.GetValue(filter.FieldKey);
+                    ret = t => Expression.Lambda<Func<TItem, bool>>(filter.GetExpression(Expression.Constant((t as IDynamicType).GetValue(filter.FieldKey))), p).Compile().Invoke(t);
                 }
             }
             return ret;

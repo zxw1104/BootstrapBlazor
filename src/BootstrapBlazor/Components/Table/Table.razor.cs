@@ -633,8 +633,9 @@ namespace BootstrapBlazor.Components
             //使用DataTable
             if (useDataTable)
             {
+                var cols = InternalTableColumn.GetProperties(DataTableAdapter.builder);
                 Columns.Clear();
-                Columns.AddRange(DataTableAdapter.GetColumns());
+                Columns.AddRange(cols);
 
                 DataService = (IDataService<TItem>?)(new DataTableDataService(DataTableAdapter));
 

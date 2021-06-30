@@ -189,6 +189,37 @@ namespace BootstrapBlazor.Components
         }
 
         /// <summary>
+        /// 根据属性名，获取属性
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+        public static PropertyInfo? GetProperty(object model,string propName)
+        {
+            if (model is IDynamicType dType)
+            {
+                return dType.GetBuilder().GetProperty(propName);
+            }
+            else
+            {
+                return model.GetType().GetProperties().FirstOrDefault(v=>v.Name==propName);
+            }
+        }
+
+        public static object? GetPropertyValue(object model, string propName)
+        {
+            if (model is IDynamicType dType)
+            {
+                return dType.GetValue(propName);
+            }
+            else
+            {
+                return model.GetType().GetProperties().FirstOrDefault(v => v.Name == propName).GetValue(model);
+            }
+        }
+
+
+        /// <summary>
         /// 动态类型，不提供根据类型，查询属性定义的方法，因为可能同一个类型，对应多个 不同的属性
         ///
         /// 之前所有需要通过类型获取属性定义的 地方，都要改为 根据 DynamicObjectBuilder获取 属性定义

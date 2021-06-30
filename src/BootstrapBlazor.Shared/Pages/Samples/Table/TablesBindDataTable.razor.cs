@@ -129,6 +129,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
         public override void RegistDynamicProperty(DynamicObjectBuilder builder)
         {
             int orderIndex = 1;
+            builder.AddClassAttribute(new AutoGenerateClassAttribute { Filterable = true });
             foreach (DataColumn item in Table.Columns)
             {
                 //Id列不显示
