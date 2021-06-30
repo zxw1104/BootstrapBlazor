@@ -113,7 +113,8 @@ namespace BootstrapBlazor.Shared.Pages
         private Task OnValidComplexModel(EditContext context)
         {
             Trace4.Log("OnValidSubmit 回调委托");
-            ComplexForm.SetError("Dummy.Dummy2.Name", "数据库中已存在");
+            //ComplexForm.SetError("Dummy.Dummy2.Name", "数据库中已存在");
+            ComplexForm.SetError(()=> ComplexModel.Dummy.Dummy2.Name, "数据库中已存在");
             return Task.CompletedTask;
         }
 

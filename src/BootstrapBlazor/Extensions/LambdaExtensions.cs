@@ -163,7 +163,6 @@ namespace System.Linq
                 else
                 {
                     //在表达式里面拼接表达式
-                    Expression<Func<IDynamicType,object>> e = t=> t.GetValue(filter.FieldKey);
                     ret = t => Expression.Lambda<Func<TItem, bool>>(filter.GetExpression(Expression.Constant((t as IDynamicType).GetValue(filter.FieldKey))), p).Compile().Invoke(t);
                 }
             }

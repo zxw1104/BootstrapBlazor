@@ -78,6 +78,10 @@ namespace BootstrapBlazor.Components
 
             NullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
 
+            if (ValueExpression != null)
+            {
+                FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression);
+            }
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.Empty);
         }

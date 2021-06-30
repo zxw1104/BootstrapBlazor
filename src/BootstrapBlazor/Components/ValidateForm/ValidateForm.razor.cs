@@ -147,6 +147,28 @@ namespace BootstrapBlazor.Components
             }
         }
 
+        /// <summary>
+        /// 设置指定字段错误信息
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="exp"></param>
+        /// <param name="errorMessage"></param>
+        public void SetError<T>(Expression<Func<T>> exp, string errorMessage)
+        {
+            var field = FieldIdentifier.Create<T>(exp);
+            if (TryGetValidator(field.Model.GetType(), field.FieldName, out var validator))
+            {
+                if (validator != null)
+                {
+                    var results = new List<ValidationResult>
+                    {
+                        new ValidationResult(errorMessage, new string[] { field.FieldName })
+                    };
+                    validator.ToggleMessage(results, true);
+                }
+            }
+        }
+
         private bool TryGetModelField(string propertyName, [MaybeNullWhen(false)] out Type modelType, [MaybeNullWhen(false)] out string fieldName)
         {
             var propNames = new ConcurrentQueue<string>(propertyName.Split('.'));
