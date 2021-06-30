@@ -150,6 +150,13 @@ namespace BootstrapBlazor.Components
         /// 获取动态Builder对象
         /// </summary>
         DynamicObjectBuilder GetBuilder();
+
+        /// <summary>
+        /// 根据属性名，判断当前属性 是否是动态属性
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+        bool IsDynamicProperty(string propName);
     }
 
     /// <summary>
@@ -210,6 +217,10 @@ namespace BootstrapBlazor.Components
         {
             if (model is IDynamicType dType)
             {
+                if (dType.GetBuilder())
+                {
+
+                }
                 return dType.GetValue(propName);
             }
             else

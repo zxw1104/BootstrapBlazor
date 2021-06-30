@@ -989,6 +989,11 @@ namespace BootstrapBlazor.Components
         {
             return Builder;
         }
+
+        public bool IsDynamicProperty(string propName)
+        {
+            return true;
+        }
     }
 
     internal class DataTableDataService : IEntityFrameworkCoreDataService, IDataService<DataRowAdapter>

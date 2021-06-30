@@ -108,6 +108,11 @@ namespace BootstrapBlazor.Shared.Pages.Table
                     Filterable = true,
                     Searchable = true
                 })
+                .AddProperty("Id", typeof(int), new Attribute[] {
+                    new AutoGenerateColumnAttribute() {
+                        Order = 1,
+                        Text = "Id" ,Editable=false},
+                })
                 .AddProperty("Name", typeof(string), new Attribute[] {
                     new AutoGenerateColumnAttribute() {
                         Order = 1,
@@ -121,7 +126,6 @@ namespace BootstrapBlazor.Shared.Pages.Table
                         Searchable = false,
                         Text = "年龄" }
                 });
-
         }
 
         private ConcurrentDictionary<string, object?> propDic = new();
@@ -140,7 +144,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
         }
 
         /// <summary>
-        /// Id属性
+        /// 静态Id属性
         /// </summary>
         public int Id { get; set; }
 
@@ -200,6 +204,11 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 obj.SetValue(p.Name, GetValue(p.Name));
             }
             return obj;
+        }
+
+        public bool IsDynamicProperty(string propName)
+        {
+            throw new NotImplementedException();
         }
     }
 
