@@ -12,6 +12,7 @@ using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -703,9 +704,20 @@ namespace BootstrapBlazor.Components
             {
                 var content = "";
                 object? val = null;
-                if (item is IDynamicType cType)
+
+             
+                if (item is IDynamicType dType)
                 {
-                    val = cType.GetValue(col.GetFieldName());
+                    var exp = col.GetValueExpression();
+                    if (exp != null)
+                    {
+                        var func = ((LambdaExpression)exp).Compile();
+                        val = func.DynamicInvoke(item);
+                    }
+                    else
+                    {
+                        val = dType.GetValue(col.GetFieldName());
+                    }
                 }
                 else
                 {
@@ -836,7 +848,7 @@ namespace BootstrapBlazor.Components
             int orderIndex = 1;
             foreach (DataColumn item in Table.Columns)
             {
-                builder.AddProperty(item.ColumnName, item.DataType, new Attribute[] {
+                builder.Model().AddProperty(item.ColumnName, item.DataType, new Attribute[] {
                     new AutoGenerateColumnAttribute() {
                     Order = orderIndex++,
                     Text = item.ColumnName
@@ -905,7 +917,7 @@ namespace BootstrapBlazor.Components
         /// <param name="attributes"></param>
         public void AddColumn(string name, Type propType, Attribute[] attributes)
         {
-            builder.AddProperty(name, propType, attributes);
+            builder.Model().AddProperty(name, propType, attributes);
             Table.Columns.Add(new DataColumn(name, propType));
         }
 
@@ -978,6 +990,17 @@ namespace BootstrapBlazor.Components
                 Row[propName] = v;
             }
             return v;
+        }
+
+        public T GetValue<T>(string propName)
+        {
+            var v = Row[propName];
+            if (v is DBNull)
+            {
+                v = Builder.GetPropertyDefaultValue(propName);
+                Row[propName] = v;
+            }
+            return (T)v;
         }
 
         public void SetValue(string propName, object value)

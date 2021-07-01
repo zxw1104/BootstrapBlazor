@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 
@@ -41,7 +42,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
             properties.Add(newPropertyName);
             if (propIndex % 2 == 0)
             {
-                DynamicUser.dynamicObjectBuilder.AddProperty(newPropertyName,
+                DynamicUser.dynamicObjectBuilder.Model().AddProperty(newPropertyName,
                     typeof(string),
                     new Attribute[] {
                         //必填
@@ -54,12 +55,14 @@ namespace BootstrapBlazor.Shared.Pages.Table
             else
             {
                 //将动态属性注册全局动态属性注册中心
-                DynamicUser.dynamicObjectBuilder.AddProperty(newPropertyName, typeof(int),
+                DynamicUser.dynamicObjectBuilder.Model().AddProperty(newPropertyName, typeof(int),
                     new Attribute[] { new AutoGenerateColumnAttribute() {
                         Order = propIndex + 10,
                         Text = $"动态属性{propIndex}-int类型" }});
                 propIndex++;
             }
+
+
             //手动通知Table，更新列信息
             DynamicUser.dynamicObjectBuilder.RefreshTableColumn();
 
@@ -91,22 +94,30 @@ namespace BootstrapBlazor.Shared.Pages.Table
         }
     }
 
+
+
     /// <summary>
     /// 示例Model，动态属性的User
     /// </summary>
-    public class DynamicUser : IDynamicType
+    public class DynamicUser : DynamicBase
     {
         public static DynamicObjectBuilder dynamicObjectBuilder { get; set; }
 
         static DynamicUser()
         {
             //定义动态对象拥有的属性
-            dynamicObjectBuilder =
-                new DynamicObjectBuilder(typeof(DynamicUser))
-                .AddClassAttribute(new AutoGenerateClassAttribute
-                {
-                    Filterable = true,
-                    Searchable = true
+            dynamicObjectBuilder = new DynamicObjectBuilder(typeof(DynamicUser));
+            dynamicObjectBuilder.AddClassAttribute(new AutoGenerateClassAttribute
+            {
+                Filterable = true,
+                Searchable = true
+            }).Model<DynamicUser>()
+                .AddProperty(u => u.Address.Name, new Attribute[] {
+                    new AutoGenerateColumnAttribute() {
+                        Order = 3,
+                        Editable=false,
+                        Searchable = false,
+                        Text = "地址信息" }
                 })
                 .AddProperty("Id", typeof(int), new Attribute[] {
                     new AutoGenerateColumnAttribute() {
@@ -127,11 +138,6 @@ namespace BootstrapBlazor.Shared.Pages.Table
                         Text = "年龄" }
                 });
         }
-
-        private ConcurrentDictionary<string, object?> propDic = new();
-
-
-
         static int userId = 1;
 
         /// <summary>
@@ -140,29 +146,17 @@ namespace BootstrapBlazor.Shared.Pages.Table
         public DynamicUser()
         {
             dynamicObjectBuilder.SetDefaultValues(this);
+            Address = new DynamicAddress();
+            Address.SetValue("Name", "默认地址");
             Id = userId++;
         }
 
+        public DynamicAddress Address { get; set; }
         /// <summary>
         /// 静态Id属性
         /// </summary>
         public int Id { get; set; }
 
-        /// <summary>
-        /// 根据属性名，获取属性值
-        /// </summary>
-        /// <param name="propName"></param>
-        /// <returns></returns>
-        public object? GetValue(string propName)
-        {
-            //如果属性不存在，则添加属性默认值
-            //当在运行时动态添加属性时，就会出现属性不存在的情况
-            if (!propDic.ContainsKey(propName))
-            {
-                propDic[propName] = dynamicObjectBuilder.GetPropertyDefaultValue(propName);
-            }
-            return propDic[propName];
-        }
         /// <summary>
         /// 当前对象是否是创建时的临时对象
         /// </summary>
@@ -174,41 +168,68 @@ namespace BootstrapBlazor.Shared.Pages.Table
         /// <returns></returns>
         public DynamicUser SetName(string n)
         {
-            propDic["Name"] = n;
+            SetValue("Name", n);
             return this;
         }
-        /// <summary>
-        /// 设置指定属性为指定值
-        /// </summary>
-        /// <param name="propName"></param>
-        /// <param name="value"></param>
-        public void SetValue(string propName, object value)
-        {
-            //这里需要类型转换
-            propDic[propName] = value;
-        }
 
 
-        public DynamicObjectBuilder GetBuilder()
+
+        public override DynamicObjectBuilder GetBuilder()
         {
             return dynamicObjectBuilder;
         }
 
-        public object Clone()
+        public override object Clone()
         {
-            var obj = new DynamicUser();
-            var props = TypeInfoHelper.GetProperties(this);
+            var obj = (DynamicUser)base.Clone();
             obj.Id = this.Id;
-            foreach (var p in props)
-            {
-                obj.SetValue(p.Name, GetValue(p.Name));
-            }
             return obj;
         }
 
-        public bool IsDynamicProperty(string propName)
+        public override IDynamicType New()
         {
-            throw new NotImplementedException();
+            return new DynamicUser();
+        }
+    }
+
+    public class DynamicAddress : DynamicBase
+    {
+        public static DynamicObjectBuilder dynamicObjectBuilder { get; set; }
+
+        static DynamicAddress()
+        {
+            //定义动态对象拥有的属性
+            dynamicObjectBuilder = new DynamicObjectBuilder(typeof(DynamicAddress));
+            dynamicObjectBuilder.AddClassAttribute(new AutoGenerateClassAttribute
+            {
+                Filterable = true,
+                Searchable = true
+            }).Model()
+                .AddProperty("AddressName", typeof(string), new Attribute[] {
+                    new AutoGenerateColumnAttribute() {
+                        Order = 1,
+                        Text = "名称" },
+                    new RequiredAttribute(),
+                    new StringLengthAttribute(5)
+                });
+        }
+
+        public string Name
+        {
+            get { return GetValue<string>("Name"); }
+            set
+            {
+                SetValue("Name", value);
+            }
+        }
+        public override DynamicObjectBuilder GetBuilder()
+        {
+            return dynamicObjectBuilder;
+        }
+
+        public override IDynamicType New()
+        {
+            return new DynamicAddress();
         }
     }
 

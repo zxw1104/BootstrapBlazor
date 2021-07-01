@@ -271,8 +271,8 @@ namespace BootstrapBlazor.Components
             builder.AddAttribute(1, "DisplayText", displayName);
             builder.AddAttribute(2, "Value", fieldValue);
             builder.AddAttribute(3, "ValueChanged", fieldValueChanged);
-
-            SetValueExpressionOrFieldIdentifierInfo(builder, 4, model, fieldName);
+            builder.AddAttribute(4, "ValueExpression", item.GetValueExpression());
+            //SetValueExpressionOrFieldIdentifierInfo(builder, 4, model, fieldName);
 
             builder.AddAttribute(5, "ShowLabel", showLabel ?? true);
             builder.CloseComponent();
@@ -312,8 +312,8 @@ namespace BootstrapBlazor.Components
             builder.AddAttribute(1, "DisplayText", displayName);
             builder.AddAttribute(2, "Value", fieldValue);
             builder.AddAttribute(3, "ValueChanged", fieldValueChanged);
-            //builder.AddAttribute(4, "ValueExpression", valueExpression);
-            SetValueExpressionOrFieldIdentifierInfo(builder, 4, model, fieldName);
+            builder.AddAttribute(4, "ValueExpression", item.GetValueExpression());
+            //SetValueExpressionOrFieldIdentifierInfo(builder, 4, model, fieldName);
             builder.AddAttribute(5, "IsDisabled", item.Readonly);
             if (IsCheckboxList(fieldType) && item.Data != null)
             {

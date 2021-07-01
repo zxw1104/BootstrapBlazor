@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace BootstrapBlazor.Components
 {
@@ -77,5 +78,15 @@ namespace BootstrapBlazor.Components
         /// 获取绑定字段信息方法
         /// </summary>
         string GetFieldName();
+
+        /// <summary>
+        /// 根据对象获取属性值
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        object GetValueExpression()
+        {
+            return null;
+        }
     }
 }

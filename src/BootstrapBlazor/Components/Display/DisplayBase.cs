@@ -80,7 +80,9 @@ namespace BootstrapBlazor.Components
 
             if (ValueExpression != null)
             {
-                FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression);
+                TypeInfoHelper.ParseModelAndProperty(ValueExpression, out object model, out string fieldName);
+                //FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression);
+                FieldIdentifier =new Microsoft.AspNetCore.Components.Forms.FieldIdentifier(model,fieldName);
             }
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.Empty);

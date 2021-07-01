@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace BootstrapBlazor.Components
 {
@@ -102,6 +103,14 @@ namespace BootstrapBlazor.Components
         public Action<TableCellArgs>? OnCellRender { get; set; }
 
         /// <summary>
+        /// 获取绑定表达式
+        /// </summary>
+        /// <returns></returns>
+        public object GetValueExpression()
+        {
+            return valueExpression;
+        }
+        /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="fieldName">字段名称</param>
@@ -113,6 +122,15 @@ namespace BootstrapBlazor.Components
             PropertyType = fieldType;
             Text = fieldText;
         }
+
+        public InternalTableColumn(DynamicPropertyInfo info, AutoGenerateColumnAttribute attr)
+        {
+            FieldName = info.Name;
+            PropertyType = info.PropertyType;
+            Text = attr.Text;
+            //valueExpression = info.ValueExpression;
+        }
+        private LambdaExpression valueExpression;
 
         public string GetDisplayName() => Text;
 
@@ -139,7 +157,7 @@ namespace BootstrapBlazor.Components
             return GetPropertiesCore(builder.ObjectType, props, attrModel, null);
         }
 
-        private static IEnumerable<ITableColumn> GetPropertiesCore(Type type,PropertyInfo[] props,AutoGenerateClassAttribute attrModel, IEnumerable<ITableColumn>? source = null)
+        private static IEnumerable<ITableColumn> GetPropertiesCore(Type type, PropertyInfo[] props, AutoGenerateClassAttribute attrModel, IEnumerable<ITableColumn>? source = null)
         {
             var cols = new List<ITableColumn>(50);
             foreach (var prop in props)
@@ -150,9 +168,18 @@ namespace BootstrapBlazor.Components
                 // Issue: 增加定义设置标签 AutoGenerateClassAttribute
                 // https://gitee.com/LongbowEnterprise/BootstrapBlazor/issues/I381ED
                 var displayName = attr?.Text ?? Utility.GetDisplayName(type, prop.Name);
+                //用过用户没设置Attribute，则使用内部默认的信息构造列描述
                 if (attr == null)
                 {
-                    tc = new InternalTableColumn(prop.Name, prop.PropertyType, displayName);
+                    if (prop is DynamicPropertyInfo info)
+                    {
+                        tc = new InternalTableColumn(info, attr);
+                    }
+                    else
+                    {
+                        tc = new InternalTableColumn(prop.Name, prop.PropertyType, displayName);
+                    }
+                   
 
                     if (attrModel != null)
                     {

@@ -49,7 +49,7 @@ namespace UnitTest.Components
             User user = new User { Age = 1, Apple = apple };
 
             Expression<Func<string>> exp = () => user.Apple.Name;
-            ParseAccessor(exp, out object child, out string field);
+            TypeInfoHelper.ParseModelAndProperty(exp, out object child, out string field);
 
             Assert.Equal(child, apple);
             Assert.Equal(nameof(Apple.Name), field);
@@ -67,84 +67,102 @@ namespace UnitTest.Components
             User user = new User { Age = 1, DynamicApple = apple };
 
             Expression<Func<object>> exp1 = () => user.DynamicApple.Name;
-            Expression<Func<object>> exp2 = () => user.DynamicApple.GetValue(nameof(Apple.Name));
 
-            ParseAccessor(exp1, out object model1, out string field1);
+
+            TypeInfoHelper.ParseModelAndProperty(exp1, out object model1, out string field1);
 
 
             Assert.Equal(apple, model1);
             Assert.Equal(nameof(Apple.Name), field1);
             Assert.Equal(name, exp1.Compile().Invoke());
 
+   
 
-            ParseAccessor(exp2, out object model2, out string field2);
-            Assert.Equal(apple, model2);
-            Assert.Equal(nameof(Apple.Name), field2);
-            Assert.Equal("ok", exp2.Compile().Invoke());
+            Expression<Func<User, string>> exp3 = (user) => user.DynamicApple.Name;
+            TypeInfoHelper.ParsePropertyName(exp3, out string field3, out string fullPath, out Type type);
+            Assert.Equal(nameof(DynamicApple.Name), field3);
+            Assert.Equal(typeof(string), type);
+            Assert.Equal("DynamicApple.Name", fullPath);
+
+
+            //放弃这种方式
+            //Expression<Func<string>> exp2 = () => user.DynamicApple.GetValue<string>(nameof(DynamicApple.Name));
+            //TypeInfoHelper.ParseModelAndProperty(exp2, out object model2, out string field2);
+            //Assert.Equal(apple, model2);
+            //Assert.Equal(nameof(Apple.Name), field2);
+            //Assert.Equal("ok", exp2.Compile().Invoke());
+
+            //Expression<Func<User, string>> exp4 = (u) => u.DynamicApple.GetValue<string>(nameof(DynamicApple.Name));
+            //TypeInfoHelper.ParsePropertyName(exp4, out string field4, out Type type2);
+            //Assert.Equal(nameof(DynamicApple.Name), field4);
+            //Assert.Equal(typeof(string), type2);
         }
-        private static void ParseAccessor<T>(Expression<Func<T>> accessor, out object model, out string fieldName)
+
+        /// <summary>
+        /// 根据Get表达式，生成Set表达式
+        /// </summary>
+        [Fact]
+        public void GetSetExpression_Test()
         {
-            var accessorBody = accessor.Body;
+            Expression<Func<User, string>> exp3 = (user) => user.DynamicApple.Name;
+            TypeInfoHelper.ParsePropertyName(exp3, out string field3, out string fullPath, out Type type);
+            MemberExpression memberExpression;
+
+            var p1 = exp3.Parameters.First();
+            var p2 = Expression.Parameter(type);
+            var member = exp3.Body as MemberExpression;
+            var instanceExp = member.Expression;
+
+            //下面这个方法 报错，可能多级表达式 还得一级一级的 拼接
+            var model= TypeInfoHelper.GetModelFromExp(instanceExp);
+            //SetValue方法表达式
+            var dType = instanceExp.Type;
+            var setMethod= dType.GetMethod(nameof(IDynamicType.SetValue));
+            var callExp= Expression.Call(instanceExp, setMethod);
+            Expression<Action<User, string>> exp = Expression.Lambda<Action<User, string>>(callExp, p1, p2);
+
+            User user = new User();
+            user.DynamicApple = new DynamicApple();
+
+            var name = "123";
+            exp.Compile().Invoke(user, name);
+            Assert.Equal(name, user.DynamicApple.GetValue(nameof(DynamicApple.Name)));
+           
+
+            //Expression<Action<User, string>> exp = (u, s) => u.DynamicApple.SetValue("Name",s);
+
+            //var param_p1 = Expression.Parameter(typeof(User));
+            //var param_p2 = Expression.Parameter(typeof(string));
+
+            //var p= typeof(DynamicApple).GetProperty("Name");
+
+            ////获取设置属性的值的方法
+            //var mi = p.GetSetMethod(true);
+            //var body = Expression.Call(param_p1, mi, param_p2);
+            //var action= Expression.Lambda<Action<User, string>>(body, param_p1, param_p2);
+            //action.Compile().Invoke()
+        }
+
+        public static void ParseModelAndProperty(LambdaExpression exp, out object model, out string fieldName)
+        {
+            var accessorBody = exp.Body;
+            var p = exp.Parameters.First();
             model = null;
             fieldName = null;
-            // Unwrap casts to object
-            if (accessorBody is UnaryExpression unaryExpression
-                && unaryExpression.NodeType == ExpressionType.Convert
-                && unaryExpression.Type == typeof(object))
-            {
-                accessorBody = unaryExpression.Operand;
-            }
 
             if (!(accessorBody is MemberExpression memberExpression))
             {
-                //throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
-                if (accessorBody is MethodCallExpression methodCall)
-                {
-                    var arg = (methodCall.Arguments[0] as ConstantExpression).Value.ToString();
-                    var obj = methodCall.Object;
-                    model = GetModelFromExp(obj);
-                    fieldName = arg;
-                }
+                throw new Exception("支持持成员访问表达式");
             }
             else
             {
-                // Identify the field name. We don't mind whether it's a property or field, or even something else.
                 fieldName = memberExpression.Member.Name;
+                
+                
 
-                // Get a reference to the model object
-                // i.e., given an value like "(something).MemberName", determine the runtime value of "(something)",
-                if (memberExpression.Expression is ConstantExpression constantExpression)
-                {
-                    if (constantExpression.Value is null)
-                    {
-                        throw new ArgumentException("The provided expression must evaluate to a non-null value.");
-                    }
-                    model = constantExpression.Value;
-                }
-                else if (memberExpression.Expression != null)
-                {
-                    model= GetModelFromExp(memberExpression.Expression);
-                }
-                else
-                {
-                    throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
-                }
             }
-        }
-
-        private static object GetModelFromExp(Expression exp)
-        {
-            var modelLambda = Expression.Lambda(exp);
-            var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
-            var result = modelLambdaCompiled();
-            if (result is null)
-            {
-                throw new ArgumentException("The provided expression must evaluate to a non-null value.");
-            }
-            return result;
         }
     }
-
 
     public class Apple
     {
@@ -169,10 +187,16 @@ namespace UnitTest.Components
             return "ok";
         }
 
+        public T GetValue<T>(string propName)
+        {
+            return (T)GetValue(propName);
+        }
+
         public bool IsDynamicProperty(string propName)
         {
             throw new NotImplementedException();
         }
+
 
         public void SetValue(string propName, object value)
         {
@@ -191,6 +215,7 @@ namespace UnitTest.Components
         {
             throw new NotImplementedException();
         }
+
         public DynamicObjectBuilder GetBuilder()
         {
             throw new NotImplementedException();
@@ -206,10 +231,17 @@ namespace UnitTest.Components
             return "Ok";
         }
 
+        public T GetValue<T>(string propName)
+        {
+            return (T)GetValue(propName);
+        }
+
         public bool IsDynamicProperty(string propName)
         {
             throw new NotImplementedException();
         }
+
+
 
         public void SetValue(string propName, object value)
         {

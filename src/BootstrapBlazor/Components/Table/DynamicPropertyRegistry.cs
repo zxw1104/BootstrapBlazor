@@ -3,10 +3,12 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -17,7 +19,7 @@ namespace BootstrapBlazor.Components
     /// <summary>
     /// 动态属性注册中心
     /// </summary>
-    internal class DynamicPropertyRegistry
+    public class DynamicPropertyRegistry
     {
         private Dictionary<string, PropertyInfo> props = new();
         private HashSet<Attribute> classAttrs = new();
@@ -40,7 +42,7 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public bool IsPropertyExist(string propName)
         {
-           return props.ContainsKey(propName);
+            return props.ContainsKey(propName);
         }
 
         /// <summary>
@@ -138,12 +140,10 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <param name="propName"></param>
         /// <returns></returns>
-        object? GetValue(string propName);
-        /// <summary>
-        /// 根据属性名称，设置属性值
-        /// </summary>
-        /// <param name="propName"></param>
-        /// <param name="value"></param>
+        T GetValue<T>(string propName);
+
+        object GetValue(string propName);
+
         void SetValue(string propName, object value);
 
         /// <summary>
@@ -157,6 +157,65 @@ namespace BootstrapBlazor.Components
         /// <param name="propName"></param>
         /// <returns></returns>
         bool IsDynamicProperty(string propName);
+    }
+
+    public abstract class DynamicBase : IDynamicType
+    {
+        private ConcurrentDictionary<string, object?> propDic = new();
+
+        /// <summary>
+        /// 根据属性名，获取属性值
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+        public object? GetValue(string propName)
+        {
+            //如果属性不存在，则添加属性默认值
+            //当在运行时动态添加属性时，就会出现属性不存在的情况
+            if (!propDic.ContainsKey(propName))
+            {
+                propDic[propName] = GetBuilder().GetPropertyDefaultValue(propName);
+            }
+            return propDic[propName];
+        }
+
+
+        /// <summary>
+        /// 设置指定属性为指定值
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <param name="value"></param>
+        public void SetValue(string propName, object value)
+        {
+            //这里需要类型转换
+            propDic[propName] = value;
+        }
+
+        public abstract DynamicObjectBuilder GetBuilder();
+
+
+        public virtual bool IsDynamicProperty(string propName)
+        {
+            return true;
+        }
+
+        public virtual object Clone()
+        {
+            var obj = New();
+            var props = TypeInfoHelper.GetProperties(this);
+            foreach (var p in props)
+            {
+                obj.SetValue(p.Name, GetValue(p.Name));
+            }
+            return obj;
+        }
+
+        public abstract IDynamicType New();
+
+        public T GetValue<T>(string propName)
+        {
+            return (T)GetValue(propName);
+        }
     }
 
     /// <summary>
@@ -201,7 +260,7 @@ namespace BootstrapBlazor.Components
         /// <param name="model"></param>
         /// <param name="propName"></param>
         /// <returns></returns>
-        public static PropertyInfo? GetProperty(object model,string propName)
+        public static PropertyInfo? GetProperty(object model, string propName)
         {
             if (model is IDynamicType dType)
             {
@@ -209,7 +268,7 @@ namespace BootstrapBlazor.Components
             }
             else
             {
-                return model.GetType().GetProperties().FirstOrDefault(v=>v.Name==propName);
+                return model.GetType().GetProperties().FirstOrDefault(v => v.Name == propName);
             }
         }
 
@@ -217,10 +276,10 @@ namespace BootstrapBlazor.Components
         {
             if (model is IDynamicType dType)
             {
-                if (dType.GetBuilder())
-                {
+                //if (dType.GetBuilder())
+                //{
 
-                }
+                //}
                 return dType.GetValue(propName);
             }
             else
@@ -228,7 +287,6 @@ namespace BootstrapBlazor.Components
                 return model.GetType().GetProperties().FirstOrDefault(v => v.Name == propName).GetValue(model);
             }
         }
-
 
         /// <summary>
         /// 动态类型，不提供根据类型，查询属性定义的方法，因为可能同一个类型，对应多个 不同的属性
@@ -251,6 +309,121 @@ namespace BootstrapBlazor.Components
             var isCustomType = type.IsAssignableTo(typeof(IDynamicType));
             return isCustomType;
         }
+
+        /// <summary>
+        /// 解析表达式 中的 属性名
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="accessor"></param>
+        /// <param name="model"></param>
+        /// <param name="fieldName"></param>
+        public static void ParsePropertyName(LambdaExpression exp, out string fieldName,out string fieldFullPath, out Type propType)
+        {
+            var accessorBody = exp.Body;
+            fieldName = null;
+            propType = null;
+            fieldFullPath = null;
+            // Unwrap casts to object
+            if (accessorBody is UnaryExpression unaryExpression
+                && unaryExpression.NodeType == ExpressionType.Convert
+                && unaryExpression.Type == typeof(object))
+            {
+                accessorBody = unaryExpression.Operand;
+            }
+
+            if (!(accessorBody is MemberExpression memberExpression))
+            {
+                //if (accessorBody is MethodCallExpression methodCall)
+                //{
+                //    var constExp = (methodCall.Arguments[0] as ConstantExpression);
+                //    var arg = constExp.Value.ToString();
+                //    fieldName = arg;
+                //    propType = constExp.Type;
+                //}
+                //else
+                //{
+                //    throw new NotSupportedException($"不支持这种表达式，{accessorBody.GetType().FullName}");
+                //}
+                throw new NotSupportedException($"不支持这种表达式，只支持简单的属性访问表达式，如A.B.C");
+            }
+            else
+            {
+                //全路径字段名
+                fieldFullPath = memberExpression.ToString();
+                var pIndex= fieldFullPath.IndexOf('.');
+                fieldFullPath = fieldFullPath.Substring(pIndex + 1);
+
+                //最后一段路径
+                fieldName = memberExpression.Member.Name;
+                if (memberExpression.Member is PropertyInfo info)
+                {
+                    propType = info.PropertyType;
+                }
+                else if (memberExpression.Member is FieldInfo info2)
+                {
+                    propType = info2.FieldType;
+                }
+
+            }
+        }
+
+        public static void ParseModelAndProperty(LambdaExpression exp, out object model, out string fieldName)
+        {
+            var accessorBody = exp.Body;
+            model = null;
+            fieldName = null;
+            // Unwrap casts to object
+            if (accessorBody is UnaryExpression unaryExpression
+                && unaryExpression.NodeType == ExpressionType.Convert
+                && unaryExpression.Type == typeof(object))
+            {
+                accessorBody = unaryExpression.Operand;
+            }
+
+            if (!(accessorBody is MemberExpression memberExpression))
+            {
+                if (accessorBody is MethodCallExpression methodCall)
+                {
+                    var arg = (methodCall.Arguments[0] as ConstantExpression).Value.ToString();
+                    var obj = methodCall.Object;
+                    model = GetModelFromExp(obj);
+                    fieldName = arg;
+                }
+            }
+            else
+            {
+                fieldName = memberExpression.Member.Name;
+
+                if (memberExpression.Expression is ConstantExpression constantExpression)
+                {
+                    if (constantExpression.Value is null)
+                    {
+                        throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                    }
+                    model = constantExpression.Value;
+                }
+                else if (memberExpression.Expression != null)
+                {
+                    model = GetModelFromExp(memberExpression.Expression);
+                }
+                else
+                {
+                    throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. FieldIdentifier only supports simple member accessors (fields, properties) of an object.");
+                }
+            }
+        }
+
+        public static object GetModelFromExp(Expression exp)
+        {
+            var modelLambda = Expression.Lambda(exp);
+            var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
+            var result = modelLambdaCompiled();
+            if (result is null)
+            {
+                throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+            }
+            return result;
+        }
     }
 
     /// <summary>
@@ -268,7 +441,7 @@ namespace BootstrapBlazor.Components
         {
             this.name = name;
             this.propertyType = propType;
-            if (attributes==null)
+            if (attributes == null)
             {
                 this.attributes = Array.Empty<Attribute>();
             }
@@ -277,6 +450,27 @@ namespace BootstrapBlazor.Components
                 this.attributes = attributes;
             }
         }
+
+        public LambdaExpression GetValueExpression { get; set; }
+
+        public LambdaExpression SetValueExpression { get; set; }
+        public DynamicPropertyInfo(LambdaExpression exp, Attribute[] attributes)
+        {
+            TypeInfoHelper.ParsePropertyName(exp, out string fieldName,out string fullPath ,out Type type);
+            this.name = fullPath;
+            this.propertyType = type;
+            if (attributes == null)
+            {
+                this.attributes = Array.Empty<Attribute>();
+            }
+            else
+            {
+                this.attributes = attributes;
+            }
+            GetValueExpression = exp;
+            //ValueExpression.Compile();
+        }
+
         public override PropertyAttributes Attributes => PropertyAttributes.None;
 
         public override bool CanRead => true;
@@ -383,16 +577,15 @@ namespace BootstrapBlazor.Components
             dynamicPropertyRegistry.TypeInfo = type;
         }
 
-        /// <summary>
-        /// 添加动态属性定义
-        /// </summary>
-        /// <param name="name">属性名称</param>
-        /// <param name="propType">属性类型</param>
-        /// <param name="attributes">属性的Attribute</param>
-        public DynamicObjectBuilder AddProperty(string name, Type propType, Attribute[] attributes)
+
+        public PropertyBuilder<TModel> Model<TModel>()
         {
-            dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(name, propType, attributes));
-            return this;
+            return new PropertyBuilder<TModel>(dynamicPropertyRegistry);
+        }
+
+        public PropertyBuilder Model()
+        {
+            return new PropertyBuilder(dynamicPropertyRegistry);
         }
 
         /// <summary>
@@ -424,7 +617,7 @@ namespace BootstrapBlazor.Components
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public void SetDefaultValues<T>(T obj) where T : IDynamicType, new()
+        public void SetDefaultValues<TType>(TType obj) where TType : IDynamicType, new()
         {
             var props = dynamicPropertyRegistry.GetProperties();
             foreach (DynamicPropertyInfo p in props)
@@ -491,6 +684,61 @@ namespace BootstrapBlazor.Components
         public bool IsPropertyExist(string propName)
         {
             return dynamicPropertyRegistry.IsPropertyExist(propName);
+        }
+    }
+
+    /// <summary>
+    /// 属性建造器
+    /// </summary>
+    public class PropertyBuilder
+    {
+        private readonly DynamicPropertyRegistry dynamicPropertyRegistry;
+
+        public PropertyBuilder(DynamicPropertyRegistry dynamicPropertyRegistry)
+        {
+            this.dynamicPropertyRegistry = dynamicPropertyRegistry;
+        }
+        /// <summary>
+        /// 添加动态属性定义
+        /// </summary>
+        /// <param name="name">属性名称</param>
+        /// <param name="propType">属性类型</param>
+        /// <param name="attributes">属性的Attribute</param>
+        public PropertyBuilder AddProperty(string name, Type propType, Attribute[] attributes)
+        {
+            dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(name, propType, attributes));
+            return this;
+        }
+
+        public PropertyBuilder AddProperty(LambdaExpression exp, Attribute[] attributes)
+        {
+            dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(exp, attributes));
+            return this;
+        }
+    }
+
+    public class PropertyBuilder<TModel> : PropertyBuilder
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objectBuilder"></param>
+        public PropertyBuilder(DynamicPropertyRegistry registry) : base(registry)
+        {
+
+        }
+        /// <summary>
+        /// 添加动态属性,表达式的写法为 u=>u.Address.Name这种 属性表达式，不能调用方法
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="exp"></param>
+        /// <param name="attributes"></param>
+        /// <returns></returns>
+        public PropertyBuilder<TModel> AddProperty<TProperty>(Expression<Func<TModel, TProperty>> exp, Attribute[] attributes)
+        {
+
+            base.AddProperty(exp, attributes);
+            return this;
         }
     }
 }
