@@ -78,12 +78,6 @@ namespace BootstrapBlazor.Components
 
             NullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
 
-            if (ValueExpression != null)
-            {
-                TypeInfoHelper.ParseModelAndProperty(ValueExpression, out object model, out string fieldName);
-                //FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression);
-                FieldIdentifier =new Microsoft.AspNetCore.Components.Forms.FieldIdentifier(model,fieldName);
-            }
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.Empty);
         }
@@ -94,6 +88,13 @@ namespace BootstrapBlazor.Components
         protected override void OnParametersSet()
         {
             base.OnParametersSet();
+
+            if (ValueExpression != null)
+            {
+                FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(ValueExpression);
+                //TypeInfoHelper.ParseModelAndProperty(ValueExpression, out object model, out string fieldName);
+                //FieldIdentifier =new Microsoft.AspNetCore.Components.Forms.FieldIdentifier(model,fieldName);
+            }
 
             IsShowLabel = ShowLabel ?? false;
 

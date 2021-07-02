@@ -271,8 +271,8 @@ namespace BootstrapBlazor.Components
             builder.AddAttribute(1, "DisplayText", displayName);
             builder.AddAttribute(2, "Value", fieldValue);
             builder.AddAttribute(3, "ValueChanged", fieldValueChanged);
-            builder.AddAttribute(4, "ValueExpression", item.GetValueExpression());
-            //SetValueExpressionOrFieldIdentifierInfo(builder, 4, model, fieldName);
+            builder.AddAttribute(4, "ValueExpression", valueExpression);
+            SetValueExpressionOrFieldIdentifierInfo(builder, 6, model, fieldName);
 
             builder.AddAttribute(5, "ShowLabel", showLabel ?? true);
             builder.CloseComponent();
@@ -312,8 +312,8 @@ namespace BootstrapBlazor.Components
             builder.AddAttribute(1, "DisplayText", displayName);
             builder.AddAttribute(2, "Value", fieldValue);
             builder.AddAttribute(3, "ValueChanged", fieldValueChanged);
-            builder.AddAttribute(4, "ValueExpression", item.GetValueExpression());
-            //SetValueExpressionOrFieldIdentifierInfo(builder, 4, model, fieldName);
+            builder.AddAttribute(4, "ValueExpression", valueExpression);
+            SetValueExpressionOrFieldIdentifierInfo(builder, 30, model, fieldName);
             builder.AddAttribute(5, "IsDisabled", item.Readonly);
             if (IsCheckboxList(fieldType) && item.Data != null)
             {
@@ -364,19 +364,17 @@ namespace BootstrapBlazor.Components
 
         private static object GenerateValueExpression(object model, string fieldName, Type fieldType)
         {
-            //if (model is IDynamicType dModel)
-            //{
-
-            //    return new FieldIdentifierInfo { Model = model, FieldName = fieldName };
-            //}
-            //else
-            //{
-            //    // ValueExpression
-            //    var body = Expression.Property(Expression.Constant(model), model.GetType(), fieldName);
-            //    var tDelegate = typeof(Func<>).MakeGenericType(fieldType);
-            //    return Expression.Lambda(tDelegate, body);
-            //}
-            return null;
+            if (model is IDynamicType)
+            {
+                return null;
+            }
+            else
+            {
+                // ValueExpression
+                var body = Expression.Property(Expression.Constant(model), model.GetType(), fieldName);
+                var tDelegate = typeof(Func<>).MakeGenericType(fieldType);
+                return Expression.Lambda(tDelegate, body);
+            }
         }
 
         /// <summary>

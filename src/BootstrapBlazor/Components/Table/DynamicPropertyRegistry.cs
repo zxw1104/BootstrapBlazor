@@ -163,6 +163,7 @@ namespace BootstrapBlazor.Components
     {
         private ConcurrentDictionary<string, object?> propDic = new();
 
+        private ConcurrentDictionary<string, (Func<IDynamicType,object> Get, Action<IDynamicType,object> Set)> longPathPropDic = new();
         /// <summary>
         /// 根据属性名，获取属性值
         /// </summary>
@@ -170,6 +171,10 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public object? GetValue(string propName)
         {
+            if (longPathPropDic.ContainsKey(propName))
+            {
+                return longPathPropDic[propName].Get(this);
+            }
             //如果属性不存在，则添加属性默认值
             //当在运行时动态添加属性时，就会出现属性不存在的情况
             if (!propDic.ContainsKey(propName))
@@ -179,7 +184,16 @@ namespace BootstrapBlazor.Components
             return propDic[propName];
         }
 
-
+        /// <summary>
+        /// 添加自定义GetSet
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <param name="getSet"></param>
+        /// <returns></returns>
+        protected bool AddCustomGetSet(string propName, Func<IDynamicType,object> Get, Action<IDynamicType,object> Set)
+        {
+            return longPathPropDic.TryAdd(propName, (Get,Set));
+        }
         /// <summary>
         /// 设置指定属性为指定值
         /// </summary>
@@ -187,6 +201,10 @@ namespace BootstrapBlazor.Components
         /// <param name="value"></param>
         public void SetValue(string propName, object value)
         {
+            if (longPathPropDic.ContainsKey(propName))
+            {
+                longPathPropDic[propName].Set(this,value);
+            }
             //这里需要类型转换
             propDic[propName] = value;
         }
@@ -199,6 +217,11 @@ namespace BootstrapBlazor.Components
             return true;
         }
 
+        /// <summary>
+        /// 此方法只会克隆已注册的动态属性，动态属性是指在
+        /// DynamicObjectBuider中注册的属性
+        /// </summary>
+        /// <returns></returns>
         public virtual object Clone()
         {
             var obj = New();
@@ -317,7 +340,7 @@ namespace BootstrapBlazor.Components
         /// <param name="accessor"></param>
         /// <param name="model"></param>
         /// <param name="fieldName"></param>
-        public static void ParsePropertyName(LambdaExpression exp, out string fieldName,out string fieldFullPath, out Type propType)
+        public static void ParsePropertyName(LambdaExpression exp, out string fieldName, out string fieldFullPath, out Type propType)
         {
             var accessorBody = exp.Body;
             fieldName = null;
@@ -350,7 +373,7 @@ namespace BootstrapBlazor.Components
             {
                 //全路径字段名
                 fieldFullPath = memberExpression.ToString();
-                var pIndex= fieldFullPath.IndexOf('.');
+                var pIndex = fieldFullPath.IndexOf('.');
                 fieldFullPath = fieldFullPath.Substring(pIndex + 1);
 
                 //最后一段路径
@@ -456,7 +479,7 @@ namespace BootstrapBlazor.Components
         public LambdaExpression SetValueExpression { get; set; }
         public DynamicPropertyInfo(LambdaExpression exp, Attribute[] attributes)
         {
-            TypeInfoHelper.ParsePropertyName(exp, out string fieldName,out string fullPath ,out Type type);
+            TypeInfoHelper.ParsePropertyName(exp, out string fieldName, out string fullPath, out Type type);
             this.name = fullPath;
             this.propertyType = type;
             if (attributes == null)
@@ -578,14 +601,16 @@ namespace BootstrapBlazor.Components
         }
 
 
-        public PropertyBuilder<TModel> Model<TModel>()
+        /// <summary>
+        /// 添加动态属性定义
+        /// </summary>
+        /// <param name="name">属性名称</param>
+        /// <param name="propType">属性类型</param>
+        /// <param name="attributes">属性的Attribute</param>
+        public DynamicObjectBuilder AddProperty(string name, Type propType, Attribute[] attributes)
         {
-            return new PropertyBuilder<TModel>(dynamicPropertyRegistry);
-        }
-
-        public PropertyBuilder Model()
-        {
-            return new PropertyBuilder(dynamicPropertyRegistry);
+            dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(name, propType, attributes));
+            return this;
         }
 
         /// <summary>
@@ -690,55 +715,55 @@ namespace BootstrapBlazor.Components
     /// <summary>
     /// 属性建造器
     /// </summary>
-    public class PropertyBuilder
-    {
-        private readonly DynamicPropertyRegistry dynamicPropertyRegistry;
+    //public class PropertyBuilder
+    //{
+    //    private readonly DynamicPropertyRegistry dynamicPropertyRegistry;
 
-        public PropertyBuilder(DynamicPropertyRegistry dynamicPropertyRegistry)
-        {
-            this.dynamicPropertyRegistry = dynamicPropertyRegistry;
-        }
-        /// <summary>
-        /// 添加动态属性定义
-        /// </summary>
-        /// <param name="name">属性名称</param>
-        /// <param name="propType">属性类型</param>
-        /// <param name="attributes">属性的Attribute</param>
-        public PropertyBuilder AddProperty(string name, Type propType, Attribute[] attributes)
-        {
-            dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(name, propType, attributes));
-            return this;
-        }
+    //    public PropertyBuilder(DynamicPropertyRegistry dynamicPropertyRegistry)
+    //    {
+    //        this.dynamicPropertyRegistry = dynamicPropertyRegistry;
+    //    }
+    //    /// <summary>
+    //    /// 添加动态属性定义
+    //    /// </summary>
+    //    /// <param name="name">属性名称</param>
+    //    /// <param name="propType">属性类型</param>
+    //    /// <param name="attributes">属性的Attribute</param>
+    //    public PropertyBuilder AddProperty(string name, Type propType, Attribute[] attributes)
+    //    {
+    //        dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(name, propType, attributes));
+    //        return this;
+    //    }
 
-        public PropertyBuilder AddProperty(LambdaExpression exp, Attribute[] attributes)
-        {
-            dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(exp, attributes));
-            return this;
-        }
-    }
+    //    public PropertyBuilder AddProperty(LambdaExpression exp, Attribute[] attributes)
+    //    {
+    //        dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(exp, attributes));
+    //        return this;
+    //    }
+    //}
 
-    public class PropertyBuilder<TModel> : PropertyBuilder
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="objectBuilder"></param>
-        public PropertyBuilder(DynamicPropertyRegistry registry) : base(registry)
-        {
+    //public class PropertyBuilder<TModel> : PropertyBuilder
+    //{
+    //    /// <summary>
+    //    /// 
+    //    /// </summary>
+    //    /// <param name="objectBuilder"></param>
+    //    public PropertyBuilder(DynamicPropertyRegistry registry) : base(registry)
+    //    {
 
-        }
-        /// <summary>
-        /// 添加动态属性,表达式的写法为 u=>u.Address.Name这种 属性表达式，不能调用方法
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="exp"></param>
-        /// <param name="attributes"></param>
-        /// <returns></returns>
-        public PropertyBuilder<TModel> AddProperty<TProperty>(Expression<Func<TModel, TProperty>> exp, Attribute[] attributes)
-        {
+    //    }
+    //    /// <summary>
+    //    /// 添加动态属性,表达式的写法为 u=>u.Address.Name这种 属性表达式，不能调用方法
+    //    /// </summary>
+    //    /// <typeparam name="T"></typeparam>
+    //    /// <param name="exp"></param>
+    //    /// <param name="attributes"></param>
+    //    /// <returns></returns>
+    //    public PropertyBuilder<TModel> AddProperty<TProperty>(Expression<Func<TModel, TProperty>> exp, Attribute[] attributes)
+    //    {
 
-            base.AddProperty(exp, attributes);
-            return this;
-        }
-    }
+    //        base.AddProperty(exp, attributes);
+    //        return this;
+    //    }
+    //}
 }

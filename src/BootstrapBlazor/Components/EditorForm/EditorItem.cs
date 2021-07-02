@@ -122,9 +122,9 @@ namespace BootstrapBlazor.Components
 
             if (FieldExpression!=null)
             {
-                TypeInfoHelper.ParseModelAndProperty(FieldExpression, out object model, out string fieldName);
-                //FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(FieldExpression);
-                FieldIdentifier =new Microsoft.AspNetCore.Components.Forms.FieldIdentifier(model,fieldName);
+                FieldIdentifier = Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create(FieldExpression);
+                //TypeInfoHelper.ParseModelAndProperty(FieldExpression, out object model, out string fieldName);
+                //FieldIdentifier =new Microsoft.AspNetCore.Components.Forms.FieldIdentifier(model,fieldName);
             }
             EditorItems?.Add(this);
 

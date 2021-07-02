@@ -705,19 +705,10 @@ namespace BootstrapBlazor.Components
                 var content = "";
                 object? val = null;
 
-             
+
                 if (item is IDynamicType dType)
                 {
-                    var exp = col.GetValueExpression();
-                    if (exp != null)
-                    {
-                        var func = ((LambdaExpression)exp).Compile();
-                        val = func.DynamicInvoke(item);
-                    }
-                    else
-                    {
-                        val = dType.GetValue(col.GetFieldName());
-                    }
+                    val = dType.GetValue(col.GetFieldName());
                 }
                 else
                 {
@@ -848,7 +839,7 @@ namespace BootstrapBlazor.Components
             int orderIndex = 1;
             foreach (DataColumn item in Table.Columns)
             {
-                builder.Model().AddProperty(item.ColumnName, item.DataType, new Attribute[] {
+                builder.AddProperty(item.ColumnName, item.DataType, new Attribute[] {
                     new AutoGenerateColumnAttribute() {
                     Order = orderIndex++,
                     Text = item.ColumnName
@@ -917,7 +908,7 @@ namespace BootstrapBlazor.Components
         /// <param name="attributes"></param>
         public void AddColumn(string name, Type propType, Attribute[] attributes)
         {
-            builder.Model().AddProperty(name, propType, attributes);
+            builder.AddProperty(name, propType, attributes);
             Table.Columns.Add(new DataColumn(name, propType));
         }
 

@@ -42,7 +42,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
             properties.Add(newPropertyName);
             if (propIndex % 2 == 0)
             {
-                DynamicUser.dynamicObjectBuilder.Model().AddProperty(newPropertyName,
+                DynamicUser.dynamicObjectBuilder.AddProperty(newPropertyName,
                     typeof(string),
                     new Attribute[] {
                         //必填
@@ -55,7 +55,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
             else
             {
                 //将动态属性注册全局动态属性注册中心
-                DynamicUser.dynamicObjectBuilder.Model().AddProperty(newPropertyName, typeof(int),
+                DynamicUser.dynamicObjectBuilder.AddProperty(newPropertyName, typeof(int),
                     new Attribute[] { new AutoGenerateColumnAttribute() {
                         Order = propIndex + 10,
                         Text = $"动态属性{propIndex}-int类型" }});
@@ -94,25 +94,26 @@ namespace BootstrapBlazor.Shared.Pages.Table
         }
     }
 
-
-
     /// <summary>
     /// 示例Model，动态属性的User
     /// </summary>
     public class DynamicUser : DynamicBase
     {
+        /// <summary>
+        /// 动态对象建造者
+        /// </summary>
         public static DynamicObjectBuilder dynamicObjectBuilder { get; set; }
 
         static DynamicUser()
         {
-            //定义动态对象拥有的属性
+            //定义动态对象拥有的属性,只有在这里注册的属性，才会在Table中显示出来
             dynamicObjectBuilder = new DynamicObjectBuilder(typeof(DynamicUser));
             dynamicObjectBuilder.AddClassAttribute(new AutoGenerateClassAttribute
             {
                 Filterable = true,
                 Searchable = true
-            }).Model<DynamicUser>()
-                .AddProperty(u => u.Address.Name, new Attribute[] {
+            })
+                .AddProperty("Address.Name", typeof(string), new Attribute[] {
                     new AutoGenerateColumnAttribute() {
                         Order = 3,
                         Editable=false,
@@ -121,7 +122,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 })
                 .AddProperty("Id", typeof(int), new Attribute[] {
                     new AutoGenerateColumnAttribute() {
-                        Order = 1,
+                        Order = 1, 
                         Text = "Id" ,Editable=false},
                 })
                 .AddProperty("Name", typeof(string), new Attribute[] {
@@ -138,17 +139,55 @@ namespace BootstrapBlazor.Shared.Pages.Table
                         Text = "年龄" }
                 });
         }
+
         static int userId = 1;
 
+        /// <summary>
+        /// 获取Id
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        private static object GetId(IDynamicType obj)
+        {
+            var user = (DynamicUser)obj;
+            return user.Id;
+        }
+        /// <summary>
+        /// 获取地址
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        private static object GetAddressName(IDynamicType obj)
+        {
+            var user = (DynamicUser)obj;
+            if (user.Address==null)
+            {
+                user.Address = new DynamicAddress();
+                user.Address.SetValue("Name", "默认地址");
+            }
+            return user.Address.GetValue("Name");
+        }
+
+        /// <summary>
+        /// 设置地址
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="v"></param>
+        private static void SetAddressName(IDynamicType obj, object v)
+        {
+            ((DynamicUser)obj).Address.SetValue("Name", v);
+        }
         /// <summary>
         /// 生成一个默认动态用户，用户点击添加按钮时，使用此构造函数，创建默认对象
         /// </summary>
         public DynamicUser()
         {
-            dynamicObjectBuilder.SetDefaultValues(this);
-            Address = new DynamicAddress();
-            Address.SetValue("Name", "默认地址");
             Id = userId++;
+            //注册复杂属性的访问器
+            AddCustomGetSet("Address.Name", GetAddressName, SetAddressName);
+
+            //注册Id静态属性的访问器
+            AddCustomGetSet("Id", GetId, null);
         }
 
         public DynamicAddress Address { get; set; }
@@ -173,19 +212,15 @@ namespace BootstrapBlazor.Shared.Pages.Table
         }
 
 
-
         public override DynamicObjectBuilder GetBuilder()
         {
             return dynamicObjectBuilder;
         }
 
-        public override object Clone()
-        {
-            var obj = (DynamicUser)base.Clone();
-            obj.Id = this.Id;
-            return obj;
-        }
-
+        /// <summary>
+        /// 构造新的User对象，在点击编辑时，会使用此方法，创建一个当前对象的副本
+        /// </summary>
+        /// <returns></returns>
         public override IDynamicType New()
         {
             return new DynamicUser();
@@ -204,8 +239,8 @@ namespace BootstrapBlazor.Shared.Pages.Table
             {
                 Filterable = true,
                 Searchable = true
-            }).Model()
-                .AddProperty("AddressName", typeof(string), new Attribute[] {
+            })
+                .AddProperty("Name", typeof(string), new Attribute[] {
                     new AutoGenerateColumnAttribute() {
                         Order = 1,
                         Text = "名称" },

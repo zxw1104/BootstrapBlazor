@@ -179,7 +179,8 @@ namespace System.Linq
             if (TypeInfoHelper.IsDynamicType(type))
             {
                 var methodName = nameof(IDynamicType.GetValue);
-                var getValueExp = Expression.Call(instance, type.GetMethod(methodName), Expression.Constant(propInfo.Name));
+                var method = type.GetMethods().First(m => m.Name == nameof(IDynamicType.GetValue) && !m.ContainsGenericParameters);
+                var getValueExp = Expression.Call(instance, method, Expression.Constant(propInfo.Name));
                 var convertExp = Expression.Convert(getValueExp, propInfo.PropertyType);
                 return convertExp;
             }
@@ -422,9 +423,17 @@ namespace System.Linq
         /// <returns></returns>
         public static object GetPropertyValue(object model, string fieldName)
         {
-            var cacheKey = (model.GetType(), fieldName);
-            var invoker = PropertyValueInvokerCache.GetOrAdd(cacheKey, key => GetPropertyValueLambda<object, object>(model, key.FieldName).Compile());
-            return invoker.Invoke(model);
+            if (model is IDynamicType dType)
+            {
+              return  dType.GetValue(fieldName);
+            }
+            else
+            {
+                var cacheKey = (model.GetType(), fieldName);
+                var invoker = PropertyValueInvokerCache.GetOrAdd(cacheKey, key => GetPropertyValueLambda<object, object>(model, key.FieldName).Compile());
+                return invoker.Invoke(model);
+            }
+           
         }
 
         #region TryParse

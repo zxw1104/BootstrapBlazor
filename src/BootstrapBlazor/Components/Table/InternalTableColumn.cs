@@ -103,14 +103,6 @@ namespace BootstrapBlazor.Components
         public Action<TableCellArgs>? OnCellRender { get; set; }
 
         /// <summary>
-        /// 获取绑定表达式
-        /// </summary>
-        /// <returns></returns>
-        public object GetValueExpression()
-        {
-            return valueExpression;
-        }
-        /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="fieldName">字段名称</param>
@@ -122,15 +114,6 @@ namespace BootstrapBlazor.Components
             PropertyType = fieldType;
             Text = fieldText;
         }
-
-        public InternalTableColumn(DynamicPropertyInfo info, AutoGenerateColumnAttribute attr)
-        {
-            FieldName = info.Name;
-            PropertyType = info.PropertyType;
-            Text = attr.Text;
-            //valueExpression = info.ValueExpression;
-        }
-        private LambdaExpression valueExpression;
 
         public string GetDisplayName() => Text;
 
@@ -171,15 +154,7 @@ namespace BootstrapBlazor.Components
                 //用过用户没设置Attribute，则使用内部默认的信息构造列描述
                 if (attr == null)
                 {
-                    if (prop is DynamicPropertyInfo info)
-                    {
-                        tc = new InternalTableColumn(info, attr);
-                    }
-                    else
-                    {
-                        tc = new InternalTableColumn(prop.Name, prop.PropertyType, displayName);
-                    }
-                   
+                    tc = new InternalTableColumn(prop.Name, prop.PropertyType, displayName);
 
                     if (attrModel != null)
                     {

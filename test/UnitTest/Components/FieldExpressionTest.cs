@@ -4,6 +4,7 @@
 
 using BootstrapBlazor.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Natasha.CSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -104,7 +105,20 @@ namespace UnitTest.Components
         [Fact]
         public void GetSetExpression_Test()
         {
+            //NatashaInitializer.InitializeAndPreheating();
+            //Expression<Func<User, object>> exp3 = (user) => user.DynamicApple.GetValue("Name");
+            //Expression<Action<User, string>> exp4 = (user,s) => user.DynamicApple.SetValue("Name",s);
+
             Expression<Func<User, string>> exp3 = (user) => user.DynamicApple.Name;
+            Expression<Action<User, string>> exp4 = (user, s) => user.DynamicApple.SetValue("Name", s);
+
+            //通过传递Get表达式，只是一种可选的 方式，因为如果 动态信息 是从DB中 拿出来的，则只能是 多级的字符串表示
+            //多级属性 Address.Name
+            //单级     Name
+
+            //先解决这种 只有属性 的Get转Set，                  然后再解决 这种字符串多级的问题！！
+
+
             TypeInfoHelper.ParsePropertyName(exp3, out string field3, out string fullPath, out Type type);
             MemberExpression memberExpression;
 
@@ -112,22 +126,33 @@ namespace UnitTest.Components
             var p2 = Expression.Parameter(type);
             var member = exp3.Body as MemberExpression;
             var instanceExp = member.Expression;
+            var propExp= Expression.Property(instanceExp, field3);
 
+            var hwFunc = FastMethodOperator
+                .RandomDomain()
+                .Param(p1.Type, "user")
+                .Param(type, "v")
+                .Body($"{exp3}=v;")
+                .Compile();
+
+         
             //下面这个方法 报错，可能多级表达式 还得一级一级的 拼接
-            var model= TypeInfoHelper.GetModelFromExp(instanceExp);
+            var model = TypeInfoHelper.GetModelFromExp(instanceExp);
             //SetValue方法表达式
-            var dType = instanceExp.Type;
-            var setMethod= dType.GetMethod(nameof(IDynamicType.SetValue));
-            var callExp= Expression.Call(instanceExp, setMethod);
-            Expression<Action<User, string>> exp = Expression.Lambda<Action<User, string>>(callExp, p1, p2);
+            //var dType = instanceExp.Type;
+            //var setMethod= dType.GetMethod(nameof(IDynamicType.SetValue));
+            //var callExp= Expression.Call(instanceExp, setMethod);
+            //Expression<Action<User, string>> exp = Expression.Lambda<Action<User, string>>(callExp, p1, p2);
 
             User user = new User();
             user.DynamicApple = new DynamicApple();
 
+
             var name = "123";
-            exp.Compile().Invoke(user, name);
+            hwFunc.DynamicInvoke(user,name);
+            //exp.Compile().Invoke(user, name);
             Assert.Equal(name, user.DynamicApple.GetValue(nameof(DynamicApple.Name)));
-           
+            Assert.Equal(name, user.DynamicApple.Name);
 
             //Expression<Action<User, string>> exp = (u, s) => u.DynamicApple.SetValue("Name",s);
 
@@ -161,6 +186,16 @@ namespace UnitTest.Components
                 
 
             }
+        }
+
+        /// <summary>
+        /// 查询非泛型Method
+        /// </summary>
+        [Fact]
+        public void GetMethod_Test()
+        {
+            var method = typeof(DynamicApple).GetMethods().Where(m=>m.Name==nameof(IDynamicType.GetValue) && !m.ContainsGenericParameters);
+            Assert.NotNull(method);
         }
     }
 
