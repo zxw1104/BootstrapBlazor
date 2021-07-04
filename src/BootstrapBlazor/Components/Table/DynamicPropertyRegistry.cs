@@ -142,21 +142,23 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         T GetValue<T>(string propName);
 
+        /// <summary>
+        /// 根据属性名获取属性值
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <returns></returns>
         object GetValue(string propName);
-
+        /// <summary>
+        /// 根据属性名，设置属性值
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <param name="value"></param>
         void SetValue(string propName, object value);
 
         /// <summary>
         /// 获取动态Builder对象
         /// </summary>
         DynamicObjectBuilder GetBuilder();
-
-        /// <summary>
-        /// 根据属性名，判断当前属性 是否是动态属性
-        /// </summary>
-        /// <param name="propName"></param>
-        /// <returns></returns>
-        bool IsDynamicProperty(string propName);
     }
 
     public abstract class DynamicBase : IDynamicType
@@ -609,7 +611,10 @@ namespace BootstrapBlazor.Components
         /// <param name="attributes">属性的Attribute</param>
         public DynamicObjectBuilder AddProperty(string name, Type propType, Attribute[] attributes)
         {
-            dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(name, propType, attributes));
+            if (!dynamicPropertyRegistry.IsPropertyExist(name))
+            {
+                dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(name, propType, attributes));
+            }
             return this;
         }
 
