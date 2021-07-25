@@ -316,6 +316,7 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
+                    IsUpdate = true,
                     Text = Localizer["ValidateForm"],
                     Url = "validateforms"
                 }
@@ -532,6 +533,12 @@ namespace BootstrapBlazor.Shared.Shared
                     IsUpdate = true,
                     Text = Localizer["TableDetail"],
                     Url = "tables/detail"
+                },
+                new()
+                {
+                    IsNew = true,
+                    Text = Localizer["TableDynamic"],
+                    Url = "tables/dynamic"
                 },
                 new()
                 {
