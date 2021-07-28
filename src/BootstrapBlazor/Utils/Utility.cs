@@ -45,8 +45,10 @@ namespace BootstrapBlazor.Components
             var cacheKey = (CultureInfoName: CultureInfo.CurrentUICulture.Name, Model: model, FieldName: fieldName);
             if (!DisplayNameCache.TryGetValue(cacheKey, out var dn))
             {
+                //如果传过来model是不是Type
+                var modelType = cacheKey.Model is Type ? (Type)cacheKey.Model : cacheKey.Model.GetType();
                 // 显示名称为空时通过资源文件查找 FieldName 项
-                var localizer = JsonStringLocalizerFactory.CreateLocalizer(cacheKey.Model.GetType());
+                var localizer = JsonStringLocalizerFactory.CreateLocalizer(modelType);
                 var stringLocalizer = localizer?[fieldName];
                 if (stringLocalizer != null && !stringLocalizer.ResourceNotFound)
                 {
