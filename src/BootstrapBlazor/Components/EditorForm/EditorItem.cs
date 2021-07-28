@@ -150,5 +150,12 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <returns></returns>
         public static IEnumerable<IEditorItem> GenerateEditorItems() => InternalTableColumn.GetProperties<TValue>();
+
+        /// <summary>
+        /// 获取动态类型的 IEditorItem 集合
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IEnumerable<IEditorItem> GenerateEditorItems(DynamicObjectBuilder builder) => InternalTableColumn.GetProperties(builder);
     }
 }
