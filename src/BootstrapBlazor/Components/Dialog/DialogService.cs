@@ -96,6 +96,31 @@ namespace BootstrapBlazor.Components
         }
 
         /// <summary>
+        /// 获取IEditorItem集合，考虑了动态对象
+        /// </summary>
+        /// <typeparam name="TModel"></typeparam>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        private IEnumerable<IEditorItem> GetModelItems<TModel>(EditDialogOption<TModel> option)
+        {
+            if (option.Items!=null)
+            {
+                return option.Items;
+            }
+            else
+            {
+                if (option.ObjectBuilder!=null)
+                {
+                  return  InternalTableColumn.GetProperties(option.ObjectBuilder);
+                }
+                else
+                {
+                    return Utility.GenerateColumns<TModel>(item => item.Editable);
+                }
+            }
+        }
+
+        /// <summary>
         /// 弹出编辑对话框
         /// </summary>
         /// <param name="option">EditDialogOption 配置类实例</param>
@@ -108,7 +133,7 @@ namespace BootstrapBlazor.Components
             {
                 new(nameof(EditDialog<TModel>.ShowLoading), option.ShowLoading),
                 new(nameof(EditDialog<TModel>.ShowLabel), option.ShowLabel),
-                new(nameof(EditDialog<TModel>.Items), option.Items ?? Utility.GenerateColumns<TModel>(item => item.Editable)),
+                new(nameof(EditDialog<TModel>.Items), GetModelItems(option)),
                 new(nameof(EditDialog<TModel>.OnCloseAsync), new Func<Task>(async () =>
                 {
                     option.Dialog.RemoveDialog();
