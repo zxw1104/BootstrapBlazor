@@ -41,6 +41,7 @@ namespace BootstrapBlazor.Components
         Task<QueryData<TModel>> QueryAsync(QueryPageOptions option);
     }
 
+
     /// <summary>
     /// 内部默认数据注入服务实现类
     /// </summary>

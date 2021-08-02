@@ -17,7 +17,7 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得 父级节点
         /// </summary>
-        private TreeItem? Parent { get; set; }
+        public TreeItem? Parent { get; set; }
 
         /// <summary>
         /// 获得/设置 是否显示正在加载动画 默认为 false
@@ -84,6 +84,17 @@ namespace BootstrapBlazor.Components
         {
             item.Parent = this;
             _items.Add(item);
+        }
+        /// <summary>
+        /// 移除 TreeItem
+        /// </summary>
+        /// <param name="item"></param>
+        public void RemoveItem(TreeItem item)
+        {
+            if (item.Parent!=null)
+            {
+                item.Parent._items.Remove(item);
+            }
         }
 
         /// <summary>

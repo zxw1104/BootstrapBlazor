@@ -7,9 +7,12 @@ using Microsoft.AspNetCore.Components.Web;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -376,6 +379,28 @@ namespace BootstrapBlazor.Components
         [Parameter]
         public IEnumerable<TItem> Items { get; set; } = Enumerable.Empty<TItem>();
 
+        [Parameter]
+        public DataTable DataTable { get; set; }
+
+        [Parameter]
+        public DataTableAdapter? DataTableAdapter { get; set; }
+
+        private bool useDataTable
+        {
+            get
+            {
+                return DataTable != null;
+            }
+        }
+
+        private bool useDynamicObjectBuilder
+        {
+            get
+            {
+                return ObjectBuilder != null;
+            }
+        }
+
         /// <summary>
         /// 获得/设置 表格组件大小 默认为 Normal 正常模式
         /// </summary>
@@ -450,6 +475,12 @@ namespace BootstrapBlazor.Components
         public bool IsTree { get; set; }
 
         /// <summary>
+        /// 动态对象的Builder对象
+        /// </summary>
+        [Parameter]
+        public DynamicObjectBuilder? ObjectBuilder { get; set; }
+
+        /// <summary>
         /// 获得/设置 树形数据模式子项字段 默认为 Children
         /// </summary>
         /// <remarks>通过 <see cref="HasChildrenColumnName"/> 参数判断是否有子项</remarks>
@@ -493,6 +524,24 @@ namespace BootstrapBlazor.Components
                 await QueryAsync();
             };
 
+            //绑定刷新列逻辑
+            if (ObjectBuilder != null)
+            {
+                ObjectBuilder.RefreshProperty = ReGenerateColumn;
+            }
+
+            //绑定的是DataTable
+            if (useDataTable)
+            {
+                //创建默认适配器
+                if (DataTableAdapter == null)
+                {
+                    DataTableAdapter = new DataTableAdapter(DataTable);
+                }
+                //建立刷新列关联
+                DataTableAdapter.builder.RefreshProperty = ReGenerateColumn;
+            }
+
             if (IsTree)
             {
                 TreeRows = Items.Select(item => new TableTreeNode<TItem>(item)
@@ -533,33 +582,8 @@ namespace BootstrapBlazor.Components
 
                 ScreenSize = await RetrieveWidth();
 
-                // 动态列模式
-                if (DynamicContext != null && typeof(TItem).IsAssignableTo(typeof(IDynamicObject)))
-                {
-                    AutoGenerateColumns = false;
+                ReGenerateColumn();
 
-                    var cols = DynamicContext.GetColumns();
-                    Columns.Clear();
-                    Columns.AddRange(cols);
-                }
-
-                // 初始化列
-                if (AutoGenerateColumns)
-                {
-                    var cols = InternalTableColumn.GetProperties<TItem>(Columns);
-                    Columns.Clear();
-                    Columns.AddRange(cols);
-                }
-
-                ColumnVisibles = Columns.Select(i => new ColumnVisibleItem { FieldName = i.GetFieldName(), Visible = i.Visible }).ToList();
-
-                // set default sortName
-                var col = Columns.FirstOrDefault(i => i.Sortable && i.DefaultSort);
-                if (col != null)
-                {
-                    SortName = col.GetFieldName();
-                    SortOrder = col.DefaultSortOrder;
-                }
                 await QueryAsync();
                 IsRendered = true;
             }
@@ -591,6 +615,56 @@ namespace BootstrapBlazor.Components
                     StateHasChanged();
                     _loop = false;
                 }
+            }
+        }
+
+
+
+        /// <summary>
+        /// 重新生成列，并设置列是否显示以及默认排序
+        /// TODO:此方法可以优化，如果发现列配置没有改变，则无需重复执行此方法
+        /// 在此Issus前，Table不支持动态添加列，此方法只有在首次Render才会执行，
+        /// 但是现在需要增加动态列，因此，每次渲染都需要检查是否需要重新生成列
+        /// https://gitee.com/LongbowEnterprise/BootstrapBlazor/issues/I3UISL
+        /// </summary>
+        private void ReGenerateColumn()
+        {
+            // 初始化列
+            if (AutoGenerateColumns)
+            {
+                var cols = InternalTableColumn.GetProperties<TItem>(Columns);
+                Columns.Clear();
+                Columns.AddRange(cols);
+            }
+
+            //使用DataTable
+            if (useDataTable)
+            {
+                var cols = InternalTableColumn.GetProperties(DataTableAdapter.builder);
+                Columns.Clear();
+                Columns.AddRange(cols);
+
+                DataService = (IDataService<TItem>?)(new DataTableDataService(DataTableAdapter));
+
+                UseInjectDataService = true;
+            }
+
+            //使用动态对象
+            if (useDynamicObjectBuilder)
+            {
+                var cols = InternalTableColumn.GetProperties(ObjectBuilder);
+                Columns.Clear();
+                Columns.AddRange(cols);
+            }
+
+            ColumnVisibles = Columns.Select(i => new ColumnVisibleItem { FieldName = i.GetFieldName(), Visible = i.Visible }).ToList();
+
+            // set default sortName
+            var col = Columns.FirstOrDefault(i => i.Sortable && i.DefaultSort);
+            if (col != null)
+            {
+                SortName = col.GetFieldName();
+                SortOrder = col.DefaultSortOrder;
             }
         }
 
@@ -639,7 +713,17 @@ namespace BootstrapBlazor.Components
             else
             {
                 var content = "";
-                var val = Table<TItem>.GetItemValue(col.GetFieldName(), item);
+                object? val = null;
+
+
+                if (item is IDynamicType dType)
+                {
+                    val = dType.GetValue(col.GetFieldName());
+                }
+                else
+                {
+                    val = Table<TItem>.GetItemValue(col.GetFieldName(), item);
+                }
 
                 // 自动化处理 bool 值
                 if (val is bool && col.ComponentType != null)
@@ -739,6 +823,258 @@ namespace BootstrapBlazor.Components
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+    }
+
+    /// <summary>
+    /// DataTable动态类型适配器
+    /// </summary>
+    public class DataTableAdapter
+    {
+        internal DynamicObjectBuilder builder = new DynamicObjectBuilder(typeof(DataRowAdapter));
+        public DataTable Table { get; set; }
+
+        public DataTableAdapter(DataTable table)
+        {
+            Table = table;
+            RegistDynamicProperty(builder);
+        }
+
+        /// <summary>
+        /// 注册动态属性
+        /// </summary>
+        /// <param name="builder"></param>
+        public virtual void RegistDynamicProperty(DynamicObjectBuilder builder)
+        {
+            int orderIndex = 1;
+            foreach (DataColumn item in Table.Columns)
+            {
+                builder.AddProperty(item.ColumnName, item.DataType, new Attribute[] {
+                    new AutoGenerateColumnAttribute() {
+                    Order = orderIndex++,
+                    Text = item.ColumnName
+                    }
+                });
+            }
+        }
+
+        internal void InitNew(DataRowAdapter rowAdapter)
+        {
+            var newRow = Table.NewRow();
+            foreach (DataColumn col in Table.Columns)
+            {
+                if (builder.IsPropertyExist(col.ColumnName))
+                {
+                    newRow[col.ColumnName] = builder.GetPropertyDefaultValue(col.ColumnName);
+                }
+            }
+            rowAdapter.Row = newRow;
+            rowAdapter.Builder = builder;
+        }
+
+        internal List<DataRowAdapter> GetItems()
+        {
+            var list = new List<DataRowAdapter>(Table.Rows.Count);
+            foreach (DataRow item in Table.Rows)
+            {
+                list.Add(new DataRowAdapter(builder, item));
+            }
+            return list;
+        }
+
+        internal IEnumerable<ITableColumn> GetColumns()
+        {
+            var cols = new List<ITableColumn>();
+
+            foreach (DataColumn col in Table.Columns)
+            {
+                if (builder.IsPropertyExist(col.ColumnName))
+                {
+                    var tc = new InternalTableColumn(col.ColumnName, col.DataType, col.ColumnName);
+                    cols.Add(tc);
+                }
+            }
+            return cols;
+        }
+
+        internal void Remove(IEnumerable<DataRowAdapter> rows)
+        {
+            foreach (var item in rows)
+            {
+                Table.Rows.Remove(item.Row);
+            }
+        }
+
+        internal void Add(DataRowAdapter row)
+        {
+            Table.Rows.Add(row.Row);
+        }
+
+        /// <summary>
+        /// 添加一列
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="propType"></param>
+        /// <param name="attributes"></param>
+        public void AddColumn(string name, Type propType, Attribute[] attributes)
+        {
+            builder.AddProperty(name, propType, attributes);
+            Table.Columns.Add(new DataColumn(name, propType));
+        }
+
+        /// <summary>
+        /// 删除一列
+        /// </summary>
+        /// <param name="name"></param>
+        public void RemoveColumn(string name)
+        {
+            if (builder.IsPropertyExist(name))
+            {
+                builder.RemoveProperty(name);
+            }
+
+            for (int i = 0; i < Table.Columns.Count; i++)
+            {
+                if (Table.Columns[i].ColumnName == name)
+                {
+                    Table.Columns.RemoveAt(i);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 刷新表格，以显示新增或删除的列
+        /// </summary>
+        public void RefreshColumn()
+        {
+            builder.RefreshTableColumn();
+        }
+    }
+
+    /// <summary>
+    /// DataRow适配器
+    /// </summary>
+    public class DataRowAdapter : IDynamicType
+    {
+        public DynamicObjectBuilder Builder { get; set; }
+
+        public DataRow Row { get; set; }
+        /// <summary>
+        /// 默认构造函数，点击新建时，使用此构造函数，创建空对象
+        /// </summary>
+        public DataRowAdapter()
+        {
+
+        }
+        public DataRowAdapter(DynamicObjectBuilder builder, DataRow row)
+        {
+            this.Builder = builder;
+            this.Row = row;
+
+        }
+        /// <summary>
+        /// 编辑时，调用此方法
+        /// </summary>
+        /// <returns></returns>
+        public object Clone()
+        {
+            throw new Exception("不会调用此方法");
+        }
+
+
+        public object? GetValue(string propName)
+        {
+            var v = Row[propName];
+            if (v is DBNull)
+            {
+                v = Builder.GetPropertyDefaultValue(propName);
+                Row[propName] = v;
+            }
+            return v;
+        }
+
+        public T GetValue<T>(string propName)
+        {
+            var v = Row[propName];
+            if (v is DBNull)
+            {
+                v = Builder.GetPropertyDefaultValue(propName);
+                Row[propName] = v;
+            }
+            return (T)v;
+        }
+
+        public void SetValue(string propName, object value)
+        {
+            Row[propName] = value;
+        }
+
+        public DynamicObjectBuilder GetBuilder()
+        {
+            return Builder;
+        }
+
+        public bool IsDynamicProperty(string propName)
+        {
+            return true;
+        }
+    }
+
+    internal class DataTableDataService : IEntityFrameworkCoreDataService, IDataService<DataRowAdapter>
+    {
+        private readonly DataTableAdapter dataTableAdapter;
+
+        internal DataTableDataService(DataTableAdapter dataTableAdapter)
+        {
+            this.dataTableAdapter = dataTableAdapter;
+        }
+
+        public Task<bool> AddAsync(DataRowAdapter adapter)
+        {
+            dataTableAdapter.InitNew(adapter);
+            return Task.FromResult(true);
+        }
+        public Task CancelAsync(object model)
+        {
+            (model as DataRowAdapter).Row.CancelEdit();
+            return Task.CompletedTask;
+        }
+
+        public Task CancelAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> DeleteAsync(IEnumerable<DataRowAdapter> models)
+        {
+            dataTableAdapter.Remove(models);
+            return Task.FromResult(true);
+        }
+
+        public Task EditAsync(object model)
+        {
+            (model as DataRowAdapter).Row.BeginEdit();
+            return Task.CompletedTask;
+        }
+
+        public Task<QueryData<DataRowAdapter>> QueryAsync(QueryPageOptions option)
+        {
+            var tableRows = dataTableAdapter.GetItems();
+            return Task.FromResult(new QueryData<DataRowAdapter>() { Items = tableRows, TotalCount = tableRows.Count });
+        }
+
+        public Task<bool> SaveAsync(DataRowAdapter model)
+        {
+            //Detached分离，表示是新增操作
+            if (model.Row.RowState == DataRowState.Detached)
+            {
+                dataTableAdapter.Add(model);
+            }
+            else
+            {
+                model.Row.AcceptChanges();
+            }
+            return Task.FromResult(true);
         }
     }
 }

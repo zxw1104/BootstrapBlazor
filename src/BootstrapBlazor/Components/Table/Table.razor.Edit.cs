@@ -332,12 +332,21 @@ namespace BootstrapBlazor.Components
             }
             else if (UseInjectDataService)
             {
+                var dataService = GetDataService();
                 queryData = await GetDataService().QueryAsync(queryOption);
             }
 
             if (queryData != null)
             {
-                Items = queryData.Items;
+                //如果是Ilist，就不用ToList了
+                if (queryData.Items is IList<TItem>)
+                {
+                    Items = queryData.Items;
+                }
+                else
+                {
+                    Items = queryData.Items.ToList();
+                }
                 if (IsTree)
                 {
                     KeySet.Clear();

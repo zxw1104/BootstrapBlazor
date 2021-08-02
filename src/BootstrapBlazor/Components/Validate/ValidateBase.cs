@@ -237,9 +237,18 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         protected virtual string? FormatParsingErrorMessage() => ParsingErrorMessage;
 
-        private bool HasRequired() => FieldIdentifier?.Model.GetType()
-            .GetProperties().Where(x => x.Name == FieldIdentifier.Value.FieldName).FirstOrDefault()
-            ?.GetCustomAttribute<RequiredAttribute>() != null;
+        private bool HasRequired()
+        {
+
+            if (FieldIdentifier.HasValue)
+            {
+                return TypeInfoHelper.GetProperties(FieldIdentifier.Value.Model)
+            .Where(x => x.Name == FieldIdentifier.Value.FieldName).FirstOrDefault()
+              ?.GetCustomAttribute<RequiredAttribute>() != null;
+            }
+            return false;
+
+        }
 
         /// <summary>
         /// Gets a string that indicates the status of the field being edited. This will include

@@ -4,6 +4,7 @@
 
 using BootstrapBlazor.Localization.Json;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -25,43 +26,35 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public static class Utility
     {
-        private static ConcurrentDictionary<(string CultureInfoName, Type ModelType, string FieldName), string> DisplayNameCache { get; } = new();
-        private static ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo> PropertyInfoCache { get; } = new();
-        private static ConcurrentDictionary<(Type ModelType, string FieldName), string> PlaceHolderCache { get; } = new();
+        private static ConcurrentDictionary<(string CultureInfoName, object Model, string FieldName), string> DisplayNameCache { get; } = new();
+        private static ConcurrentDictionary<(object Model, string FieldName), PropertyInfo> PropertyInfoCache { get; } = new();
+        private static ConcurrentDictionary<(object Model, string FieldName), string> PlaceHolderCache { get; } = new();
 
         private static ConcurrentDictionary<(Type ModelType, string FieldName), Func<object, object?>> GetPropertyValueLambdaCache { get; } = new();
 
         private static ConcurrentDictionary<(Type ModelType, string FieldName), Action<object, object?>> SetPropertyValueLambdaCache { get; } = new();
 
         /// <summary>
-        /// 获取资源文件中 DisplayAttribute/DisplayNameAttribute 标签名称方法
-        /// </summary>
-        /// <param name="model">模型实例</param>
-        /// <param name="fieldName">字段名称</param>
-        /// <returns></returns>
-        public static string GetDisplayName(object model, string fieldName) => GetDisplayName(model.GetType(), fieldName);
-
-        /// <summary>
         /// 获取显示名称方法
         /// </summary>
-        /// <param name="modelType">模型类型</param>
+        /// <param name="model">模型类型</param>
         /// <param name="fieldName">字段名称</param>
         /// <returns></returns>
-        public static string GetDisplayName(Type modelType, string fieldName)
+        public static string GetDisplayName(object model, string fieldName)
         {
-            if (modelType.Assembly.IsDynamic) return fieldName;
-
-            var cacheKey = (CultureInfoName: CultureInfo.CurrentUICulture.Name, Type: modelType, FieldName: fieldName);
+            var cacheKey = (CultureInfoName: CultureInfo.CurrentUICulture.Name, Model: model, FieldName: fieldName);
             if (!DisplayNameCache.TryGetValue(cacheKey, out var dn))
             {
+                //如果传过来model是不是Type
+                var modelType = cacheKey.Model is Type ? (Type)cacheKey.Model : cacheKey.Model.GetType();
                 // 显示名称为空时通过资源文件查找 FieldName 项
-                var localizer = JsonStringLocalizerFactory.CreateLocalizer(cacheKey.Type);
+                var localizer = JsonStringLocalizerFactory.CreateLocalizer(modelType);
                 var stringLocalizer = localizer?[fieldName];
                 if (stringLocalizer != null && !stringLocalizer.ResourceNotFound)
                 {
                     dn = stringLocalizer.Value;
                 }
-                else if (TryGetProperty(cacheKey.Type, cacheKey.FieldName, out var propertyInfo))
+                else if (TryGetProperty(cacheKey.Model, cacheKey.FieldName, out var propertyInfo))
                 {
                     // 回退查找 Display 标签
                     dn = propertyInfo.GetCustomAttribute<DisplayAttribute>()?.Name
@@ -95,35 +88,27 @@ namespace BootstrapBlazor.Components
             return dn ?? cacheKey.FieldName;
         }
 
-        /// <summary>
-        /// 获取 PlaceHolder 方法
-        /// </summary>
-        /// <param name="model">模型实例</param>
-        /// <param name="fieldName">字段名称</param>
-        /// <returns></returns>
-        public static string? GetPlaceHolder(object model, string fieldName) => GetPlaceHolder(model.GetType(), fieldName);
 
         /// <summary>
         /// 获取 PlaceHolder 方法
         /// </summary>
-        /// <param name="modelType">模型类型</param>
+        /// <param name="model">模型类型</param>
         /// <param name="fieldName">字段名称</param>
         /// <returns></returns>
-        public static string? GetPlaceHolder(Type modelType, string fieldName)
+        public static string? GetPlaceHolder(object model, string fieldName)
         {
-            if (modelType.Assembly.IsDynamic) return "";
-
-            var cacheKey = (Type: modelType, FieldName: fieldName);
+            var cacheKey = (Type: model, FieldName: fieldName);
             if (!PlaceHolderCache.TryGetValue(cacheKey, out var placeHolder))
             {
+                var type = model.GetType();
                 // 通过资源文件查找 FieldName 项
-                var localizer = JsonStringLocalizerFactory.CreateLocalizer(cacheKey.Type);
+                var localizer = JsonStringLocalizerFactory.CreateLocalizer(type);
                 var stringLocalizer = localizer?[$"{fieldName}.PlaceHolder"];
                 if (stringLocalizer != null && !stringLocalizer.ResourceNotFound)
                 {
                     placeHolder = stringLocalizer.Value;
                 }
-                else if (Utility.TryGetProperty(cacheKey.Type, cacheKey.FieldName, out var propertyInfo))
+                else if (Utility.TryGetProperty(type, cacheKey.FieldName, out var propertyInfo))
                 {
                     var placeHolderAttribute = propertyInfo.GetCustomAttribute<PlaceHolderAttribute>();
                     if (placeHolderAttribute != null)
@@ -140,13 +125,13 @@ namespace BootstrapBlazor.Components
             return placeHolder;
         }
 
-        private static bool TryGetProperty(Type modelType, string fieldName, [NotNullWhen(true)] out PropertyInfo? propertyInfo)
+        private static bool TryGetProperty(object model, string fieldName, [NotNullWhen(true)] out PropertyInfo? propertyInfo)
         {
-            var cacheKey = (ModelType: modelType, FieldName: fieldName);
+            var cacheKey = (ModelType: model, FieldName: fieldName);
             if (!PropertyInfoCache.TryGetValue(cacheKey, out propertyInfo))
             {
                 // Validator.TryValidateProperty 只能对 Public 属性生效
-                propertyInfo = cacheKey.ModelType.GetProperties().Where(x => x.Name == cacheKey.FieldName).FirstOrDefault();
+                propertyInfo = TypeInfoHelper.GetProperties(cacheKey.ModelType).Where(x => x.Name == cacheKey.FieldName).FirstOrDefault();
 
                 if (propertyInfo != null)
                 {
@@ -163,9 +148,9 @@ namespace BootstrapBlazor.Components
         public static void Reset<TModel>(TModel source) where TModel : class, new()
         {
             var v = new TModel();
-            foreach (var pi in source.GetType().GetProperties().Where(p => p.CanWrite))
+            foreach (var pi in TypeInfoHelper.GetProperties(source).Where(p => p.CanWrite))
             {
-                var pinfo = v.GetType().GetProperties().Where(p => p.Name == pi.Name).FirstOrDefault();
+                var pinfo = TypeInfoHelper.GetProperties(v).Where(p => p.Name == pi.Name).FirstOrDefault();
                 if (pinfo != null)
                 {
                     pi.SetValue(source, pinfo.GetValue(v));
@@ -203,7 +188,7 @@ namespace BootstrapBlazor.Components
                                 var v = f.GetValue(item);
                                 valType.GetField(f.Name)?.SetValue(ret, v);
                             };
-                            foreach (var p in type.GetProperties())
+                            foreach (var p in TypeInfoHelper.GetProperties(item))
                             {
                                 if (p.CanWrite)
                                 {
@@ -238,14 +223,14 @@ namespace BootstrapBlazor.Components
                         var v = f.GetValue(source);
                         valType.GetField(f.Name)?.SetValue(destination, v);
                     });
-                    type.GetProperties().ToList().ForEach(p =>
-                    {
-                        if (p.CanWrite)
-                        {
-                            var v = p.GetValue(source);
-                            valType.GetProperty(p.Name)?.SetValue(destination, v);
-                        }
-                    });
+                    TypeInfoHelper.GetProperties(source).ToList().ForEach(p =>
+                   {
+                       if (p.CanWrite)
+                       {
+                           var v = p.GetValue(source);
+                           valType.GetProperty(p.Name)?.SetValue(destination, v);
+                       }
+                   });
                 }
             }
         }
@@ -285,12 +270,24 @@ namespace BootstrapBlazor.Components
             var valueExpression = GenerateValueExpression(model, fieldName, fieldType);
 
             builder.OpenComponent(0, typeof(Display<>).MakeGenericType(fieldType));
-            builder.AddAttribute(1, nameof(ValidateBase<string>.DisplayText), displayName);
-            builder.AddAttribute(2, nameof(ValidateBase<string>.Value), fieldValue);
-            builder.AddAttribute(3, nameof(ValidateBase<string>.ValueChanged), fieldValueChanged);
-            builder.AddAttribute(4, nameof(ValidateBase<string>.ValueExpression), valueExpression);
-            builder.AddAttribute(5, nameof(ValidateBase<string>.ShowLabel), showLabel ?? true);
+            builder.AddAttribute(1, "DisplayText", displayName);
+            builder.AddAttribute(2, "Value", fieldValue);
+            builder.AddAttribute(3, "ValueChanged", fieldValueChanged);
+            builder.AddAttribute(4, "ValueExpression", valueExpression);
+            SetValueExpressionOrFieldIdentifierInfo(builder, 6, model, fieldName);
+
+            builder.AddAttribute(5, "ShowLabel", showLabel ?? true);
             builder.CloseComponent();
+        }
+        /// <summary>
+        /// 设置字段标识符
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="seq"></param>
+        /// <param name="exp"></param>
+        private static void SetValueExpressionOrFieldIdentifierInfo(RenderTreeBuilder builder, int seq, object obj, string fieldName)
+        {
+            builder.AddAttribute(seq, "FieldIdentifier", new FieldIdentifier(obj, fieldName));
         }
 
         /// <summary>
@@ -314,11 +311,12 @@ namespace BootstrapBlazor.Components
 
             var componentType = item.ComponentType ?? GenerateComponentType(fieldType, item.Rows != 0);
             builder.OpenComponent(0, componentType);
-            builder.AddAttribute(1, nameof(ValidateBase<string>.DisplayText), displayName);
-            builder.AddAttribute(2, nameof(ValidateBase<string>.Value), fieldValue);
-            builder.AddAttribute(3, nameof(ValidateBase<string>.ValueChanged), fieldValueChanged);
-            builder.AddAttribute(4, nameof(ValidateBase<string>.ValueExpression), valueExpression);
-            builder.AddAttribute(5, nameof(ValidateBase<string>.IsDisabled), item.Readonly);
+            builder.AddAttribute(1, "DisplayText", displayName);
+            builder.AddAttribute(2, "Value", fieldValue);
+            builder.AddAttribute(3, "ValueChanged", fieldValueChanged);
+            builder.AddAttribute(4, "ValueExpression", valueExpression);
+            SetValueExpressionOrFieldIdentifierInfo(builder, 30, model, fieldName);
+            builder.AddAttribute(5, "IsDisabled", item.Readonly);
             if (IsCheckboxList(fieldType) && item.Data != null)
             {
                 builder.AddAttribute(6, nameof(CheckboxList<IEnumerable<string>>.Items), item.Data);
@@ -344,20 +342,19 @@ namespace BootstrapBlazor.Components
 
         private static object? GenerateValue(object model, string fieldName)
         {
-            object? ret = null;
-            if (model is IDynamicObject dynamicObject)
+            // FieldValue
+            if (model is IDynamicType dTypeModel)
             {
-                ret = dynamicObject.GetValue(fieldName);
+                return dTypeModel.GetValue(fieldName);
             }
             else
             {
                 var valueInvoker = GetPropertyValueLambdaCache.GetOrAdd(
-                    key: (model.GetType(), fieldName),
-                    valueFactory: key => LambdaExtensions.GetPropertyValueLambda<object, object?>(model, key.FieldName).Compile()
-                );
-                ret = valueInvoker.Invoke(model);
+                key: (model.GetType(), fieldName),
+                valueFactory: key => LambdaExtensions.GetPropertyValueLambda<object, object?>(model, key.FieldName).Compile()
+            );
+                return valueInvoker.Invoke(model);
             }
-            return ret;
         }
 
         private static object? GenerateValueChanged(ComponentBase component, object model, string fieldName, Type fieldType)
@@ -369,10 +366,17 @@ namespace BootstrapBlazor.Components
 
         private static object GenerateValueExpression(object model, string fieldName, Type fieldType)
         {
-            // ValueExpression
-            var body = Expression.Property(Expression.Constant(model), model.GetType(), fieldName);
-            var tDelegate = typeof(Func<>).MakeGenericType(fieldType);
-            return Expression.Lambda(tDelegate, body);
+            if (model is IDynamicType)
+            {
+                return null;
+            }
+            else
+            {
+                // ValueExpression
+                var body = Expression.Property(Expression.Constant(model), model.GetType(), fieldName);
+                var tDelegate = typeof(Func<>).MakeGenericType(fieldType);
+                return Expression.Lambda(tDelegate, body);
+            }
         }
 
         /// <summary>
@@ -511,9 +515,9 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         private static EventCallback<TType> CreateCallback<TType>(ComponentBase component, object model, string fieldName) => EventCallback.Factory.Create<TType>(component, t =>
         {
-            if (model is IDynamicObject dynamicObject)
+            if (model is IDynamicType cType)
             {
-                dynamicObject.SetValue(fieldName, t);
+                cType.SetValue(fieldName, t);
             }
             else
             {

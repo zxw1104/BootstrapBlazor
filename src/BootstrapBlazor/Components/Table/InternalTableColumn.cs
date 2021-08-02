@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace BootstrapBlazor.Components
 {
@@ -121,9 +122,27 @@ namespace BootstrapBlazor.Components
         public static IEnumerable<ITableColumn> GetProperties<TModel>(IEnumerable<ITableColumn>? source = null)
         {
             var cols = new List<ITableColumn>(50);
-            var type = typeof(TModel);
-            var attrModel = type.GetCustomAttribute<AutoGenerateClassAttribute>();
-            var props = type.GetProperties();
+            Type type = typeof(TModel);
+
+            var props = TypeInfoHelper.GetProperties(type);
+            var attrModel = TypeInfoHelper.GetTypeAttribute<AutoGenerateClassAttribute>(type);
+
+            return GetPropertiesCore(type, props, attrModel, source);
+        }
+
+        public static IEnumerable<ITableColumn> GetProperties(DynamicObjectBuilder builder)
+        {
+            var cols = new List<ITableColumn>(50);
+
+            var props = builder.GetProperties();
+            var attrModel = builder.GetClasseAttributes().OfType<AutoGenerateClassAttribute>().FirstOrDefault();
+
+            return GetPropertiesCore(builder.ObjectType, props, attrModel, null);
+        }
+
+        private static IEnumerable<ITableColumn> GetPropertiesCore(Type type, PropertyInfo[] props, AutoGenerateClassAttribute attrModel, IEnumerable<ITableColumn>? source = null)
+        {
+            var cols = new List<ITableColumn>(50);
             foreach (var prop in props)
             {
                 ITableColumn? tc;
@@ -132,6 +151,7 @@ namespace BootstrapBlazor.Components
                 // Issue: 增加定义设置标签 AutoGenerateClassAttribute
                 // https://gitee.com/LongbowEnterprise/BootstrapBlazor/issues/I381ED
                 var displayName = attr?.Text ?? Utility.GetDisplayName(type, prop.Name);
+                //用过用户没设置Attribute，则使用内部默认的信息构造列描述
                 if (attr == null)
                 {
                     tc = new InternalTableColumn(prop.Name, prop.PropertyType, displayName);

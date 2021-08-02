@@ -147,6 +147,28 @@ namespace BootstrapBlazor.Components
             }
         }
 
+        /// <summary>
+        /// 设置指定字段错误信息
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="exp"></param>
+        /// <param name="errorMessage"></param>
+        public void SetError<T>(Expression<Func<T>> exp, string errorMessage)
+        {
+            var field = FieldIdentifier.Create<T>(exp);
+            if (TryGetValidator(field.Model.GetType(), field.FieldName, out var validator))
+            {
+                if (validator != null)
+                {
+                    var results = new List<ValidationResult>
+                    {
+                        new ValidationResult(errorMessage, new string[] { field.FieldName })
+                    };
+                    validator.ToggleMessage(results, true);
+                }
+            }
+        }
+
         private bool TryGetModelField(string propertyName, [MaybeNullWhen(false)] out Type modelType, [MaybeNullWhen(false)] out string fieldName)
         {
             var propNames = new ConcurrentQueue<string>(propertyName.Split('.'));
@@ -157,7 +179,7 @@ namespace BootstrapBlazor.Components
             {
                 modelType = modelTypeInfo;
                 fieldName = propName;
-                var propertyInfo = modelType.GetProperties()
+                var propertyInfo = TypeInfoHelper.GetProperties(modelType)
                     .Where(p => p.Name == propName)
                     .FirstOrDefault();
                 if (propertyInfo == null)
@@ -202,7 +224,7 @@ namespace BootstrapBlazor.Components
                     if (!validator.IsDisabled && !validator.SkipValidate)
                     {
                         var messages = new List<ValidationResult>();
-                        var pi = key.ModelType.GetProperties().Where(p => p.Name == key.FieldName).FirstOrDefault();
+                        var pi = TypeInfoHelper.GetProperties(fieldIdentifier.Model).Where(p => p.Name == key.FieldName).FirstOrDefault();
                         if (pi != null)
                         {
                             var propertyValidateContext = new ValidationContext(fieldIdentifier.Model)
@@ -238,7 +260,7 @@ namespace BootstrapBlazor.Components
                 if (validator != null && !validator.IsDisabled && !validator.SkipValidate)
                 {
                     var fieldName = fieldIdentifier.FieldName;
-                    var pi = fieldIdentifier.Model.GetType().GetProperties().Where(p => p.Name == fieldName).FirstOrDefault();
+                    var pi = TypeInfoHelper.GetProperties(fieldIdentifier.Model).Where(p => p.Name == fieldName).FirstOrDefault();
                     if (pi != null)
                     {
                         var propertyValue = LambdaExtensions.GetPropertyValue(fieldIdentifier.Model, fieldIdentifier.FieldName);

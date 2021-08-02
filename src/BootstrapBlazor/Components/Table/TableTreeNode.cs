@@ -19,15 +19,25 @@ namespace BootstrapBlazor.Components
     {
         private static readonly Lazy<Func<TItem, object?>> GetKeyFunc = new(() =>
         {
-            var property = typeof(TItem).GetProperties().FirstOrDefault(p => p.IsDefined(typeof(KeyAttribute)));
-            if (property == null)
-            {
-                return _ => null;
-            }
-            HasKey = true;
-            var param = Expression.Parameter(typeof(TItem));
-            var body = Expression.Property(param, property);
-            return Expression.Lambda<Func<TItem, object>>(Expression.Convert(body, typeof(object)), param).Compile();
+            //var property = TypeInfoHelper.GetProperties(typeof(TItem)).FirstOrDefault(p => p.IsDefined(typeof(KeyAttribute)));
+            //if (property == null)
+            //{
+            //    return _ => null;
+            //}
+            //HasKey = true;
+            //var param = Expression.Parameter(typeof(TItem));
+            //var body = LambdaExtensions.GetItemPropertyValueExp(param, property);
+            //return Expression.Lambda<Func<TItem, object>>(Expression.Convert(body, typeof(object)), param).Compile();
+            Func<TItem, object?> func = (model) =>
+             {
+                 var property = TypeInfoHelper.GetProperties(model).FirstOrDefault(p => p.IsDefined(typeof(KeyAttribute)));
+                 HasKey = true;
+                 var param = Expression.Parameter(typeof(TItem));
+                 var body = LambdaExtensions.GetItemPropertyValueExp(param, property);
+                 var f = Expression.Lambda<Func<TItem, object>>(Expression.Convert(body, typeof(object)), param).Compile();
+                 return f(model);
+             };
+            return func;
         });
 
         /// <summary>

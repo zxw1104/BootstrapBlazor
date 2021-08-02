@@ -11,11 +11,12 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public interface IEntityFrameworkCoreDataService
     {
+        Task CancelAsync();
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        Task CancelAsync();
+        Task CancelAsync(object model) { CancelAsync(); return Task.CompletedTask; }
 
         /// <summary>
         /// 

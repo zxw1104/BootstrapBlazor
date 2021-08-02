@@ -1,0 +1,19 @@
+﻿@page "/tables/dynamic"
+
+<h3>Table 表格</h3>
+
+
+<Block Title="动态列生成" Introduction="支持动态添加列，删除列，示例中只能删除动态添加的列。">
+    <Table TItem="DynamicUser" ObjectBuilder="@DynamicUser.dynamicObjectBuilder"
+           ShowDefaultButtons="true"
+           ShowToolbar="true"
+           ShowAddButton="true"
+           ShowDeleteButton="true"
+           ShowEditButton="true"
+           DataService="@DataService" UseInjectDataService="true" IsMultipleSelect="true">
+        <TableToolbarTemplate>
+            <TableToolbarButton TItem="DynamicUser" Color="Color.Primary" Icon="fa fa-fw fa-edit" Text="添加列" OnClickCallback="@AddColumn" />
+            <TableToolbarButton TItem="DynamicUser" Color="Color.Success" Icon="fa fa-fw fa-edit" Text="删除列" OnClickCallback="@DeleteLastColumn" />
+        </TableToolbarTemplate>
+    </Table>
+</Block>

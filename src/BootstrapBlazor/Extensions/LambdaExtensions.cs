@@ -138,27 +138,56 @@ namespace System.Linq
             Expression<Func<TItem, bool>> ret = t => true;
             if (!string.IsNullOrEmpty(filter.FieldKey) && filter.FieldValue != null)
             {
-                var prop = typeof(TItem).GetProperties()
-                    .Where(p => p.Name == filter.FieldKey)
-                    .FirstOrDefault();
-                if (prop != null)
+                var p = Expression.Parameter(typeof(TItem));
+                if (!TypeInfoHelper.IsDynamicType(typeof(TItem)))
                 {
-                    var p = Expression.Parameter(typeof(TItem));
-                    var fieldExpression = Expression.Property(p, prop);
-
-                    Expression eq = fieldExpression;
-
-                    // 可为空类型转化为具体类型
-                    if (prop.PropertyType.IsGenericType &&
-                        prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    var prop = TypeInfoHelper.GetProperties(typeof(TItem))
+                  .Where(p => p.Name == filter.FieldKey)
+                  .FirstOrDefault();
+                    if (prop != null)
                     {
-                        eq = Expression.Convert(fieldExpression, prop.PropertyType.GenericTypeArguments[0]);
+                        //var fieldExpression = Expression.Property(p, prop);
+                        var fieldExpression = GetItemPropertyValueExp(p, prop);
+                        Expression eq = fieldExpression;
+
+                        // 可为空类型转化为具体类型
+                        if (prop.PropertyType.IsGenericType &&
+                            prop.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                        {
+                            eq = Expression.Convert(fieldExpression, prop.PropertyType.GenericTypeArguments[0]);
+                        }
+                        eq = filter.GetExpression(eq);
+                        ret = Expression.Lambda<Func<TItem, bool>>(eq, p);
                     }
-                    eq = filter.GetExpression(eq);
-                    ret = Expression.Lambda<Func<TItem, bool>>(eq, p);
+                }
+                else
+                {
+                    //在表达式里面拼接表达式
+                    ret = t => Expression.Lambda<Func<TItem, bool>>(filter.GetExpression(Expression.Constant((t as IDynamicType).GetValue(filter.FieldKey))), p).Compile().Invoke(t);
                 }
             }
             return ret;
+        }
+
+        /// <summary>
+        /// 获取对象属性值得表达式
+        /// </summary>
+        /// <returns></returns>
+        public static Expression GetItemPropertyValueExp(Expression instance, PropertyInfo propInfo)
+        {
+            var type = instance.Type;
+            if (TypeInfoHelper.IsDynamicType(type))
+            {
+                var methodName = nameof(IDynamicType.GetValue);
+                var method = type.GetMethods().First(m => m.Name == nameof(IDynamicType.GetValue) && !m.ContainsGenericParameters);
+                var getValueExp = Expression.Call(instance, method, Expression.Constant(propInfo.Name));
+                var convertExp = Expression.Convert(getValueExp, propInfo.PropertyType);
+                return convertExp;
+            }
+            else
+            {
+                return Expression.Property(instance, propInfo);
+            }
         }
 
         /// <summary>
@@ -248,7 +277,7 @@ namespace System.Linq
             IEnumerable<TItem>? ret = null;
             var methodName = sortOrder == SortOrder.Desc ? "OrderByDescendingInternal" : "OrderByInternal";
 
-            var pi = typeof(TItem).GetProperties()
+            var pi = TypeInfoHelper.GetProperties(typeof(TItem))
                     .Where(p => p.Name == propertyName)
                     .FirstOrDefault();
             if (pi != null)
@@ -266,7 +295,7 @@ namespace System.Linq
             IQueryable<TItem>? ret = null;
             var methodName = sortOrder == SortOrder.Desc ? nameof(OrderByDescendingInternal) : nameof(OrderByInternal);
 
-            var pi = typeof(TItem).GetProperties()
+            var pi = TypeInfoHelper.GetProperties(typeof(TItem))
                     .Where(p => p.Name == propertyName)
                     .FirstOrDefault();
             if (pi != null)
@@ -291,7 +320,8 @@ namespace System.Linq
             }
 
             var exp_p1 = Expression.Parameter(typeof(TItem));
-            return Expression.Lambda<Func<TItem, TKey>>(Expression.Property(exp_p1, pi), exp_p1);
+            //return Expression.Lambda<Func<TItem, TKey>>(Expression.Property(exp_p1, pi), exp_p1);
+            return Expression.Lambda<Func<TItem, TKey>>(GetItemPropertyValueExp(exp_p1, pi), exp_p1);
         }
         #endregion
 
@@ -341,14 +371,15 @@ namespace System.Linq
                 throw new ArgumentNullException(nameof(item));
             }
 
-            var p = item.GetType().GetProperties().FirstOrDefault(p => p.Name == name);
+            var p = TypeInfoHelper.GetProperties(item).FirstOrDefault(p => p.Name == name);
             if (p == null)
             {
                 throw new InvalidOperationException($"类型 {item.GetType().Name} 未找到 {name} 属性，无法获取其值");
             }
 
             var param_p1 = Expression.Parameter(typeof(TModel));
-            var body = Expression.Property(Expression.Convert(param_p1, item.GetType()), p);
+            //var body =  Expression.Property(Expression.Convert(param_p1, item.GetType()), p);
+            var body = GetItemPropertyValueExp(Expression.Convert(param_p1, item.GetType()), p);
             return Expression.Lambda<Func<TModel, TResult>>(Expression.Convert(body, typeof(TResult)), param_p1);
         }
 
@@ -367,7 +398,7 @@ namespace System.Linq
                 throw new ArgumentNullException(nameof(model));
             }
 
-            var p = model.GetType().GetProperties().FirstOrDefault(p => p.Name == name);
+            var p = TypeInfoHelper.GetProperties(model).FirstOrDefault(p => p.Name == name);
             if (p == null)
             {
                 throw new InvalidOperationException($"类型 {typeof(TModel).Name} 未找到 {name} 属性，无法设置其值");
@@ -392,9 +423,17 @@ namespace System.Linq
         /// <returns></returns>
         public static object GetPropertyValue(object model, string fieldName)
         {
-            var cacheKey = (model.GetType(), fieldName);
-            var invoker = PropertyValueInvokerCache.GetOrAdd(cacheKey, key => GetPropertyValueLambda<object, object>(model, key.FieldName).Compile());
-            return invoker.Invoke(model);
+            if (model is IDynamicType dType)
+            {
+              return  dType.GetValue(fieldName);
+            }
+            else
+            {
+                var cacheKey = (model.GetType(), fieldName);
+                var invoker = PropertyValueInvokerCache.GetOrAdd(cacheKey, key => GetPropertyValueLambda<object, object>(model, key.FieldName).Compile());
+                return invoker.Invoke(model);
+            }
+           
         }
 
         #region TryParse
