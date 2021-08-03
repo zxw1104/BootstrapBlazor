@@ -21,7 +21,7 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public class DynamicPropertyRegistry
     {
-        private Dictionary<string, PropertyInfo> props = new();
+        private Dictionary<string, DynamicPropertyInfo> props = new();
         private HashSet<Attribute> classAttrs = new();
         public Type TypeInfo { get; set; }
         #region 注册
@@ -30,7 +30,7 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <param name="typeKey"></param>
         /// <param name="info"></param>
-        public void AddProperty(PropertyInfo info)
+        public void AddProperty(DynamicPropertyInfo info)
         {
             props.Add(info.Name, info);
         }
@@ -87,7 +87,7 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public PropertyInfo[] GetProperties()
         {
-            return props.Values.ToArray();
+            return props.Values.OrderBy(x=>x.SortIndex).ToArray();
         }
         /// <summary>
         /// 获取指定类型的指定属性
@@ -454,7 +454,7 @@ namespace BootstrapBlazor.Components
     /// <summary>
     /// 动态属性信息
     /// </summary>
-    class DynamicPropertyInfo : PropertyInfo
+    public class DynamicPropertyInfo : PropertyInfo
     {
         /// <summary>
         /// 构造动态属性
@@ -462,8 +462,9 @@ namespace BootstrapBlazor.Components
         /// <param name="name"></param>
         /// <param name="propType"></param>
         /// <param name="attributes"></param>
-        public DynamicPropertyInfo(string name, Type propType, Attribute[] attributes)
+        public DynamicPropertyInfo(int sortIndex,string name, Type propType, Attribute[] attributes)
         {
+            SortIndex = sortIndex;
             this.name = name;
             this.propertyType = propType;
             if (attributes == null)
@@ -512,6 +513,8 @@ namespace BootstrapBlazor.Components
         public override string Name => name;
 
         public override Type? ReflectedType => throw new NotImplementedException();
+
+        public int SortIndex { get; }
 
         public override MethodInfo[] GetAccessors(bool nonPublic)
         {
@@ -609,11 +612,11 @@ namespace BootstrapBlazor.Components
         /// <param name="name">属性名称</param>
         /// <param name="propType">属性类型</param>
         /// <param name="attributes">属性的Attribute</param>
-        public DynamicObjectBuilder AddProperty(string name, Type propType, Attribute[] attributes)
+        public DynamicObjectBuilder AddProperty(int sortIndex,string name, Type propType, Attribute[] attributes)
         {
             if (!dynamicPropertyRegistry.IsPropertyExist(name))
             {
-                dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(name, propType, attributes));
+                dynamicPropertyRegistry.AddProperty(new DynamicPropertyInfo(sortIndex,name, propType, attributes));
             }
             return this;
         }

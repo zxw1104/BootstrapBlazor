@@ -849,9 +849,9 @@ namespace BootstrapBlazor.Components
             int orderIndex = 1;
             foreach (DataColumn item in Table.Columns)
             {
-                builder.AddProperty(item.ColumnName, item.DataType, new Attribute[] {
+                builder.AddProperty(++orderIndex, item.ColumnName, item.DataType, new Attribute[] {
                     new AutoGenerateColumnAttribute() {
-                    Order = orderIndex++,
+                    Order = orderIndex,
                     Text = item.ColumnName
                     }
                 });
@@ -918,7 +918,7 @@ namespace BootstrapBlazor.Components
         /// <param name="attributes"></param>
         public void AddColumn(string name, Type propType, Attribute[] attributes)
         {
-            builder.AddProperty(name, propType, attributes);
+            builder.AddProperty(0,name, propType, attributes);
             Table.Columns.Add(new DataColumn(name, propType));
         }
 
