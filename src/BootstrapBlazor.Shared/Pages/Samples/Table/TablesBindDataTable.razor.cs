@@ -132,6 +132,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
             builder.AddClassAttribute(new AutoGenerateClassAttribute { Filterable = true });
             foreach (DataColumn item in Table.Columns)
             {
+                ++orderIndex;
                 //Id列不显示
                 if (item.ColumnName == "Id")
                 {
@@ -139,18 +140,18 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 }
                 else if (item.ColumnName == "int类型列")
                 {
-                    builder.AddProperty(item.ColumnName, item.DataType, new Attribute[] {
+                    builder.AddProperty(orderIndex, item.ColumnName, item.DataType, new Attribute[] {
                     new AutoGenerateColumnAttribute() {
-                    Order = orderIndex++,
+                    Order = orderIndex,
                     Text = item.ColumnName
                     },new RequiredAttribute()
                 });
                 }
                 else if (item.ColumnName == "string类型列")
                 {
-                    builder.AddProperty(item.ColumnName, item.DataType, new Attribute[] {
+                    builder.AddProperty(orderIndex,item.ColumnName, item.DataType, new Attribute[] {
                     new AutoGenerateColumnAttribute() {
-                    Order = orderIndex++,
+                    Order = orderIndex,
                     Text = item.ColumnName
                     },
                     new RequiredAttribute(),
@@ -160,9 +161,9 @@ namespace BootstrapBlazor.Shared.Pages.Table
 
                 else
                 {
-                    builder.AddProperty(item.ColumnName, item.DataType, new Attribute[] {
+                    builder.AddProperty(orderIndex,item.ColumnName, item.DataType, new Attribute[] {
                     new AutoGenerateColumnAttribute() {
-                    Order = orderIndex++,
+                    Order = orderIndex,
                     Text = item.ColumnName
                     } });
                 }

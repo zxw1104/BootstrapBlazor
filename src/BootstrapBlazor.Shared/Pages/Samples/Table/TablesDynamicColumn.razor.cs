@@ -37,12 +37,12 @@ namespace BootstrapBlazor.Shared.Pages.Table
         {
             //动态属性名称
             var newPropertyName = $"动态属性-{propIndex}";
-
+            int orderIndex = 1;
             //把属性名保存起来，便于后面动态移除属性
             properties.Add(newPropertyName);
             if (propIndex % 2 == 0)
             {
-                DynamicUser.dynamicObjectBuilder.AddProperty(newPropertyName,
+                DynamicUser.dynamicObjectBuilder.AddProperty(orderIndex++, newPropertyName,
                     typeof(string),
                     new Attribute[] {
                         //必填
@@ -55,7 +55,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
             else
             {
                 //将动态属性注册全局动态属性注册中心
-                DynamicUser.dynamicObjectBuilder.AddProperty(newPropertyName, typeof(int),
+                DynamicUser.dynamicObjectBuilder.AddProperty(orderIndex++, newPropertyName, typeof(int),
                     new Attribute[] { new AutoGenerateColumnAttribute() {
                         Order = propIndex + 10,
                         Text = $"动态属性{propIndex}-int类型" }});
@@ -106,6 +106,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
 
         static DynamicUser()
         {
+            int orderIndex = 1;
             //定义动态对象拥有的属性,只有在这里注册的属性，才会在Table中显示出来
             dynamicObjectBuilder = new DynamicObjectBuilder(typeof(DynamicUser));
             dynamicObjectBuilder.AddClassAttribute(new AutoGenerateClassAttribute
@@ -113,26 +114,26 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 Filterable = true,
                 Searchable = true
             })
-                .AddProperty("Address.Name", typeof(string), new Attribute[] {
+                .AddProperty(orderIndex++,"Address.Name", typeof(string), new Attribute[] {
                     new AutoGenerateColumnAttribute() {
                         Order = 3,
                         Editable=false,
                         Searchable = false,
                         Text = "地址信息" }
                 })
-                .AddProperty("Id", typeof(int), new Attribute[] {
+                .AddProperty(orderIndex++, "Id", typeof(int), new Attribute[] {
                     new AutoGenerateColumnAttribute() {
                         Order = 1, 
                         Text = "Id" ,Editable=false},
                 })
-                .AddProperty("Name", typeof(string), new Attribute[] {
+                .AddProperty(orderIndex++, "Name", typeof(string), new Attribute[] {
                     new AutoGenerateColumnAttribute() {
                         Order = 1,
                         Text = "名称" },
                     new RequiredAttribute(),
                     new StringLengthAttribute(5)
                 })
-                .AddProperty("Age", typeof(int), new Attribute[] {
+                .AddProperty(orderIndex++, "Age", typeof(int), new Attribute[] {
                     new AutoGenerateColumnAttribute() {
                         Order = 2,
                         Searchable = false,
@@ -233,6 +234,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
 
         static DynamicAddress()
         {
+            int orderIndex = 1;
             //定义动态对象拥有的属性
             dynamicObjectBuilder = new DynamicObjectBuilder(typeof(DynamicAddress));
             dynamicObjectBuilder.AddClassAttribute(new AutoGenerateClassAttribute
@@ -240,7 +242,7 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 Filterable = true,
                 Searchable = true
             })
-                .AddProperty("Name", typeof(string), new Attribute[] {
+                .AddProperty(orderIndex, "Name", typeof(string), new Attribute[] {
                     new AutoGenerateColumnAttribute() {
                         Order = 1,
                         Text = "名称" },
