@@ -27,7 +27,7 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得/设置 子节点数据源
         /// </summary>
-        public IEnumerable<TreeItem> Items => _items;
+        public virtual IEnumerable<TreeItem> Items => _items;
 
         /// <summary>
         /// 获得/设置 TreeItem 标识
@@ -42,7 +42,7 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得/设置 显示文字
         /// </summary>
-        public string? Text { get; set; }
+        public virtual string? Text { get; set; }
 
         /// <summary>
         /// 获得/设置 图标
@@ -69,7 +69,9 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得/设置 是否展开 默认 false 不展开
         /// </summary>
-        public bool IsExpanded { get; set; }
+        public bool IsExpanded {
+            get;
+            set; }
 
         /// <summary>
         /// 获取/设置 是否有子节点 默认 false 

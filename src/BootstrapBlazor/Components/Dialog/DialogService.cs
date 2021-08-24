@@ -109,15 +109,15 @@ namespace BootstrapBlazor.Components
             }
             else
             {
-                if (typeof(TModel).IsAssignableTo(typeof(IDynamicType)) &&option.ObjectBuilder!=null)
+                if (option.Model is IDynamicType model)
                 {
-                    if (option.ObjectBuilder==null)
+                    if (model.GetBuilder()==null)
                     {
-                        throw new Exception("动态类型必须设置option.ObjectBuilder属性");
+                        throw new Exception("动态类型必须设置,GetBuilder()为null");
                     }
                     else
                     {
-                        return InternalTableColumn.GetProperties(option.ObjectBuilder);
+                        return InternalTableColumn.GetProperties(model.GetBuilder());
                     }
                 
                 }

@@ -66,10 +66,5 @@ namespace BootstrapBlazor.Components
         /// 获得/设置 查询按钮文本
         /// </summary>
         public string? SaveButtonText { get; set; }
-
-        /// <summary>
-        /// 动态对象的Builder对象
-        /// </summary>
-        public DynamicObjectBuilder? ObjectBuilder { get; set; }
     }
 }
