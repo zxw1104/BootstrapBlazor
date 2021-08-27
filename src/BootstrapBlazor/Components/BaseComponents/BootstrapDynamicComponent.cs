@@ -58,7 +58,7 @@ namespace BootstrapBlazor.Components
         {
             var index = 0;
             builder.OpenComponent(index++, ComponentType);
-            if (Parameters.Any())
+            if (Parameters!=null && Parameters.Any())
             {
                 builder.AddMultipleAttributes(index++, Parameters);
             }

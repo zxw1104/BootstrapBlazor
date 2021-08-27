@@ -5,8 +5,10 @@
 <ValidateForm Model="@Model" OnValidSubmit="@OnValidSubmitAsync">
     @if (BodyTemplate != null)
     {
-        @BodyTemplate?.Invoke(Model)
-        @RenderFooter
+        <CascadingValue Value="Items" IsFixed="true">
+            @BodyTemplate?.Invoke(Model)
+            @RenderFooter
+        </CascadingValue>
     }
     else
     {
