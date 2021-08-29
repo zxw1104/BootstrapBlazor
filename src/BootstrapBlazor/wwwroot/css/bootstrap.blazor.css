@@ -934,7 +934,10 @@ form .form-label[required]:before {
 /*pulse*/
 
 .pulse {
-    position: relative
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
     .pulse.pulse-white .pulse-ring {
