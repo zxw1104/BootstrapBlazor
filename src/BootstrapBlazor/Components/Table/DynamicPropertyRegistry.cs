@@ -520,7 +520,9 @@ namespace BootstrapBlazor.Components
         {
             return null;
         }
-
+        /// <summary>
+        /// 特性集合
+        /// </summary>
         private Attribute[] attributes;
         public override object[] GetCustomAttributes(bool inherit)
         {
