@@ -35,6 +35,28 @@ namespace BootstrapBlazor.Components
         private static ConcurrentDictionary<(Type ModelType, string FieldName), Action<object, object?>> SetPropertyValueLambdaCache { get; } = new();
 
         /// <summary>
+        /// 尝试从外部资源提供器 获取资源,
+        /// !!注意,此方法添加到 缓存查询之前，是为了支持运行时动态更新功能
+        /// 如果添加到缓存后面，就无法支持动态更新资源了
+        /// ！！缓存的功能由外部开发者提供
+        /// </summary>
+        /// <returns></returns>
+        private static bool TryGetResourceFromExternalProvider(Type modelType, string fieldName, out string resValue)
+        {
+            var externalProvider = ServiceProviderHelper.ServiceProvider?.GetService<IExternalResourceProvider>();
+            resValue = fieldName;
+            if (externalProvider != null &&
+                externalProvider.TryGetResource(CultureInfo.CurrentUICulture.Name,
+                $"{modelType.FullName}.{fieldName}", out resValue))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        /// <summary>
         /// 获取显示名称方法
         /// </summary>
         /// <param name="model">模型类型</param>
@@ -45,14 +67,12 @@ namespace BootstrapBlazor.Components
             var cacheKey = (CultureInfoName: CultureInfo.CurrentUICulture.Name, Model: model, FieldName: fieldName);
             //如果传过来model是不是Type
             var modelType = cacheKey.Model is Type ? (Type)cacheKey.Model : cacheKey.Model.GetType();
-            var externalProvider = ServiceProviderHelper.ServiceProvider?.GetService<IExternalResourceProvider>();
 
-            if (externalProvider != null &&
-                externalProvider.TryGetResource(CultureInfo.CurrentUICulture.Name,
-                $"{modelType.FullName}.{fieldName}", out string resValue))
+            if (TryGetResourceFromExternalProvider(modelType,fieldName,out string resValue))
             {
                 return resValue;
             }
+            
 
             if (!DisplayNameCache.TryGetValue(cacheKey, out var dn))
             {
@@ -107,7 +127,14 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public static string? GetPlaceHolder(object model, string fieldName)
         {
-            var cacheKey = (Type: model, FieldName: fieldName);
+            var cacheKey = (Model: model, FieldName: fieldName);
+            var modelType = cacheKey.Model is Type ? (Type)cacheKey.Model : cacheKey.Model.GetType();
+
+            if (TryGetResourceFromExternalProvider(modelType, fieldName, out string resValue))
+            {
+                return resValue;
+            }
+
             if (!PlaceHolderCache.TryGetValue(cacheKey, out var placeHolder))
             {
                 var type = model.GetType();
@@ -120,25 +147,15 @@ namespace BootstrapBlazor.Components
                 }
                 else if (Utility.TryGetProperty(type, cacheKey.FieldName, out var propertyInfo))
                 {
-                    // 通过资源文件查找 FieldName 项
-                    var localizer = JsonStringLocalizerFactory.CreateLocalizer(cacheKey.Type);
-                    var stringLocalizer = localizer?[$"{fieldName}.PlaceHolder"];
-                    if (stringLocalizer != null && !stringLocalizer.ResourceNotFound)
+                    var placeHolderAttribute = propertyInfo.GetCustomAttribute<PlaceHolderAttribute>();
+                    if (placeHolderAttribute != null)
                     {
-                        placeHolder = stringLocalizer.Value;
+                        placeHolder = placeHolderAttribute.Text;
                     }
-                    else if (Utility.TryGetProperty(cacheKey.Type, cacheKey.FieldName, out var propertyInfo))
+                    if (!string.IsNullOrEmpty(placeHolder))
                     {
-                        var placeHolderAttribute = propertyInfo.GetCustomAttribute<PlaceHolderAttribute>();
-                        if (placeHolderAttribute != null)
-                        {
-                            placeHolder = placeHolderAttribute.Text;
-                        }
-                        if (!string.IsNullOrEmpty(placeHolder))
-                        {
-                            // add display name into cache
-                            PlaceHolderCache.GetOrAdd(cacheKey, key => placeHolder);
-                        }
+                        // add display name into cache
+                        PlaceHolderCache.GetOrAdd(cacheKey, key => placeHolder);
                     }
                 }
             }
@@ -201,36 +218,30 @@ namespace BootstrapBlazor.Components
                         var instance = Activator.CreateInstance(type);
                         if (instance != null)
                         {
-                            ret = (TModel)instance;
-                            var valType = ret?.GetType();
-                            if (valType != null)
+                            // 20200608 tian_teng@outlook.com 支持字段和只读属性
+                            foreach (var f in type.GetFields())
                             {
                                 var v = f.GetValue(item);
-                                valType.GetField(f.Name)?.SetValue(ret, v);
+                                type.GetField(f.Name)?.SetValue(ret, v);
                             };
-                            foreach (var p in TypeInfoHelper.GetProperties(item))
+
+                            foreach (var p in TypeInfoHelper.GetProperties(instance))
                             {
                                 if (p.CanWrite)
-                                // 20200608 tian_teng@outlook.com 支持字段和只读属性
-                                foreach (var f in type.GetFields())
                                 {
-                                    var v = f.GetValue(item);
-                                    valType.GetField(f.Name)?.SetValue(ret, v);
-                                };
-                                foreach (var p in type.GetProperties())
-                                {
-                                    if (p.CanWrite)
-                                    {
-                                        var v = p.GetValue(item);
-                                        valType.GetProperty(p.Name)?.SetValue(ret, v);
-                                    }
-                                };
+                                    var v = p.GetValue(item);
+                                    type.GetProperty(p.Name)?.SetValue(ret, v);
+                                }
                             }
                         }
                     }
                 }
+                return ret;
             }
-            return ret;
+            else
+            {
+                return item;
+            }
         }
 
         /// <summary>

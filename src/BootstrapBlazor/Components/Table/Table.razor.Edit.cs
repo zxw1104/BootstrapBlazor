@@ -343,26 +343,30 @@ namespace BootstrapBlazor.Components
             }
             else
             {
-                queryData = await OnQueryAsync(queryOption);
-            }
-            else if (UseInjectDataService)
-            {
-                var dataService = GetDataService();
-                queryData = await GetDataService().QueryAsync(queryOption);
-            }
+                QueryData<TItem>? queryData = null;
+                var queryOption = new QueryPageOptions()
+                {
+                    IsPage = IsPagination,
+                    PageIndex = PageIndex,
+                    PageItems = PageItems,
+                    SearchText = SearchText,
+                    SortOrder = SortOrder,
+                    SortName = SortName,
+                    Filters = Filters.Values,
+                    Searchs = GetSearchs(),
+                    SearchModel = SearchModel
+                };
 
-            if (queryData != null)
-            {
-                //如果是Ilist，就不用ToList了
-                if (queryData.Items is IList<TItem>)
+                if (OnQueryAsync != null)
                 {
-                    Items = queryData.Items;
+                    queryData = await OnQueryAsync(queryOption);
                 }
-                else
+                else if (UseInjectDataService)
                 {
-                    Items = queryData.Items.ToList();
+                    queryData = await GetDataService().QueryAsync(queryOption);
                 }
-                if (IsTree)
+
+                if (queryData != null)
                 {
                     RowItemsCache = null;
                     Items = null;

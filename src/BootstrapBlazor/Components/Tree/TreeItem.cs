@@ -26,7 +26,7 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得/设置 子节点数据源
         /// </summary>
-        public virtual IEnumerable<TreeItem> Items => _items;
+        public virtual List<TreeItem> Items { get; set; } = new List<TreeItem>();
 
         /// <summary>
         /// 获得/设置 TreeItem 标识
@@ -90,7 +90,7 @@ namespace BootstrapBlazor.Components
         public void AddItem(TreeItem item)
         {
             item.Parent = this;
-            _items.Add(item);
+            Items.Add(item);
         }
         /// <summary>
         /// 移除 TreeItem
@@ -100,7 +100,7 @@ namespace BootstrapBlazor.Components
         {
             if (item.Parent!=null)
             {
-                item.Parent._items.Remove(item);
+                item.Parent.Items.Remove(item);
             }
         }
 

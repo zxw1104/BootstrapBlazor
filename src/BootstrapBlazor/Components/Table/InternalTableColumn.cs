@@ -141,8 +141,7 @@ namespace BootstrapBlazor.Components
         public static IEnumerable<ITableColumn> GetProperties(Type type, IEnumerable<ITableColumn>? source = null)
         {
             var cols = new List<ITableColumn>(50);
-            Type type = typeof(TModel);
-
+       
             var props = TypeInfoHelper.GetProperties(type);
             var attrModel = TypeInfoHelper.GetTypeAttribute<AutoGenerateClassAttribute>(type);
 

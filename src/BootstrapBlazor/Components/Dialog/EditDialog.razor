@@ -6,7 +6,7 @@
 	@if (BodyTemplate != null)
 	{
 		<CascadingValue Value="Items" IsFixed="true">
-		@BodyTemplate?.Invoke(Model)
+			@BodyTemplate?.Invoke(Model)
 		 </CascadingValue>
 		@if (!IsTracking)
 		{
