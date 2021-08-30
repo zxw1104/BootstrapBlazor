@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using System.Linq.Expressions;
 
 namespace BootstrapBlazor.Components
@@ -83,6 +83,11 @@ namespace BootstrapBlazor.Components
         public Type? ComponentType { get; set; }
 
         /// <summary>
+        /// 获得/设置 组件自定义类型参数集合 默认为 null
+        /// </summary>
+        public IEnumerable<KeyValuePair<string, object>>? ComponentParameters { get; set; }
+
+        /// <summary>
         /// 获得/设置 额外数据源一般用于下拉框或者 CheckboxList 这种需要额外配置数据源组件使用
         /// </summary>
         public IEnumerable<SelectedItem>? Data { get; set; }
@@ -108,7 +113,7 @@ namespace BootstrapBlazor.Components
         /// <param name="fieldName">字段名称</param>
         /// <param name="fieldType">字段类型</param>
         /// <param name="fieldText">显示文字</param>
-        public InternalTableColumn(string fieldName, Type fieldType, string fieldText)
+        public InternalTableColumn(string fieldName, Type fieldType, string? fieldText = null)
         {
             FieldName = fieldName;
             PropertyType = fieldType;
@@ -119,7 +124,21 @@ namespace BootstrapBlazor.Components
 
         public string GetFieldName() => FieldName;
 
-        public static IEnumerable<ITableColumn> GetProperties<TModel>(IEnumerable<ITableColumn>? source = null)
+        /// <summary>
+        /// 通过泛型模型获取模型属性集合
+        /// </summary>
+        /// <typeparam name="TModel"></typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static IEnumerable<ITableColumn> GetProperties<TModel>(IEnumerable<ITableColumn>? source = null) => GetProperties(typeof(TModel), source);
+
+        /// <summary>
+        /// 通过特定类型模型获取模型属性集合
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static IEnumerable<ITableColumn> GetProperties(Type type, IEnumerable<ITableColumn>? source = null)
         {
             var cols = new List<ITableColumn>(50);
             Type type = typeof(TModel);
@@ -244,6 +263,8 @@ namespace BootstrapBlazor.Components
             if (source.Width != null) dest.Width = source.Width;
             if (!string.IsNullOrEmpty(source.Text)) dest.Text = source.Text;
             if (source.Rows > 0) dest.Rows = source.Rows;
+            if (source.ComponentType != null) dest.ComponentType = source.ComponentType;
+            if (source.ComponentParameters != null) dest.ComponentParameters = source.ComponentParameters;
         }
     }
 }

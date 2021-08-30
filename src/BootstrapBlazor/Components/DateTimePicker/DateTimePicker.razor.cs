@@ -128,6 +128,12 @@ namespace BootstrapBlazor.Components
         [Parameter]
         public DateTime? MinValue { get; set; }
 
+        /// <summary>
+        /// 获得/设置 当前日期变化时回调委托方法
+        /// </summary>
+        [Parameter]
+        public Func<TValue, Task>? OnDateTimeChanged { get; set; }
+
         [Inject]
         [NotNull]
         private IStringLocalizer<DateTimePicker<DateTime>>? Localizer { get; set; }
@@ -170,13 +176,13 @@ namespace BootstrapBlazor.Components
             // 不允许为空时设置 Value 默认值
             if (!AllowNull && Value == null)
             {
-                Value = (TValue)(object)DateTime.Now;
+                CurrentValue = (TValue)(object)DateTime.Now;
             }
 
             // Value 为 MinValue 时 设置 Value 默认值
             if (Value?.ToString() == DateTime.MinValue.ToString())
             {
-                Value = (TValue)(object)DateTime.Now;
+                CurrentValue = (TValue)(object)DateTime.Now;
             }
         }
 
@@ -221,6 +227,10 @@ namespace BootstrapBlazor.Components
         {
             CurrentValue = default!;
             await JSRuntime.InvokeVoidAsync(Picker, "bb_datetimePicker", "hide");
+            if (OnDateTimeChanged != null)
+            {
+                await OnDateTimeChanged(Value);
+            }
             StateHasChanged();
         }
 
@@ -230,6 +240,10 @@ namespace BootstrapBlazor.Components
         private async Task OnConfirm()
         {
             await JSRuntime.InvokeVoidAsync(Picker, "bb_datetimePicker", "hide");
+            if (OnDateTimeChanged != null)
+            {
+                await OnDateTimeChanged(Value);
+            }
         }
     }
 }

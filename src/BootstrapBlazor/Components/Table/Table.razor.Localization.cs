@@ -64,6 +64,13 @@ namespace BootstrapBlazor.Components
         public string? SaveButtonText { get; set; }
 
         /// <summary>
+        /// 保存按钮文本
+        /// </summary>
+        [Parameter]
+        [NotNull]
+        public string? CloseButtonText { get; set; }
+
+        /// <summary>
         /// 确认删除按钮文本
         /// </summary>
         [Parameter]
@@ -83,6 +90,13 @@ namespace BootstrapBlazor.Components
         [Parameter]
         [NotNull]
         public string? RefreshButtonText { get; set; }
+
+        /// <summary>
+        /// 视图按钮文本
+        /// </summary>
+        [Parameter]
+        [NotNull]
+        public string? CardViewButtonText { get; set; }
 
         /// <summary>
         /// 列显示隐藏按钮提示信息文本
@@ -120,7 +134,7 @@ namespace BootstrapBlazor.Components
         public string? SearchButtonText { get; set; }
 
         /// <summary>
-        /// 搜索按钮文本
+        /// 搜索弹窗文本
         /// </summary>
         [Parameter]
         [NotNull]
@@ -257,10 +271,12 @@ namespace BootstrapBlazor.Components
             DeleteButtonText ??= Localizer[nameof(DeleteButtonText)];
             CancelButtonText ??= Localizer[nameof(CancelButtonText)];
             SaveButtonText ??= Localizer[nameof(SaveButtonText)];
+            CloseButtonText ??= Localizer[nameof(CloseButtonText)];
             CancelDeleteButtonText ??= Localizer[nameof(CancelDeleteButtonText)];
             ConfirmDeleteButtonText ??= Localizer[nameof(ConfirmDeleteButtonText)];
             ConfirmDeleteContentText ??= Localizer[nameof(ConfirmDeleteContentText)];
             RefreshButtonText ??= Localizer[nameof(RefreshButtonText)];
+            CardViewButtonText ??= Localizer[nameof(CardViewButtonText)];
             ColumnButtonTitleText ??= Localizer[nameof(ColumnButtonTitleText)];
             ColumnButtonText ??= Localizer[nameof(ColumnButtonText)];
             ExportButtonText ??= Localizer[nameof(ExportButtonText)];
@@ -290,6 +306,10 @@ namespace BootstrapBlazor.Components
             DeleteButtonToastResultContent ??= Localizer[nameof(DeleteButtonToastResultContent)];
             DataServiceInvalidOperationText ??= Localizer[nameof(DataServiceInvalidOperationText), typeof(TItem).FullName!];
             NotSetOnTreeExpandErrorMessage = Localizer[nameof(NotSetOnTreeExpandErrorMessage)];
+            UnsetText ??= Localizer[nameof(UnsetText)];
+            SortAscText ??= Localizer[nameof(SortAscText)];
+            SortDescText ??= Localizer[nameof(SortDescText)];
+            EmptyText ??= Localizer[nameof(EmptyText)];
         }
     }
 }

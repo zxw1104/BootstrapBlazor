@@ -27,6 +27,11 @@ namespace BootstrapBlazor.Components
         public string? Title { get; set; }
 
         /// <summary>
+        /// 获得/设置 弹窗自定义样式
+        /// </summary>
+        public string? Class { get; set; }
+
+        /// <summary>
         /// 获得/设置 弹窗大小
         /// </summary>
         public Size Size { get; set; } = Size.Large;
@@ -75,6 +80,11 @@ namespace BootstrapBlazor.Components
         /// 获得/设置 ModalFooter 组件
         /// </summary>
         public RenderFragment? FooterTemplate { get; set; }
+
+        /// <summary>
+        /// 获得/设置 ModalHeader 组件
+        /// </summary>
+        public RenderFragment? HeaderTemplate { get; set; }
 
         /// <summary>
         /// 获得/设置 自定义组件

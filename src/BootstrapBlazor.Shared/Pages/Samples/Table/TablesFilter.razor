@@ -87,3 +87,20 @@
         </TableColumns>
     </Table>
 </Block>
+
+<Block Title="显示过滤表头" Introduction="设置 <code>ShowFilterHeader</code> 属性值为 <code>true</code> 时显示过滤表头">
+    <Table TItem="Foo"
+           IsPagination="true" PageItemsSource="@PageItemsSource"
+           IsStriped="true" IsBordered="true" IsMultipleSelect="true"
+           ShowSkeleton="true" ShowFilterHeader="true"
+           OnQueryAsync="@OnQueryAsync">
+        <TableColumns>
+            <TableColumn @bind-Field="@context.DateTime" Width="180" Sortable="true" />
+            <TableColumn @bind-Field="@context.Name" Width="100" Sortable="true" />
+            <TableColumn @bind-Field="@context.Address" Sortable="true" />
+            <TableColumn @bind-Field="@context.Complete" Width="100" Sortable="true" Filterable="true" ComponentType="typeof(Switch)" />
+            <TableColumn @bind-Field="@context.Education" Width="100" Sortable="true" Filterable="true" />
+            <TableColumn @bind-Field="@context.Count" Width="100" Sortable="true" DefaultSort="true" DefaultSortOrder="@SortOrder.Desc" />
+        </TableColumns>
+    </Table>
+</Block>

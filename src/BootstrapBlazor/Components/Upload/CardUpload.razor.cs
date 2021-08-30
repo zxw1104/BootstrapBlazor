@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components
 {
@@ -17,7 +18,7 @@ namespace BootstrapBlazor.Components
         private string? GetDeleteButtonDiabledString(UploadFile item) => (!IsDisabled && item.Uploaded) ? null : "disabled";
 
         private string? CardItemClass => CssBuilder.Default("upload-item")
-            .AddClass("is-disabled", IsDisabled)
+            .AddClass("disabled", IsDisabled)
             .Build();
 
         private static bool IsImage(UploadFile item)
@@ -28,6 +29,12 @@ namespace BootstrapBlazor.Components
                     ".jpg" or ".jpeg" or ".png" or ".bmp" or ".gif" => true,
                     _ => false
                 };
+        }
+
+        private async Task OnCardFileDelete(UploadFile item)
+        {
+            await OnFileDelete(item);
+            StateHasChanged();
         }
     }
 }

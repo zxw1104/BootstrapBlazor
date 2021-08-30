@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
+using BootstrapBlazor.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -18,12 +19,15 @@ namespace BootstrapBlazor.Shared.Pages
     {
         private ElementReference TypeElement { get; set; }
 
+        private string? BodyClassString => CssBuilder.Default(Localizer["BodyClassString"])
+            .Build();
+
         [Inject]
         private IJSRuntime? JSRuntime { get; set; }
 
         [Inject]
         [NotNull]
-        private IStringLocalizer<App>? Localizer { get; set; }
+        private IStringLocalizer<Index>? Localizer { get; set; }
 
         [Inject]
         [NotNull]
@@ -40,7 +44,7 @@ namespace BootstrapBlazor.Shared.Pages
 
             if (firstRender && JSRuntime != null)
             {
-                await JSRuntime.InvokeVoidAsync("$.indexTyper", TypeElement);
+                await JSRuntime.InvokeVoidAsync("$.indexTyper", TypeElement, Localizer["DynamicText"].Value.ToCharArray(), Localizer["DynamicText1"].Value.ToCharArray(), Localizer["DynamicText2"].Value.ToCharArray());
             }
         }
     }

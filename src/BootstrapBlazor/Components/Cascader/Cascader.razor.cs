@@ -56,7 +56,7 @@ namespace BootstrapBlazor.Components
         /// ValueChanged 方法
         /// </summary>
         [Parameter]
-        public Func<CascaderItem[], Task>? OnValueChanged { get; set; }
+        public Func<CascaderItem[], Task>? OnSelectedItemChanged { get; set; }
 
         [Inject]
         [NotNull]
@@ -132,14 +132,14 @@ namespace BootstrapBlazor.Components
         /// 获得 样式集合
         /// </summary>
         private string? ClassName => CssBuilder.Default("dropdown")
-            .AddClass("is-disabled", IsDisabled)
+            .AddClass("disabled", IsDisabled)
             .AddClassFromAttributes(AdditionalAttributes)
             .Build();
 
         /// <summary>
         /// 获得 样式集合
         /// </summary>
-        private string? InputClassName => CssBuilder.Default("form-control form-select-input")
+        private string? InputClassName => CssBuilder.Default("form-control form-select")
             .AddClass($"border-{Color.ToDescriptionString()}", Color != Color.None && !IsDisabled)
             .AddClass(CssClass).AddClass(ValidCss)
             .Build();
@@ -190,7 +190,7 @@ namespace BootstrapBlazor.Components
 
             CurrentValueAsString = value;
 
-            if (OnValueChanged != null) await OnValueChanged.Invoke(_selectedItems.ToArray());
+            if (OnSelectedItemChanged != null) await OnSelectedItemChanged.Invoke(_selectedItems.ToArray());
         }
 
         private void RefreshDisplayValue() => _displayText = string.Join("/", _selectedItems.Select(item => item.Text));

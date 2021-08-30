@@ -37,6 +37,10 @@ namespace BootstrapBlazor.Shared.Shared
 
         [Inject]
         [NotNull]
+        private TitleService? TitleService { get; set; }
+
+        [Inject]
+        [NotNull]
         private IStringLocalizer<NavMenu>? Localizer { get; set; }
 
         private string? NavMenuCssClass => CssBuilder.Default("sidebar-content")
@@ -68,7 +72,7 @@ namespace BootstrapBlazor.Shared.Shared
 
             if (!item.Items.Any() && !string.IsNullOrEmpty(item.Text))
             {
-                await TitleService.SetWebSiteTitle($"{item.Text} - {AppLocalizer["Title"]}");
+                await TitleService.SetTitle($"{item.Text} - {AppLocalizer["Title"]}");
             }
         }
 
@@ -175,6 +179,12 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
+                    IsNew = true,
+                    Text = Localizer["GlobalException"],
+                    Url = "globalexception"
+                },
+                new()
+                {
                     Text = Localizer["ServerBlazor"],
                     Url = "install-server",
                     Match = NavLinkMatch.All
@@ -245,9 +255,13 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
-                    IsUpdate = true,
                     Text = Localizer["EditorForm"],
                     Url = "editorforms"
+                },
+                new()
+                {
+                    Text = Localizer["FloatingLabel"],
+                    Url = "floatinglabels"
                 },
                 new()
                 {
@@ -316,7 +330,6 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
-                    IsUpdate = true,
                     Text = Localizer["ValidateForm"],
                     Url = "validateforms"
                 }
@@ -377,6 +390,12 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
+                    IsNew = true,
+                    Text = Localizer["Client"],
+                    Url = "client"
+                },
+                new()
+                {
                     Text = Localizer["Circle"],
                     Url = "circles"
                 },
@@ -417,6 +436,12 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
+                    IsNew = true,
+                    Text = Localizer["Locator"],
+                    Url = "locator"
+                },
+                new()
+                {
                     Text = Localizer["QRCode"],
                     Url = "qrcodes"
                 },
@@ -448,13 +473,13 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
-                    Text = Localizer["Tooltip"],
-                    Url = "tooltips"
+                    Text = Localizer["Tree"],
+                    Url = "trees"
                 },
                 new()
                 {
-                    Text = Localizer["Tree"],
-                    Url = "trees"
+                    Text = Localizer["Transition"],
+                    Url = "transitions"
                 },
             };
             AddBadge(item);
@@ -530,13 +555,11 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
-                    IsUpdate = true,
                     Text = Localizer["TableDetail"],
                     Url = "tables/detail"
                 },
                 new()
                 {
-                    IsNew = true,
                     Text = Localizer["TableDynamic"],
                     Url = "tables/dynamic"
                 },
@@ -641,7 +664,6 @@ namespace BootstrapBlazor.Shared.Shared
                 },
                 new()
                 {
-                    IsUpdate = true,
                     Text = Localizer["Dialog"],
                     Url = "dialogs"
                 },
@@ -709,6 +731,11 @@ namespace BootstrapBlazor.Shared.Shared
                 {
                     Text = Localizer["Toast"],
                     Url = "toasts"
+                },
+                new()
+                {
+                    Text = Localizer["Tooltip"],
+                    Url = "tooltips"
                 }
             };
             AddBadge(item);

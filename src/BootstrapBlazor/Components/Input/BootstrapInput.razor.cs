@@ -19,7 +19,10 @@ namespace BootstrapBlazor.Components
             .AddClass(CssClass).AddClass(ValidCss)
             .Build();
 
-        private string? Type { get; set; }
+        /// <summary>
+        /// 获得 input 组件类型 默认 text
+        /// </summary>
+        protected string? Type { get; set; }
 
         /// <summary>
         /// 获得/设置 input 类型 placeholder 属性
@@ -74,7 +77,7 @@ namespace BootstrapBlazor.Components
         protected override string? FormatValueAsString(TValue value) => Formatter != null
             ? Formatter.Invoke(value)
             : (!string.IsNullOrEmpty(FormatString) && value != null
-                ? Utility.Format((object)value, FormatString)
+                ? Utility.Format(value, FormatString)
                 : base.FormatValueAsString(value));
     }
 }

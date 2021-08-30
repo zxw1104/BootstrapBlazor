@@ -1,9 +1,9 @@
 ﻿@namespace BootstrapBlazor.Components
-@inherits ToggleBase
+@inherits ToggleBase<bool>
 
 @if (IsShowLabel)
 {
-    <label class="control-label" required="@Required">@DisplayText</label>
+    <label class="form-label" required="@Required">@DisplayText</label>
 }
 <div @attributes="@AdditionalAttributes" class="@ClassName" style="@SwitchStyleName">
     <span class="@CoreClassName" data-inner-text="@GetInnerText()" style="@StyleName" @onclick="@OnClick" />

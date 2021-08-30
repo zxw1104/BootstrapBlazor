@@ -1,0 +1,15 @@
+﻿.is-draggable .modal-header {
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: .5rem 1rem;
+}
+
+    .modal-header.is-drag {
+        cursor: move;
+    }
+
+.modal-footer {
+    padding: 0.25rem 1rem;
+}

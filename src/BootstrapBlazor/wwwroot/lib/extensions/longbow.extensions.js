@@ -92,6 +92,15 @@
             do prefix += ~~(Math.random() * 1000000);
             while (document.getElementById(prefix));
             return prefix;
+        },
+        webClient: function (obj, url, method) {
+            $.ajax({
+                type: "GET",
+                url: url,
+                success: function (data) {
+                    obj.invokeMethodAsync(method, data.Id, data.Ip, data.Os, data.Browser, data.UserAgent);
+                }
+            });
         }
     });
 

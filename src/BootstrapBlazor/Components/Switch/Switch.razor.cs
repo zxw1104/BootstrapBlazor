@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components
 {
@@ -13,12 +14,9 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public partial class Switch
     {
-        /// <summary>
-        /// 获得 样式集合
-        /// </summary>
-        protected override string? ClassName => CssBuilder.Default("switch")
+        private string? ClassName => CssBuilder.Default("switch")
             .AddClass("is-checked", Value)
-            .AddClass("is-disabled", IsDisabled)
+            .AddClass("disabled", IsDisabled)
             .AddClassFromAttributes(AdditionalAttributes)
             .Build();
 
@@ -32,7 +30,11 @@ namespace BootstrapBlazor.Components
         private string? GetInnerText()
         {
             string? ret = null;
-            if (ShowInnerText) ret = Value ? OnInnerText : OffInnerText;
+            if (ShowInnerText)
+            {
+                ret = Value ? OnInnerText : OffInnerText;
+            }
+
             return ret;
         }
 
@@ -114,6 +116,23 @@ namespace BootstrapBlazor.Components
 
             OnInnerText ??= Localizer[nameof(OnInnerText)];
             OffInnerText ??= Localizer[nameof(OffInnerText)];
+        }
+
+        /// <summary>
+        /// 点击控件时触发此方法
+        /// </summary>
+        private async Task OnClick()
+        {
+            if (!IsDisabled)
+            {
+                Value = !Value;
+                if (ValueChanged.HasDelegate)
+                {
+                    await ValueChanged.InvokeAsync(Value);
+                }
+
+                OnValueChanged?.Invoke(Value);
+            }
         }
     }
 }

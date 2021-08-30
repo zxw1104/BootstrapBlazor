@@ -17,7 +17,7 @@ namespace BootstrapBlazor.Shared.Pages
     public sealed partial class Collapses
     {
         [NotNull]
-        private Logger? Trace { get; set; }
+        private BlockLogger? Trace { get; set; }
 
         private Task OnChanged(CollapseItem item)
         {
@@ -38,13 +38,6 @@ namespace BootstrapBlazor.Shared.Pages
                 Type = "RenderFragment",
                 ValueList = " — ",
                 DefaultValue = " — "
-            },
-            new AttributeItem() {
-                Name = "ShowArrow",
-                Description = "是否显示指示箭头",
-                Type = "bool",
-                ValueList = "true|false",
-                DefaultValue = "false"
             },
             new AttributeItem() {
                 Name = "IsAccordion",

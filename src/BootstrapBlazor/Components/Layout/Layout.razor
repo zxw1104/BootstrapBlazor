@@ -70,7 +70,7 @@
     @<header class="@HeaderClassString">
         @if (collapse)
         {
-            <a title="" data-toggle="tooltip" data-original-title="@TooltipText" class="@CollapseBarClassString" @onclick="@(EventCallback.Factory.Create<MouseEventArgs>(this, e => CollapseMenu()))">
+            <a title="" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="@TooltipText" class="@CollapseBarClassString" @onclick="@(EventCallback.Factory.Create<MouseEventArgs>(this, e => CollapseMenu()))">
                 <i class="fa fa-bars"></i>
             </a>
         }
@@ -97,10 +97,13 @@ RenderFragment RenderMain =>
     {
         <RenderTemplate>
             <Tab ClickTabToNavigation="true" ShowExtendButtons="true" ShowClose="true" TabItemTextDictionary="@TabItemTextDictionary"
-                 AdditionalAssemblies="@AdditionalAssemblies" ExcludeUrls="@ExcludeUrls" Body="@Main">
+                 AdditionalAssemblies="@AdditionalAssemblies" ExcludeUrls="@ExcludeUrls" NotFoundTabText="@NotFoundTabText" Body="@Main">
                 <NotAuthorized>
                     @NotAuthorized
                 </NotAuthorized>
+                <NotFound>
+                    @NotFound
+                </NotFound>
             </Tab>
         </RenderTemplate>
     }

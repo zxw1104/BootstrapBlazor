@@ -32,8 +32,8 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得 组件弹窗样式名称
         /// </summary>
-        private string? BodyClassString => CssBuilder.Default("datetime-range-body collapse")
-            .AddClass("show", IsShown)
+        private string? BodyClassString => CssBuilder.Default("datetime-range-body")
+            .AddClass("d-none", !IsShown)
             .Build();
 
         /// <summary>
@@ -201,8 +201,7 @@ namespace BootstrapBlazor.Components
 
             if (firstRender)
             {
-                if (!IsDisabled)
-                    await JSRuntime.InvokeVoidAsync(PickerRange, "bb_datetimeRange");
+                await JSRuntime.InvokeVoidAsync(PickerRange, "bb_datetimeRange");
             }
         }
 

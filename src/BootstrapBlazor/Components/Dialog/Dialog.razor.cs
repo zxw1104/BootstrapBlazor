@@ -77,9 +77,19 @@ namespace BootstrapBlazor.Components
                 parameters.Add(new(nameof(ModalDialog.BodyTemplate), content));
             }
 
+            if (option.HeaderTemplate != null)
+            {
+                parameters.Add(new(nameof(ModalDialog.HeaderTemplate), option.HeaderTemplate));
+            }
+
             if (option.FooterTemplate != null)
             {
                 parameters.Add(new(nameof(ModalDialog.FooterTemplate), option.FooterTemplate));
+            }
+
+            if (!string.IsNullOrEmpty(option.Class))
+            {
+                parameters.Add(new(nameof(ModalDialog.Class), option.Class));
             }
 
             parameters.Add(new(nameof(ModalDialog.OnClose), new Func<Task>(async () =>

@@ -100,7 +100,12 @@ namespace BootstrapBlazor.Components
         /// </summary>
         public Type? ComponentType { get; set; }
 
-        //RenderFragment<object>? ITableColumn.Template { get => Template; }
+        /// <summary>
+        /// 获得/设置 组件自定义类型参数集合 默认为 null
+        /// </summary>
+        public IEnumerable<KeyValuePair<string, object>>? ComponentParameters { get; set; }
+
+        RenderFragment<object>? ITableColumn.Template { get => Template; }
 
         /// <summary>
         /// 获得/设置 显示模板
@@ -133,13 +138,13 @@ namespace BootstrapBlazor.Components
         public IFilter? Filter { get; set; }
 
         /// <summary>
-        /// 
+        /// 获得 属性类型
         /// </summary>
         [NotNull]
         public Type? PropertyType { get; internal set; }
 
         /// <summary>
-        /// 
+        /// 获得/设置 当前属性显示文字 列头或者标签名称
         /// </summary>
         public string? Text { get; set; }
 

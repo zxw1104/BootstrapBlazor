@@ -71,7 +71,7 @@ namespace BootstrapBlazor.Components
                         ?? propertyInfo.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
 
                     // 回退查找资源文件通过 dn 查找匹配项 用于支持 Validation
-                    if (!string.IsNullOrEmpty(dn))
+                    if (!string.IsNullOrEmpty(dn) && !modelType.Assembly.IsDynamic)
                     {
                         var resxType = ServiceProviderHelper.ServiceProvider?.GetRequiredService<IOptions<JsonLocalizationOptions>>();
                         if (resxType?.Value.ResourceManagerStringLocalizerType != null)
@@ -120,15 +120,25 @@ namespace BootstrapBlazor.Components
                 }
                 else if (Utility.TryGetProperty(type, cacheKey.FieldName, out var propertyInfo))
                 {
-                    var placeHolderAttribute = propertyInfo.GetCustomAttribute<PlaceHolderAttribute>();
-                    if (placeHolderAttribute != null)
+                    // 通过资源文件查找 FieldName 项
+                    var localizer = JsonStringLocalizerFactory.CreateLocalizer(cacheKey.Type);
+                    var stringLocalizer = localizer?[$"{fieldName}.PlaceHolder"];
+                    if (stringLocalizer != null && !stringLocalizer.ResourceNotFound)
                     {
-                        placeHolder = placeHolderAttribute.Text;
+                        placeHolder = stringLocalizer.Value;
                     }
-                    if (!string.IsNullOrEmpty(placeHolder))
+                    else if (Utility.TryGetProperty(cacheKey.Type, cacheKey.FieldName, out var propertyInfo))
                     {
-                        // add display name into cache
-                        PlaceHolderCache.GetOrAdd(cacheKey, key => placeHolder);
+                        var placeHolderAttribute = propertyInfo.GetCustomAttribute<PlaceHolderAttribute>();
+                        if (placeHolderAttribute != null)
+                        {
+                            placeHolder = placeHolderAttribute.Text;
+                        }
+                        if (!string.IsNullOrEmpty(placeHolder))
+                        {
+                            // add display name into cache
+                            PlaceHolderCache.GetOrAdd(cacheKey, key => placeHolder);
+                        }
                     }
                 }
             }
@@ -188,12 +198,12 @@ namespace BootstrapBlazor.Components
                     var type = item.GetType();
                     if (type.IsClass)
                     {
-                        ret = (TModel)Activator.CreateInstance(type)!;
-                        var valType = ret?.GetType();
-                        if (valType != null)
+                        var instance = Activator.CreateInstance(type);
+                        if (instance != null)
                         {
-                            // 20200608 tian_teng@outlook.com 支持字段和只读属性
-                            foreach (var f in type.GetFields())
+                            ret = (TModel)instance;
+                            var valType = ret?.GetType();
+                            if (valType != null)
                             {
                                 var v = f.GetValue(item);
                                 valType.GetField(f.Name)?.SetValue(ret, v);
@@ -201,11 +211,21 @@ namespace BootstrapBlazor.Components
                             foreach (var p in TypeInfoHelper.GetProperties(item))
                             {
                                 if (p.CanWrite)
+                                // 20200608 tian_teng@outlook.com 支持字段和只读属性
+                                foreach (var f in type.GetFields())
                                 {
-                                    var v = p.GetValue(item);
-                                    valType.GetProperty(p.Name)?.SetValue(ret, v);
-                                }
-                            };
+                                    var v = f.GetValue(item);
+                                    valType.GetField(f.Name)?.SetValue(ret, v);
+                                };
+                                foreach (var p in type.GetProperties())
+                                {
+                                    if (p.CanWrite)
+                                    {
+                                        var v = p.GetValue(item);
+                                        valType.GetProperty(p.Name)?.SetValue(ret, v);
+                                    }
+                                };
+                            }
                         }
                     }
                 }
@@ -318,35 +338,40 @@ namespace BootstrapBlazor.Components
             var fieldValue = GenerateValue(model, fieldName);
             var fieldValueChanged = GenerateValueChanged(component, model, fieldName, fieldType);
             var valueExpression = GenerateValueExpression(model, fieldName, fieldType);
-
             var componentType = item.ComponentType ?? GenerateComponentType(fieldType, item.Rows != 0);
             builder.OpenComponent(0, componentType);
-            builder.AddAttribute(1, "DisplayText", displayName);
-            builder.AddAttribute(2, "Value", fieldValue);
-            builder.AddAttribute(3, "ValueChanged", fieldValueChanged);
-            builder.AddAttribute(4, "ValueExpression", valueExpression);
-            SetValueExpressionOrFieldIdentifierInfo(builder, 30, model, fieldName);
-            builder.AddAttribute(5, "IsDisabled", item.Readonly);
+            if (componentType.IsSubclassOf(typeof(ValidateBase<>).MakeGenericType(fieldType)))
+            {
+                builder.AddAttribute(1, nameof(ValidateBase<string>.DisplayText), displayName);
+                builder.AddAttribute(2, nameof(ValidateBase<string>.Value), fieldValue);
+                builder.AddAttribute(3, nameof(ValidateBase<string>.ValueChanged), fieldValueChanged);
+                builder.AddAttribute(4, nameof(ValidateBase<string>.ValueExpression), valueExpression);
+                builder.AddAttribute(5, nameof(ValidateBase<string>.IsDisabled), item.Readonly);
+            }
+
             if (IsCheckboxList(fieldType) && item.Data != null)
             {
                 builder.AddAttribute(6, nameof(CheckboxList<IEnumerable<string>>.Items), item.Data);
             }
 
-            //增加非枚举类,手动设定 ComponentType 为 Select 并且 Data 有值 自动生成下拉框
-            if (item.Data != null && item.ComponentType != null && item.ComponentType == typeof(Select<>).MakeGenericType(fieldType))
+            // 增加非枚举类,手动设定 ComponentType 为 Select 并且 Data 有值 自动生成下拉框
+            if (item.Data != null && item.ComponentType == typeof(Select<>).MakeGenericType(fieldType))
             {
                 builder.AddAttribute(7, nameof(Select<SelectedItem>.Items), item.Data);
-                builder.AddAttribute(8, nameof(Select<SelectedItem>.Value), fieldValue);
-                builder.AddAttribute(9, nameof(Select<SelectedItem>.ValueChanged), fieldValueChanged);
-                builder.AddAttribute(10, nameof(Select<SelectedItem>.ValueExpression), valueExpression);
-                builder.AddAttribute(11, nameof(Select<SelectedItem>.SkipValidate), false);
-            }
-            else if (IsValidatableComponent(componentType))
-            {
-                builder.AddAttribute(11, nameof(IEditorItem.SkipValidate), item.SkipValidate);
             }
 
-            builder.AddMultipleAttributes(12, CreateMultipleAttributes(fieldType, model, fieldName, item, showLabel, placeholder));
+            // 设置 SkipValidate 参数
+            if (IsValidatableComponent(componentType))
+            {
+                builder.AddAttribute(8, nameof(IEditorItem.SkipValidate), item.SkipValidate);
+            }
+
+            builder.AddMultipleAttributes(9, CreateMultipleAttributes(fieldType, model, fieldName, item, showLabel, placeholder));
+
+            if (item.ComponentParameters != null)
+            {
+                builder.AddMultipleAttributes(10, item.ComponentParameters);
+            }
             builder.CloseComponent();
         }
 
@@ -467,45 +492,36 @@ namespace BootstrapBlazor.Components
         {
             var ret = new List<KeyValuePair<string, object>>();
             var type = Nullable.GetUnderlyingType(fieldType) ?? fieldType;
-            if (type.IsEnum)
+            switch (type.Name)
             {
-                // 枚举类型
-                // 通过字符串转化为枚举类实例
-                var items = type.ToSelectList();
-                if (items != null)
-                {
-                    ret.Add(new("Items", items));
-                }
-            }
-            else
-            {
-                switch (type.Name)
-                {
-                    case nameof(String):
-                        var ph = Utility.GetPlaceHolder(model, fieldName) ?? placeholder;
-                        if (!string.IsNullOrEmpty(ph))
+                case nameof(String):
+                    var ph = Utility.GetPlaceHolder(model, fieldName) ?? placeholder;
+                    if (!string.IsNullOrEmpty(ph))
+                    {
+                        ret.Add(new("placeholder", ph));
+                    }
+                    if (item.Rows != 0)
+                    {
+                        ret.Add(new("rows", item.Rows));
+                    }
+                    break;
+                case nameof(Int16):
+                case nameof(Int32):
+                case nameof(Int64):
+                case nameof(Single):
+                case nameof(Double):
+                case nameof(Decimal):
+                    if (item.Step != null)
+                    {
+                        var step = item.Step.ToString();
+                        if (!string.IsNullOrEmpty(step))
                         {
-                            ret.Add(new("placeholder", ph));
+                            ret.Add(new("Step", step));
                         }
-                        if (item.Rows != 0)
-                        {
-                            ret.Add(new("rows", item.Rows));
-                        }
-                        break;
-                    case nameof(Int16):
-                    case nameof(Int32):
-                    case nameof(Int64):
-                    case nameof(Single):
-                    case nameof(Double):
-                    case nameof(Decimal):
-                        if (item.Step != null)
-                        {
-                            ret.Add(new("Step", item.Step));
-                        }
-                        break;
-                    default:
-                        break;
-                }
+                    }
+                    break;
+                default:
+                    break;
             }
 
             if (showLabel != null)

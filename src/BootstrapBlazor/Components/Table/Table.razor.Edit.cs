@@ -47,15 +47,15 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得/设置 是否正在查询数据
         /// </summary>
-        protected bool IsLoading { get; set; }
+        private bool IsLoading { get; set; }
 
         /// <summary>
         /// 获得 渲染模式
         /// </summary>
-        protected TableRenderModel ActiveRenderModel => RenderModel switch
+        protected TableRenderMode ActiveRenderMode => RenderMode switch
         {
-            TableRenderModel.Auto => ScreenSize < RenderModelResponsiveWidth ? TableRenderModel.CardView : TableRenderModel.Table,
-            _ => RenderModel
+            TableRenderMode.Auto => ScreenSize < RenderModelResponsiveWidth ? TableRenderMode.CardView : TableRenderMode.Table,
+            _ => RenderMode
         };
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace BootstrapBlazor.Components
         /// 获得/设置 组件布局方式 默认为 Auto
         /// </summary>
         [Parameter]
-        public TableRenderModel RenderModel { get; set; }
+        public TableRenderMode RenderMode { get; set; }
 
         /// <summary>
         /// 获得/设置 组件布局自适应切换阈值 默认为 768
@@ -112,6 +112,12 @@ namespace BootstrapBlazor.Components
         public Func<TItem, string?>? SetRowClassFormatter { get; set; }
 
         /// <summary>
+        /// 获得/设置 保存后回调委托方法
+        /// </summary>
+        [Parameter]
+        public Func<TItem, Task>? OnAfterSaveAsync { get; set; }
+
+        /// <summary>
         /// 获得/设置 编辑数据弹窗 Title
         /// </summary>
         [Parameter]
@@ -139,7 +145,13 @@ namespace BootstrapBlazor.Components
         public RenderFragment<TItem>? EditTemplate { get; set; }
 
         /// <summary>
-        /// 获得/设置 RowButtonTemplate 实例
+        /// 获得/设置 BeforeRowButtonTemplate 实例 此模板生成的按钮默认放置到按钮前面如需放置前面 请查看 <see cref="RowButtonTemplate" />
+        /// </summary>
+        [Parameter]
+        public RenderFragment<TItem>? BeforeRowButtonTemplate { get; set; }
+
+        /// <summary>
+        /// 获得/设置 RowButtonTemplate 实例 此模板生成的按钮默认放置到按钮后面如需放置前面 请查看 <see cref="BeforeRowButtonTemplate" />
         /// </summary>
         [Parameter]
         public RenderFragment<TItem>? RowButtonTemplate { get; set; }
@@ -238,7 +250,8 @@ namespace BootstrapBlazor.Components
 
         private async Task OnSelectedRowsChanged()
         {
-            SelectedRows = SelectedItems;
+            var rows = new List<TItem>(SelectedItems);
+            SelectedRows = rows;
             if (SelectedRowsChanged.HasDelegate)
             {
                 await SelectedRowsChanged.InvokeAsync(SelectedRows);
@@ -259,6 +272,26 @@ namespace BootstrapBlazor.Components
         protected Task OnClickRefreshAsync() => QueryAsync();
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        protected void OnClickCardView()
+        {
+            var model = RenderMode;
+            if (model == TableRenderMode.Auto)
+            {
+                model = ActiveRenderMode;
+            }
+            RenderMode = model switch
+            {
+                TableRenderMode.Table => TableRenderMode.CardView,
+                _ => TableRenderMode.Table
+            };
+
+            StateHasChanged();
+        }
+
+        /// <summary>
         /// 查询按钮调用此方法
         /// </summary>
         /// <returns></returns>
@@ -270,8 +303,6 @@ namespace BootstrapBlazor.Components
             StateHasChanged();
         }
 
-        private bool loading = false;
-
         /// <summary>
         /// 显示/隐藏 Loading 遮罩
         /// </summary>
@@ -281,7 +312,7 @@ namespace BootstrapBlazor.Components
         {
             if (ShowLoading)
             {
-                loading = state;
+                IsLoading = state;
                 await JSRuntime.InvokeVoidAsync(TableElement, "bb_table_load", state ? "show" : "hide");
             }
         }
@@ -293,7 +324,7 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         protected async ValueTask InternalToggleLoading(bool state)
         {
-            if (ShowLoading && !loading)
+            if (ShowLoading && !IsLoading)
             {
                 await JSRuntime.InvokeVoidAsync(TableElement, "bb_table_load", state ? "show" : "hide");
             }
@@ -304,29 +335,13 @@ namespace BootstrapBlazor.Components
         /// </summary>
         protected async Task QueryData()
         {
-            // https://gitee.com/LongbowEnterprise/BootstrapBlazor/issues/I29YK1
             SelectedItems.Clear();
 
             if (OnQueryAsync == null && DynamicContext != null && typeof(TItem).IsAssignableTo(typeof(IDynamicObject)))
             {
-                Items = DynamicContext.GetItems().Cast<TItem>();
-                return;
+                QueryItems = DynamicContext.GetItems().Cast<TItem>();
             }
-
-            QueryData<TItem>? queryData = null;
-            var queryOption = new QueryPageOptions()
-            {
-                IsPage = IsPagination,
-                PageIndex = PageIndex,
-                PageItems = PageItems,
-                SearchText = SearchText,
-                SortOrder = SortOrder,
-                SortName = SortName,
-                Filters = Filters.Values,
-                Searchs = GetSearchs(),
-                SearchModel = SearchModel
-            };
-            if (OnQueryAsync != null)
+            else
             {
                 queryData = await OnQueryAsync(queryOption);
             }
@@ -349,63 +364,64 @@ namespace BootstrapBlazor.Components
                 }
                 if (IsTree)
                 {
-                    KeySet.Clear();
-                    if (TableTreeNode<TItem>.HasKey)
+                    RowItemsCache = null;
+                    Items = null;
+                    QueryItems = queryData.Items;
+                    if (IsTree)
                     {
-                        CheckExpandKeys(TreeRows);
-                    }
-                    if (KeySet.Count > 0)
-                    {
-                        TreeRows = new List<TableTreeNode<TItem>>();
-                        foreach (var item in Items)
+                        KeySet.Clear();
+                        if (TableTreeNode<TItem>.HasKey)
                         {
-                            var node = new TableTreeNode<TItem>(item)
+                            CheckExpandKeys(TreeRows);
+                        }
+                        if (KeySet.Count > 0)
+                        {
+                            TreeRows = new List<TableTreeNode<TItem>>();
+                            foreach (var item in QueryItems)
                             {
-                                HasChildren = CheckTreeChildren(item),
-                            };
-                            node.IsExpand = node.HasChildren && node.Key != null && KeySet.Contains(node.Key);
-                            if (node.IsExpand)
-                            {
-                                await RestoreIsExpand(node);
+                                var node = new TableTreeNode<TItem>(item)
+                                {
+                                    HasChildren = CheckTreeChildren(item),
+                                };
+                                node.IsExpand = node.HasChildren && node.Key != null && KeySet.Contains(node.Key);
+                                if (node.IsExpand)
+                                {
+                                    await RestoreIsExpand(node);
+                                }
+                                TreeRows.Add(node);
                             }
-                            TreeRows.Add(node);
+                        }
+                        else
+                        {
+                            TreeRows = QueryItems.Select(item => new TableTreeNode<TItem>(item)
+                            {
+                                HasChildren = CheckTreeChildren(item)
+                            }).ToList();
                         }
                     }
-                    else
+                    TotalCount = queryData.TotalCount;
+                    IsFiltered = queryData.IsFiltered;
+                    IsSorted = queryData.IsSorted;
+                    IsSearch = queryData.IsSearch;
+
+                    // 外部未过滤，内部自行过滤
+                    if (!IsFiltered && Filters.Any())
                     {
-                        TreeRows = Items.Select(item => new TableTreeNode<TItem>(item)
-                        {
-                            HasChildren = CheckTreeChildren(item)
-                        }).ToList();
+                        QueryItems = QueryItems.Where(Filters.Values.GetFilterFunc<TItem>());
+                        TotalCount = QueryItems.Count();
+                    }
+
+                    // 外部未处理排序，内部自行排序
+                    if (!IsSorted && SortOrder != SortOrder.Unset && !string.IsNullOrEmpty(SortName))
+                    {
+                        var invoker = SortLambdaCache.GetOrAdd(typeof(TItem), key => LambdaExtensions.GetSortLambda<TItem>().Compile());
+                        QueryItems = invoker(QueryItems, SortName, SortOrder);
                     }
                 }
-                TotalCount = queryData.TotalCount;
-                IsFiltered = queryData.IsFiltered;
-                IsSorted = queryData.IsSorted;
-                IsSearch = queryData.IsSearch;
-
-                // 外部未过滤，内部自行过滤
-                if (!IsFiltered && Filters.Any())
-                {
-                    Items = Items.Where(Filters.Values.GetFilterFunc<TItem>());
-                    TotalCount = Items.Count();
-                }
-
-                // 外部未处理排序，内部自行排序
-                if (!IsSorted && SortOrder != SortOrder.Unset && !string.IsNullOrEmpty(SortName))
-                {
-                    var invoker = SortLambdaCache.GetOrAdd(typeof(TItem), key => LambdaExtensions.GetSortLambda<TItem>().Compile());
-                    Items = invoker(Items, SortName, SortOrder);
-                }
             }
-
-            // https://gitee.com/LongbowEnterprise/BootstrapBlazor/issues/I3XZ71
-            // https://gitee.com/LongbowEnterprise/BootstrapBlazor/issues/I3XIDI
-            Items = Items.ToList();
-
             if (SelectedRows != null)
             {
-                SelectedItems.AddRange(Items.Where(i => SelectedRows.Contains(i)));
+                SelectedItems.AddRange(RowItems.Where(i => SelectedRows.Contains(i)));
             }
         }
 
@@ -467,6 +483,12 @@ namespace BootstrapBlazor.Components
         {
             var context = new EditContext(EditModel);
             await SaveAsync(context);
+
+            // 回调外部自定义方法
+            if (OnAfterSaveAsync != null)
+            {
+                await OnAfterSaveAsync(EditModel);
+            }
         });
 
         /// <summary>

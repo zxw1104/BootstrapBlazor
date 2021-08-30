@@ -38,7 +38,7 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得/设置 按钮文本样式
         /// </summary>
-        private string? RightButtonClassName => CssBuilder.Default("mr-1")
+        private string? RightButtonClassName => CssBuilder.Default("me-1")
             .AddClass("d-none", string.IsNullOrEmpty(RightButtonText))
             .Build();
 
@@ -299,19 +299,6 @@ namespace BootstrapBlazor.Components
         {
             StateHasChanged();
             return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 更改组件数据源方法
-        /// </summary>
-        /// <param name="items"></param>
-        [Obsolete("更改数据源 Items 参数即可，下一个版本移除此方法")]
-        public void SetItems(List<SelectedItem>? items)
-        {
-            Items = items;
-            ResetItems();
-
-            StateHasChanged();
         }
 
         private void ResetItems()

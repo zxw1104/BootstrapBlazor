@@ -286,7 +286,7 @@ namespace BootstrapBlazor.Components
             var rules = propertyInfo.GetCustomAttributes(true).OfType<ValidationAttribute>();
             var displayName = context.DisplayName;
             memberName ??= propertyInfo.Name;
-            var attributeSpan = "Attribute".AsSpan();
+            var attributeSpan = nameof(Attribute).AsSpan();
             foreach (var rule in rules)
             {
                 var result = rule.GetValidationResult(value, context);
@@ -311,7 +311,7 @@ namespace BootstrapBlazor.Components
                     }
 
                     // 通过设置 ErrorMessage 检索
-                    if (!find && !string.IsNullOrEmpty(rule.ErrorMessage) && JsonStringLocalizerFactory.TryGetLocalizerString(
+                    if (!context.ObjectType.Assembly.IsDynamic && !find && !string.IsNullOrEmpty(rule.ErrorMessage) && JsonStringLocalizerFactory.TryGetLocalizerString(
                             localizer: LocalizerFactory.Create(context.ObjectType),
                             key: rule.ErrorMessage, out var msg))
                     {
@@ -320,7 +320,7 @@ namespace BootstrapBlazor.Components
                     }
 
                     // 通过 Attribute 检索
-                    if (!find && JsonStringLocalizerFactory.TryGetLocalizerString(
+                    if (!rule.GetType().Assembly.IsDynamic && !find && JsonStringLocalizerFactory.TryGetLocalizerString(
                         localizer: LocalizerFactory.Create(rule.GetType()),
                         key: nameof(rule.ErrorMessage), out msg))
                     {
@@ -329,7 +329,7 @@ namespace BootstrapBlazor.Components
                     }
 
                     // 通过 字段.规则名称 检索
-                    if (!find && JsonStringLocalizerFactory.TryGetLocalizerString(
+                    if (!context.ObjectType.Assembly.IsDynamic && !find && JsonStringLocalizerFactory.TryGetLocalizerString(
                             localizer: LocalizerFactory.Create(context.ObjectType),
                             key: $"{memberName}.{ruleName.ToString()}", out msg))
                     {

@@ -40,6 +40,24 @@ namespace BootstrapBlazor.Components
         public bool ShowLabel { get; set; }
 
         /// <summary>
+        /// 获得/设置 每行显示组件数量 默认为 null
+        /// </summary>
+        [Parameter]
+        public int? ItemsPerRow { get; set; }
+
+        /// <summary>
+        /// 获得/设置 设置行格式 默认 Row 布局
+        /// </summary>
+        [Parameter]
+        public RowType RowType { get; set; }
+
+        /// <summary>
+        /// 获得/设置 设置 <see cref="RowType" /> Inline 模式下标签对齐方式 默认 None 等效于 Left 左对齐
+        /// </summary>
+        [Parameter]
+        public Alignment LabelAlign { get; set; }
+
+        /// <summary>
         /// OnInitialized 方法
         /// </summary>
         protected override void OnInitialized()

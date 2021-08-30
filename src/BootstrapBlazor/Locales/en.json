@@ -111,7 +111,7 @@
     "PlaceHolderText": "Please input ..."
   },
   "BootstrapBlazor.Components.Empty": {
-    "Description": "No Data"
+    "Text": "No Data"
   },
   "BootstrapBlazor.Components.EqualToValidator": {
     "ErrorMessage": "Please enter the same value again"
@@ -179,7 +179,8 @@
   "BootstrapBlazor.Components.Tab": {
     "CloseCurrentTabText": "Close",
     "CloseOtherTabsText": "Close Other",
-    "CloseAllTabsText": "Close All"
+    "CloseAllTabsText": "Close All",
+    "NotFoundTabText": "NotFound"
   },
   "BootstrapBlazor.Components.Table": {
     "AddButtonText": "Add",
@@ -188,10 +189,12 @@
     "DeleteButtonText": "Delete",
     "CancelButtonText": "Cancel",
     "SaveButtonText": "Save",
+    "CloseButtonText": "Close",
     "CancelDeleteButtonText": "Cancel",
     "ConfirmDeleteButtonText": "Delete",
     "ConfirmDeleteContentText": "Are you sure to DELETE all selected rows?",
     "RefreshButtonText": "Refresh",
+    "CardViewButtonText": "View",
     "ColumnButtonTitleText": "Show/Hide Columns",
     "ColumnButtonText": "Columns",
     "ExportButtonText": "Export",
@@ -220,7 +223,11 @@
     "DeleteButtonToastContent": "Please select DELETE rows, auto close after {0}s",
     "DeleteButtonToastResultContent": "Delete data {0}, auto close after {1}s",
     "DataServiceInvalidOperationText": "Cannot provide a value for property 'DataService' on type 'BootstrapBlazor.Components.Table`1[[{0}]]'. There is no registered service of type 'BootstrapBlazor.Components.IDataService`1[{0}]'.",
-    "NotSetOnTreeExpandErrorMessage": "not set OnTreeExpand parameter"
+    "NotSetOnTreeExpandErrorMessage": "not set OnTreeExpand parameter",
+    "UnsetText": "Asc",
+    "SortAscText": "Desc",
+    "SortDescText": "None",
+    "EmptyText": "No Data"
   },
   "BootstrapBlazor.Components.EditDialog": {
     "CloseButtonText": "Close",

@@ -111,7 +111,7 @@
     "PlaceHolderText": "请输入 ..."
   },
   "BootstrapBlazor.Components.Empty": {
-    "Description": "暂无描述"
+    "Text": "暂无描述"
   },
   "BootstrapBlazor.Components.EqualToValidator": {
     "ErrorMessage": "你的输入不相同"
@@ -179,7 +179,8 @@
   "BootstrapBlazor.Components.Tab": {
     "CloseCurrentTabText": "关闭当前标签",
     "CloseOtherTabsText": "关闭其他标签",
-    "CloseAllTabsText": "关闭所有标签"
+    "CloseAllTabsText": "关闭所有标签",
+    "NotFoundTabText": "未找到"
   },
   "BootstrapBlazor.Components.Table": {
     "AddButtonText": "新建",
@@ -188,10 +189,12 @@
     "DeleteButtonText": "删除",
     "CancelButtonText": "取消",
     "SaveButtonText": "保存",
+    "CloseButtonText": "关闭",
     "CancelDeleteButtonText": "取消",
     "ConfirmDeleteButtonText": "删除",
     "ConfirmDeleteContentText": "确认要删除选中的所有行吗？",
     "RefreshButtonText": "刷新",
+    "CardViewButtonText": "视图",
     "ColumnButtonTitleText": "列显示隐藏控制",
     "ColumnButtonText": "列",
     "ExportButtonText": "导出数据",
@@ -220,7 +223,11 @@
     "DeleteButtonToastContent": "请选择要删除的数据, {0} 秒后自动关闭",
     "DeleteButtonToastResultContent": "删除数据{0}, {1} 秒后自动关闭",
     "DataServiceInvalidOperationText": "未注册 'BootstrapBlazor.Components.IDataService`1[{0}]' 服务",
-    "NotSetOnTreeExpandErrorMessage": "未设置 OnTreeExpand 回调委托方法"
+    "NotSetOnTreeExpandErrorMessage": "未设置 OnTreeExpand 回调委托方法",
+    "UnsetText": "点击升序",
+    "SortAscText": "点击降序",
+    "SortDescText": "取消排序",
+    "EmptyText": "无数据"
   },
   "BootstrapBlazor.Components.EditDialog": {
     "CloseButtonText": "关闭",

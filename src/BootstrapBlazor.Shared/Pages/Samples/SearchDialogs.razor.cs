@@ -22,7 +22,7 @@ namespace BootstrapBlazor.Shared.Pages
         private DialogService? DialogService { get; set; }
 
         [NotNull]
-        private Logger? Trace { get; set; }
+        private BlockLogger? Trace { get; set; }
 
         private async Task ShowDialog()
         {
@@ -30,6 +30,8 @@ namespace BootstrapBlazor.Shared.Pages
             {
                 Title = "搜索弹出框",
                 Model = new Foo(),
+                ItemsPerRow = 2,
+                RowType = RowType.Inline,
                 OnCloseAsync = () =>
                 {
                     Trace.Log("关闭按钮被点击");
@@ -56,6 +58,37 @@ namespace BootstrapBlazor.Shared.Pages
             var option = new SearchDialogOption<Foo>()
             {
                 Title = "搜索弹出框",
+                Model = model,
+                ItemsPerRow = 2,
+                RowType = RowType.Inline,
+                Items = Utility.GenerateColumns<Foo>(p => p.GetFieldName() == nameof(Foo.Name) || p.GetFieldName() == nameof(Foo.Address))
+            };
+            await DialogService.ShowSearchDialog(option);
+        }
+
+        private async Task ShowInlineDialog()
+        {
+            var model = new Foo();
+            var option = new SearchDialogOption<Foo>()
+            {
+                Title = "搜索弹出框",
+                ItemsPerRow = 2,
+                RowType = RowType.Inline,
+                Model = model,
+                Items = Utility.GenerateColumns<Foo>(p => p.GetFieldName() == nameof(Foo.Name) || p.GetFieldName() == nameof(Foo.Address))
+            };
+            await DialogService.ShowSearchDialog(option);
+        }
+
+        private async Task ShowInlineAlignDialog()
+        {
+            var model = new Foo();
+            var option = new SearchDialogOption<Foo>()
+            {
+                Title = "搜索弹出框",
+                ItemsPerRow = 2,
+                RowType = RowType.Inline,
+                LabelAlign = Alignment.Right,
                 Model = model,
                 Items = Utility.GenerateColumns<Foo>(p => p.GetFieldName() == nameof(Foo.Name) || p.GetFieldName() == nameof(Foo.Address))
             };
@@ -124,6 +157,27 @@ namespace BootstrapBlazor.Shared.Pages
                 Type = "Func<Task>",
                 ValueList = " — ",
                 DefaultValue = " — "
+            },
+            new AttributeItem() {
+                Name = "ItemsPerRow",
+                Description = "每行显示组件数量",
+                Type = "int?",
+                ValueList = " — ",
+                DefaultValue = " — "
+            },
+            new AttributeItem() {
+                Name = "RowType",
+                Description = "设置组件布局方式",
+                Type = "RowType",
+                ValueList = "Row|Inline",
+                DefaultValue = "Row"
+            },
+            new AttributeItem() {
+                Name = "LabelAlign",
+                Description = "Inline 布局模式下标签对齐方式",
+                Type = "Alignment",
+                ValueList = "None|Left|Center|Right",
+                DefaultValue = "None"
             }
         };
     }

@@ -34,7 +34,7 @@ namespace BootstrapBlazor.Shared.Pages
         private IStringLocalizer<Foo>? Localizer { get; set; }
 
         [NotNull]
-        private Logger? Trace { get; set; }
+        private BlockLogger? Trace { get; set; }
 
         private async Task ShowDialog()
         {
@@ -47,6 +47,71 @@ namespace BootstrapBlazor.Shared.Pages
                 Title = "编辑对话框",
                 Model = Model,
                 Items = items,
+                ItemsPerRow = 2,
+                RowType = RowType.Inline,
+                OnCloseAsync = () =>
+                {
+                    Trace.Log("关闭按钮被点击");
+                    return Task.CompletedTask;
+                },
+                OnSaveAsync = context =>
+                {
+                    Trace.Log("保存按钮被点击");
+                    return Task.FromResult(true);
+                }
+            };
+
+            await DialogService.ShowEditDialog(option);
+        }
+
+        private async Task ShowAlignDialog()
+        {
+            var items = EditorItem<Foo>.GenerateEditorItems();
+            var item = items.First(i => i.GetFieldName() == nameof(Foo.Hobby));
+            item.Data = Foo.GenerateHobbys(Localizer);
+
+            var option = new EditDialogOption<Foo>()
+            {
+                Title = "编辑对话框",
+                Model = Model,
+                Items = items,
+                ItemsPerRow = 2,
+                RowType = RowType.Inline,
+                LabelAlign = Alignment.Right,
+                OnCloseAsync = () =>
+                {
+                    Trace.Log("关闭按钮被点击");
+                    return Task.CompletedTask;
+                },
+                OnSaveAsync = context =>
+                {
+                    Trace.Log("保存按钮被点击");
+                    return Task.FromResult(true);
+                }
+            };
+
+            await DialogService.ShowEditDialog(option);
+        }
+
+        private async Task ShowEditDialog()
+        {
+            var items = EditorItem<Foo>.GenerateEditorItems();
+            var item = items.First(i => i.GetFieldName() == nameof(Foo.Hobby));
+            item.Data = Foo.GenerateHobbys(Localizer);
+
+            // 设置 地址与数量 不可编辑
+            item = items.First(i => i.GetFieldName() == nameof(Foo.Address));
+            item.Editable = false;
+            item = items.First(i => i.GetFieldName() == nameof(Foo.Count));
+            item.Editable = false;
+
+            var option = new EditDialogOption<Foo>()
+            {
+                Title = "编辑对话框",
+                Model = Model,
+                Items = items,
+                ItemsPerRow = 2,
+                RowType = RowType.Inline,
                 OnCloseAsync = () =>
                 {
                     Trace.Log("关闭按钮被点击");
@@ -117,6 +182,27 @@ namespace BootstrapBlazor.Shared.Pages
                 Type = "Func<Task>",
                 ValueList = " — ",
                 DefaultValue = " — "
+            },
+            new AttributeItem() {
+                Name = "ItemsPerRow",
+                Description = "每行显示组件数量",
+                Type = "int?",
+                ValueList = " — ",
+                DefaultValue = " — "
+            },
+            new AttributeItem() {
+                Name = "RowType",
+                Description = "设置组件布局方式",
+                Type = "RowType",
+                ValueList = "Row|Inline",
+                DefaultValue = "Row"
+            },
+            new AttributeItem() {
+                Name = "LabelAlign",
+                Description = "Inline 布局模式下标签对齐方式",
+                Type = "Alignment",
+                ValueList = "None|Left|Center|Right",
+                DefaultValue = "None"
             }
         };
     }

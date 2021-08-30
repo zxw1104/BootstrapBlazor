@@ -24,17 +24,19 @@ namespace BootstrapBlazor.Shared.Pages
         private string SpanValue2 { get; set; } = DateTime.Now.ToString("HH:mm:ss");
 
         [NotNull]
-        private Logger? DateLogger { get; set; }
+        private BlockLogger? DateLogger { get; set; }
 
         [NotNull]
-        private Logger? TimeLogger { get; set; }
+        private BlockLogger? TimeLogger { get; set; }
 
         [NotNull]
-        private Logger? DateTimeLogger { get; set; }
+        private BlockLogger? DateTimeLogger { get; set; }
 
         private DateTime? BindValue { get; set; } = DateTime.Today;
 
         private DateTime? BindNullValue { get; set; }
+
+        private bool IsDisabled { get; set; } = true;
 
         /// <summary>
         /// 
@@ -115,7 +117,6 @@ namespace BootstrapBlazor.Shared.Pages
         private Task DateTimeValueChanged(DateTime? d)
         {
             BindValue = d;
-            DateTimeLogger.Log($"选择的时间为: {d:yyyy-MM-dd}");
             return Task.CompletedTask;
         }
 

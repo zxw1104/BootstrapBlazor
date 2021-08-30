@@ -32,6 +32,21 @@ namespace BootstrapBlazor.Components
         public bool ShowLabel { get; set; }
 
         /// <summary>
+        /// 获得/设置 每行显示组件数量 默认为 null
+        /// </summary>
+        public int? ItemsPerRow { get; set; }
+
+        /// <summary>
+        /// 获得/设置 设置行内组件布局格式 默认 Row 布局
+        /// </summary>
+        public RowType RowType { get; set; }
+
+        /// <summary>
+        /// 获得/设置 设置 <see cref="RowType" /> Inline 模式下标签对齐方式 默认 None 等效于 Left 左对齐
+        /// </summary>
+        public Alignment LabelAlign { get; set; }
+
+        /// <summary>
         /// 获得/设置 编辑框模型
         /// </summary>
         public TModel? Model { get; set; }

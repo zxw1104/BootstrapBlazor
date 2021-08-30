@@ -41,16 +41,28 @@ namespace BootstrapBlazor.Components
         public bool ShowAddButton { get; set; } = true;
 
         /// <summary>
-        /// 获得/设置 是否显示编辑按钮 默认为 true 显示
+        /// 获得/设置 是否显示编辑按钮 默认为 true 显示 <see cref="ShowEditButtonCallback" />
         /// </summary>
         [Parameter]
         public bool ShowEditButton { get; set; } = true;
 
         /// <summary>
-        /// 获得/设置 是否显示删除按钮 默认为 true 显示
+        /// 获得/设置 是否显示编辑按钮 设置此参数时 <see cref="ShowEditButton" /> 参数不起作用 默认为 null 
+        /// </summary>
+        [Parameter]
+        public Func<TItem, bool>? ShowEditButtonCallback { get; set; }
+
+        /// <summary>
+        /// 获得/设置 是否显示删除按钮 默认为 true 显示 <see cref="ShowDeleteButtonCallback" />
         /// </summary>
         [Parameter]
         public bool ShowDeleteButton { get; set; } = true;
+
+        /// <summary>
+        /// 获得/设置 是否显示删除按钮  设置此参数时 <see cref="ShowDeleteButton" /> 参数不起作用 默认为 null 
+        /// </summary>
+        [Parameter]
+        public Func<TItem, bool>? ShowDeleteButtonCallback { get; set; }
 
         /// <summary>
         /// 获得/设置 是否显示导出按钮 默认为 false 显示
@@ -81,6 +93,12 @@ namespace BootstrapBlazor.Components
         /// </summary>
         [Parameter]
         public bool ShowRefresh { get; set; } = true;
+
+        /// <summary>
+        /// 获得/设置 是否显示视图按钮 默认为 false
+        /// </summary>
+        [Parameter]
+        public bool ShowCardView { get; set; }
 
         /// <summary>
         /// 获得/设置 是否显示列选择下拉框 默认为 false 不显示
@@ -184,12 +202,14 @@ namespace BootstrapBlazor.Components
 
         private bool EditInCell { get; set; }
 
+        private bool AddInCell { get; set; }
+
         /// <summary>
         /// 新建按钮方法
         /// </summary>
         public async Task AddAsync()
         {
-            if (UseInjectDataService || OnSaveAsync != null)
+            if (UseInjectDataService || IsTracking || OnSaveAsync != null)
             {
                 await ToggleLoading(true);
                 if (OnAddAsync != null)
@@ -209,6 +229,10 @@ namespace BootstrapBlazor.Components
                 SelectedItems.Clear();
                 EditModalTitleString = AddModalTitle;
 
+                if (IsTracking)
+                {
+                    RowItems.Insert(0, EditModel);
+                }
                 if (EditMode == EditMode.Popup)
                 {
                     await ShowEditDialog();
@@ -217,9 +241,18 @@ namespace BootstrapBlazor.Components
                 {
                     ShowAddForm = true;
                     ShowEditForm = false;
+
+                    await UpdateAsync();
+                }
+                else if (EditMode == EditMode.InCell)
+                {
+                    AddInCell = true;
+                    EditInCell = true;
+                    SelectedItems.Add(EditModel);
+
+                    await UpdateAsync();
                 }
                 await ToggleLoading(false);
-                StateHasChanged();
             }
             else
             {
@@ -240,7 +273,7 @@ namespace BootstrapBlazor.Components
         /// </summary>
         public async Task EditAsync()
         {
-            if (UseInjectDataService || OnSaveAsync != null)
+            if (UseInjectDataService || IsTracking || OnSaveAsync != null)
             {
                 if (SelectedItems.Count == 1)
                 {
@@ -258,7 +291,7 @@ namespace BootstrapBlazor.Components
                     }
                     else
                     {
-                        EditModel = Utility.Clone(SelectedItems[0]);
+                        EditModel = IsTracking ? SelectedItems[0] : Utility.Clone(SelectedItems[0]);
                     }
                     EditModalTitleString = EditModalTitle;
 
@@ -271,12 +304,15 @@ namespace BootstrapBlazor.Components
                     {
                         ShowEditForm = true;
                         ShowAddForm = false;
-                        StateHasChanged();
+                        await UpdateAsync();
+
                     }
                     else if (EditMode == EditMode.InCell)
                     {
+                        AddInCell = false;
                         EditInCell = true;
-                        StateHasChanged();
+                        await UpdateAsync();
+
                     }
                     await ToggleLoading(false);
                 }
@@ -317,6 +353,7 @@ namespace BootstrapBlazor.Components
             else if (EditMode == EditMode.InCell)
             {
                 SelectedItems.Clear();
+                AddInCell = false;
                 EditInCell = false;
             }
         });
@@ -381,6 +418,11 @@ namespace BootstrapBlazor.Components
                     {
                         SelectedItems.Clear();
                         EditInCell = false;
+                        if (AddInCell)
+                        {
+                            AddInCell = false;
+                            await QueryAsync();
+                        }
                     }
                 }
                 await ToggleLoading(false);
@@ -404,6 +446,7 @@ namespace BootstrapBlazor.Components
         /// </summary>
         protected Task ShowEditDialog() => DialogService.ShowEditDialog(new EditDialogOption<TItem>()
         {
+            IsTracking = IsTracking,
             IsScrolling = ScrollingDialogContent,
             ShowLoading = ShowLoading,
             Title = EditModalTitleString,
@@ -411,6 +454,9 @@ namespace BootstrapBlazor.Components
             Items = Columns.Where(i => i.Editable),
             SaveButtonText = EditDialogSaveButtonText,
             DialogBodyTemplate = EditTemplate,
+            RowType = EditDialogRowType,
+            ItemsPerRow = EditDialogItemsPerRow,
+            LabelAlign = EditDialogLabelAlign,
             OnCloseAsync = async () =>
             {
                 if (UseInjectDataService)
@@ -424,6 +470,7 @@ namespace BootstrapBlazor.Components
                         await ToggleLoading(false);
                     }
                 }
+                await UpdateAsync();
             },
             OnSaveAsync = async context =>
             {
@@ -437,6 +484,18 @@ namespace BootstrapBlazor.Components
                 return valid;
             }
         });
+
+        private async Task UpdateAsync()
+        {
+            if (ItemsChanged.HasDelegate)
+            {
+                await ItemsChanged.InvokeAsync(RowItems);
+            }
+            else
+            {
+                StateHasChanged();
+            }
+        }
 
         /// <summary>
         /// 确认删除按钮方法
@@ -468,13 +527,21 @@ namespace BootstrapBlazor.Components
         {
             await ToggleLoading(true);
             var ret = false;
-            if (OnDeleteAsync != null)
+            if (IsTracking)
             {
-                ret = await OnDeleteAsync(SelectedItems);
+                RowItems.RemoveAll(i => SelectedItems.Any(item => item == i));
+                ret = true;
             }
-            else if (UseInjectDataService)
+            else
             {
-                ret = await GetDataService().DeleteAsync(SelectedItems);
+                if (OnDeleteAsync != null)
+                {
+                    ret = await OnDeleteAsync(SelectedItems);
+                }
+                else if (UseInjectDataService)
+                {
+                    ret = await GetDataService().DeleteAsync(SelectedItems);
+                }
             }
 
             var option = new ToastOption()
@@ -495,9 +562,17 @@ namespace BootstrapBlazor.Components
                 PageItems = Math.Min(PageItems, items.Any() ? items.Min() : PageItems);
 
                 SelectedItems.Clear();
-                await QueryAsync();
+
+                if (!IsTracking)
+                {
+                    await QueryAsync();
+                }
+                else
+                {
+                    await UpdateAsync();
+                }
             }
-            if (ShowErrorToast || ret)
+            if ((ShowErrorToast || ret) && !IsTracking)
             {
                 await Toast.Show(option);
             }
@@ -511,7 +586,7 @@ namespace BootstrapBlazor.Components
         protected async Task<bool> ConfirmExport()
         {
             var ret = false;
-            if (!Items.Any())
+            if (!RowItems.Any())
             {
                 var option = new ToastOption
                 {
@@ -539,13 +614,13 @@ namespace BootstrapBlazor.Components
             {
                 if (OnExportAsync != null)
                 {
-                    ret = await OnExportAsync(Items);
+                    ret = await OnExportAsync(RowItems);
                 }
                 else
                 {
                     // 如果未提供 OnExportAsync 回调委托使用注入服务来尝试解析
                     // TODO: 这里将本页数据作为参数传递给导出服务，服务本身可以利用自身优势获取全部所需数据，如果获取全部数据呢？
-                    ret = await ExcelExport.ExportAsync(Items, Columns, JSRuntime);
+                    ret = await ExcelExport.ExportAsync(RowItems, Columns, JSRuntime);
                 }
 
                 var option = new ToastOption()
@@ -575,5 +650,17 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <returns></returns>
         protected IEnumerable<TItem> GetSelectedRows() => SelectedItems;
+
+        /// <summary>
+        /// 是否显示行内编辑按钮
+        /// </summary>
+        /// <returns></returns>
+        protected bool GetShowEditButton(TItem item) => ShowEditButtonCallback == null ? ShowEditButton : ShowEditButtonCallback(item);
+
+        /// <summary>
+        /// 是否显示行内删除按钮
+        /// </summary>
+        /// <returns></returns>
+        protected bool GetShowDeleteButton(TItem item) => ShowDeleteButtonCallback == null ? ShowDeleteButton : ShowDeleteButtonCallback(item);
     }
 }

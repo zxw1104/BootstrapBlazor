@@ -28,22 +28,28 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得 Table 组件样式表
         /// </summary>
-        protected string? TableClassName => CssBuilder.Default("table-container")
+        private string? ClassName => CssBuilder.Default("table-container")
             .AddClassFromAttributes(AdditionalAttributes)
+            .Build();
+
+        /// <summary>
+        /// 获得 Table 组件样式表
+        /// </summary>
+        private string? TableClassName => CssBuilder.Default("table")
+            .AddClass("table-sm", TableSize == TableSize.Compact)
+            .AddClass("table-bordered", IsBordered)
+            .AddClass("table-striped table-hover", IsStriped)
             .Build();
 
         /// <summary>
         /// 获得 wrapper 样式表集合
         /// </summary>
         protected string? WrapperClassName => CssBuilder.Default()
-            .AddClass("table-bordered", IsBordered)
-            .AddClass("table-striped table-hover", IsStriped)
-            .AddClass("border-dark", HeaderStyle == TableHeaderStyle.Dark)
+            .AddClass("table-wrapper", IsBordered)
             .AddClass("is-clickable", ClickToSelect || DoubleClickToEdit || OnClickRowCallback != null || OnDoubleClickRowCallback != null)
             .AddClass("table-scroll", !Height.HasValue)
             .AddClass("table-fixed", Height.HasValue)
             .AddClass("table-fixed-column", Columns.Any(c => c.Fixed))
-            .AddClass("table-sm", TableSize == TableSize.Compact)
             .AddClass("table-resize", AllowResizing)
             .Build();
 
@@ -59,6 +65,7 @@ namespace BootstrapBlazor.Components
             .AddClass("is-master", ShowDetails())
             .AddClass("is-click", ClickToSelect)
             .AddClass("is-dblclick", DoubleClickToEdit)
+            .AddClass("is-edit", EditInCell)
             .Build();
 
         /// <summary>
@@ -138,6 +145,12 @@ namespace BootstrapBlazor.Components
         public Func<TItem, bool>? HasChildrenCallback { get; set; }
 
         /// <summary>
+        /// 获得/设置 组件是否采用 Tracking 模式对编辑项进行直接更新 默认 false
+        /// </summary>
+        [Parameter]
+        public bool IsTracking { get; set; }
+
+        /// <summary>
         /// 获得/设置 缩进大小 默认为 16 单位 px
         /// </summary>
         [Parameter]
@@ -148,6 +161,24 @@ namespace BootstrapBlazor.Components
         /// </summary>
         [Parameter]
         public bool? IsDetails { get; set; }
+
+        /// <summary>
+        /// 获得/设置 每行显示组件数量 默认为 2
+        /// </summary>
+        [Parameter]
+        public int EditDialogItemsPerRow { get; set; } = 2;
+
+        /// <summary>
+        /// 获得/设置 设置行内组件布局格式 默认 Inline 布局
+        /// </summary>
+        [Parameter]
+        public RowType EditDialogRowType { get; set; } = RowType.Inline;
+
+        /// <summary>
+        /// 获得/设置 设置 <see cref="EditDialogRowType" /> Inline 模式下标签对齐方式 默认 None 等效于 Left 左对齐
+        /// </summary>
+        [Parameter]
+        public Alignment EditDialogLabelAlign { get; set; }
 
         [NotNull]
         private string? NotSetOnTreeExpandErrorMessage { get; set; }
@@ -299,10 +330,7 @@ namespace BootstrapBlazor.Components
             return ret;
         }
 
-        #region Tree 树形数据获取 Items 方法集合
-        private IEnumerable<TItem> GetItems() => IsTree ? GetTreeRows() : Items;
-
-        private IEnumerable<TItem> GetTreeRows()
+        private List<TItem> GetTreeRows()
         {
             var ret = new List<TItem>();
             ReloadTreeNodes(ret, TreeRows);
@@ -321,7 +349,6 @@ namespace BootstrapBlazor.Components
                 }
             }
         }
-        #endregion
 
         /// <summary>
         /// 明细行集合用于数据懒加载
@@ -377,7 +404,13 @@ namespace BootstrapBlazor.Components
         /// 获得/设置 数据集合，适用于无功能时仅做数据展示使用，高级功能时请使用 <see cref="OnQueryAsync"/> 回调委托
         /// </summary>
         [Parameter]
-        public IEnumerable<TItem> Items { get; set; } = Enumerable.Empty<TItem>();
+        public IEnumerable<TItem>? Items { get; set; }
+
+        /// <summary>
+        /// 获得/设置 数据集合回调方法
+        /// </summary>
+        [Parameter]
+        public EventCallback<IEnumerable<TItem>> ItemsChanged { get; set; }
 
         [Parameter]
         public DataTable DataTable { get; set; }
@@ -406,6 +439,30 @@ namespace BootstrapBlazor.Components
         /// </summary>
         [Parameter]
         public TableSize TableSize { get; set; }
+
+        /// <summary>
+        /// 获得/设置 无数据时显示模板 默认 null
+        /// </summary>
+        [Parameter]
+        public RenderFragment? EmptyTemplate { get; set; }
+
+        /// <summary>
+        /// 获得/设置 无数据时显示文本 默认取资源文件 英文 NoData 中文 无数据
+        /// </summary>
+        [Parameter]
+        public string? EmptyText { get; set; }
+
+        /// <summary>
+        /// 获得/设置 是否显示无数据空记录 默认 false 不显示
+        /// </summary>
+        [Parameter]
+        public bool ShowEmpty { get; set; }
+
+        /// <summary>
+        /// 获得/设置 是否显示过滤表头 默认 false 不显示
+        /// </summary>
+        [Parameter]
+        public bool ShowFilterHeader { get; set; }
 
         /// <summary>
         /// 获得/设置 是否显示表脚 默认为 false
@@ -500,6 +557,27 @@ namespace BootstrapBlazor.Components
         public IDynamicObjectContext? DynamicContext { get; set; }
 
         /// <summary>
+        /// 获得/设置 未设置排序时 tooltip 显示文字 默认点击升序
+        /// </summary>
+        [Parameter]
+        [NotNull]
+        public string? UnsetText { get; set; }
+
+        /// <summary>
+        /// 获得/设置 升序排序时 tooltip 显示文字 默认点击降序
+        /// </summary>
+        [Parameter]
+        [NotNull]
+        public string? SortAscText { get; set; }
+
+        /// <summary>
+        /// 获得/设置 降序排序时 tooltip 显示文字 默认取消排序
+        /// </summary>
+        [Parameter]
+        [NotNull]
+        public string? SortDescText { get; set; }
+
+        /// <summary>
         /// OnInitialized 方法
         /// </summary>
         protected override void OnInitialized()
@@ -544,7 +622,8 @@ namespace BootstrapBlazor.Components
 
             if (IsTree)
             {
-                TreeRows = Items.Select(item => new TableTreeNode<TItem>(item)
+                var rows = Items ?? QueryItems ?? Enumerable.Empty<TItem>();
+                TreeRows = rows.Select(item => new TableTreeNode<TItem>(item)
                 {
                     HasChildren = CheckTreeChildren(item)
                 }).ToList();
@@ -559,6 +638,41 @@ namespace BootstrapBlazor.Components
         protected bool FirstRender { get; set; } = true;
 
         private CancellationTokenSource? AutoRefreshCancelTokenSource { get; set; }
+
+        /// <summary>
+        /// OnParametersSet 方法
+        /// </summary>
+        protected override void OnParametersSet()
+        {
+            base.OnParametersSet();
+
+            RowItemsCache = null;
+
+            if (!FirstRender)
+            {
+                // 动态列模式
+                if (DynamicContext != null && typeof(TItem).IsAssignableTo(typeof(IDynamicObject)))
+                {
+                    AutoGenerateColumns = false;
+
+                    var cols = DynamicContext.GetColumns();
+                    Columns.Clear();
+                    Columns.AddRange(cols);
+
+                    QueryItems = DynamicContext.GetItems().Cast<TItem>();
+                }
+
+                ColumnVisibles = Columns.Select(i => new ColumnVisibleItem { FieldName = i.GetFieldName(), Visible = i.Visible }).ToList();
+
+                // set default sortName
+                var col = Columns.FirstOrDefault(i => i.Sortable && i.DefaultSort);
+                if (col != null)
+                {
+                    SortName = col.GetFieldName();
+                    SortOrder = col.DefaultSortOrder;
+                }
+            }
+        }
 
         /// <summary>
         /// OnAfterRenderAsync 方法
@@ -599,7 +713,7 @@ namespace BootstrapBlazor.Components
 
                 if (!string.IsNullOrEmpty(methodName))
                 {
-                    await JSRuntime.InvokeVoidAsync(TableElement, "bb_table", methodName);
+                    await JSRuntime.InvokeVoidAsync(TableElement, "bb_table", methodName, new { unset = UnsetText, sortAsc = SortAscText, sortDesc = SortDescText });
                     methodName = null;
                 }
 
@@ -693,6 +807,22 @@ namespace BootstrapBlazor.Components
             };
         }
 
+        /// <summary>
+        /// OnQueryAsync 查询结果数据集合
+        /// </summary>
+        private IEnumerable<TItem>? QueryItems { get; set; }
+
+        private Lazy<List<TItem>>? RowItemsCache { get; set; }
+
+        private List<TItem> RowItems
+        {
+            get
+            {
+                RowItemsCache ??= new(() => Items?.ToList() ?? QueryItems?.ToList() ?? new List<TItem>());
+                return IsTree ? GetTreeRows() : RowItemsCache.Value;
+            }
+        }
+
         #region 生成 Row 方法
         /// <summary>
         /// 获得 指定单元格数据方法
@@ -705,10 +835,6 @@ namespace BootstrapBlazor.Components
             if (col.Template != null)
             {
                 builder.AddContent(0, col.Template.Invoke(item));
-            }
-            else if (item is IDynamicObject dynamicObject)
-            {
-                builder.AddContent(0, dynamicObject.GetValue(col.GetFieldName()));
             }
             else
             {
@@ -748,7 +874,7 @@ namespace BootstrapBlazor.Components
                     if (col.Formatter != null)
                     {
                         // 格式化回调委托
-                        content = await col.Formatter(val);
+                        content = await col.Formatter(new TableColumnContext<TItem, object?>(item, val));
                     }
                     else if (!string.IsNullOrEmpty(col.FormatString))
                     {
@@ -796,9 +922,40 @@ namespace BootstrapBlazor.Components
         #endregion
 
         private RenderFragment RenderCell(ITableColumn col) => col.EditTemplate == null
-            ? builder => builder.CreateComponentByFieldType(this, col, EditModel)
+            ? (col.Readonly
+                ? builder => builder.CreateDisplayByFieldType(this, col, EditModel, false)
+                : builder => builder.CreateComponentByFieldType(this, col, EditModel, false))
             : col.EditTemplate.Invoke(EditModel);
 
+        #region Filter
+        /// <summary>
+        /// 获得 过滤小图标样式
+        /// </summary>
+        protected string? GetFilterClassString(string fieldName) => CssBuilder.Default("fa fa-fw fa-filter")
+            .AddClass("active", Filters.ContainsKey(fieldName))
+            .Build();
+
+        /// <summary>
+        /// 获得/设置 表头过滤时回调方法
+        /// </summary>
+        public Func<Task>? OnFilterAsync { get; private set; }
+
+        /// <summary>
+        /// 获得 过滤集合
+        /// </summary>
+        public Dictionary<string, IFilterAction> Filters { get; } = new Dictionary<string, IFilterAction>();
+
+        /// <summary>
+        /// 点击 过滤小图标方法
+        /// </summary>
+        /// <param name="col"></param>
+        protected EventCallback<MouseEventArgs> OnFilterClick(ITableColumn col) => EventCallback.Factory.Create<MouseEventArgs>(this, () =>
+        {
+            col.Filter?.Show();
+        });
+        #endregion
+
+        #region Dispose
         /// <summary>
         /// Dispose 方法
         /// </summary>
@@ -824,6 +981,7 @@ namespace BootstrapBlazor.Components
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+        #endregion
     }
 
     /// <summary>

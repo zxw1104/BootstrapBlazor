@@ -21,6 +21,7 @@ namespace BootstrapBlazor.Localization.Json
         private readonly JsonLocalizationOptions _jsonOptions;
         private readonly ILoggerFactory _loggerFactory;
         private string? _typeName;
+        private readonly IServiceProvider _provider;
 
         /// <summary>
         /// 构造函数
@@ -29,13 +30,15 @@ namespace BootstrapBlazor.Localization.Json
         /// <param name="resxOptions"></param>
         /// <param name="options"></param>
         /// <param name="loggerFactory"></param>
-        public JsonStringLocalizerFactory(IOptions<JsonLocalizationOptions> jsonOptions, IOptions<LocalizationOptions> resxOptions, IOptions<BootstrapBlazorOptions> options, ILoggerFactory loggerFactory) : base(resxOptions, loggerFactory)
+        /// <param name="provider"></param>
+        public JsonStringLocalizerFactory(IOptions<JsonLocalizationOptions> jsonOptions, IOptions<LocalizationOptions> resxOptions, IOptions<BootstrapBlazorOptions> options, ILoggerFactory loggerFactory, IServiceProvider provider) : base(resxOptions, loggerFactory)
         {
             _jsonOptions = jsonOptions.Value;
             _jsonOptions.FallbackCulture = options.Value.FallbackCulture;
             _jsonOptions.FallBackToParentUICultures = options.Value.FallBackToParentUICultures;
             _jsonOptions.SupportedCultures.AddRange(options.Value.GetSupportedCultures());
             _loggerFactory = loggerFactory;
+            _provider = provider;
         }
 
         protected override string GetResourcePrefix(TypeInfo typeInfo)
@@ -77,14 +80,14 @@ namespace BootstrapBlazor.Localization.Json
         /// <returns></returns>
         protected override ResourceManagerStringLocalizer CreateResourceManagerStringLocalizer(Assembly assembly, string baseName)
         {
-            return new JsonStringLocalizer(this, assembly, _typeName ?? "", baseName, _loggerFactory.CreateLogger<JsonStringLocalizer>(), _jsonOptions);
+            return new JsonStringLocalizer(this, assembly, _typeName ?? "", baseName, _loggerFactory.CreateLogger<JsonStringLocalizer>(), _jsonOptions, _provider);
         }
 
         /// <summary>
         /// 获得 IResourceNamesCache 实例
         /// </summary>
         /// <returns></returns>
-        public IResourceNamesCache GetCache()
+        internal IResourceNamesCache GetCache()
         {
             var field = this.GetType().BaseType?.GetField("_resourceNamesCache", BindingFlags.NonPublic | BindingFlags.Instance);
             var ret = field?.GetValue(this) as IResourceNamesCache;

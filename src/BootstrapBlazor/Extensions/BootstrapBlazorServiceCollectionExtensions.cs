@@ -4,9 +4,13 @@
 
 using BootstrapBlazor.Components;
 using BootstrapBlazor.Localization.Json;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -20,12 +24,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services"></param>
         /// <param name="configureOptions"></param>
-        /// <param name="setupAction"></param>
+        /// <param name="localizationAction"></param>
+        /// <param name="locatorAction"></param>
         /// <returns></returns>
-        public static IServiceCollection AddBootstrapBlazor(this IServiceCollection services, Action<BootstrapBlazorOptions>? configureOptions = null, Action<JsonLocalizationOptions>? setupAction = null)
+        public static IServiceCollection AddBootstrapBlazor(this IServiceCollection services, Action<BootstrapBlazorOptions>? configureOptions = null, Action<JsonLocalizationOptions>? localizationAction = null, Action<IPLocatorOption>? locatorAction = null)
         {
             services.AddAuthorizationCore();
-            services.AddJsonLocalization(setupAction);
+            services.AddJsonLocalization(localizationAction);
             services.TryAddScoped<IComponentIdGenerator, DefaultIdGenerator>();
             services.TryAddScoped<ITableExcelExport, DefaultExcelExport>();
             services.TryAddScoped(typeof(IDataService<>), typeof(NullDataService<>));
@@ -37,12 +42,68 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<TabItemTextOptions>();
             services.TryAddScoped<TitleService>();
             services.TryAddScoped<DownloadService>();
+            services.TryAddScoped<WebClientService>();
             services.TryAddSingleton<IConfigureOptions<BootstrapBlazorOptions>, ConfigureOptions<BootstrapBlazorOptions>>();
             services.Configure<BootstrapBlazorOptions>(options =>
             {
                 configureOptions?.Invoke(options);
             });
+
+            services.AddHttpClient();
+            services.TryAddSingleton<IIPLocatorProvider, DefaultIPLocatorProvider>();
+            services.Configure<IPLocatorOption>(options =>
+            {
+                locatorAction?.Invoke(options);
+            });
             return services;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseBootstrapBlazor(this IApplicationBuilder builder)
+        {
+            // 获得客户端 IP 地址
+            builder.UseWhen(context => context.Request.Path.StartsWithSegments("/ip.axd"), app => app.Run(async context =>
+            {
+                var ip = "";
+                var os = "";
+                var browser = "";
+                var headers = context.Request.Headers;
+                if (headers.ContainsKey("X-Forwarded-For"))
+                {
+                    var ips = new List<string>();
+                    foreach (var xf in headers["X-Forwarded-For"])
+                    {
+                        if (!string.IsNullOrEmpty(xf))
+                        {
+                            ips.Add(xf);
+                        }
+                    }
+                    ip = string.Join(";", ips);
+                }
+                else
+                {
+                    ip = context.Connection.RemoteIpAddress.ToIPv4String();
+                }
+
+                // UserAgent
+                var agent = headers["User-Agent"];
+
+                // OS/Browser
+                if (!string.IsNullOrEmpty(agent))
+                {
+                    var at = new UserAgent(agent);
+                    os = $"{at.OS.Name} {at.OS.Version}";
+                    browser = $"{at.Browser.Name} {at.Browser.Version}";
+                }
+
+                context.Response.Headers.Add("Content-Type", new Microsoft.Extensions.Primitives.StringValues("application/json; charset=utf-8"));
+                await context.Response.WriteAsync(JsonSerializer.Serialize(new { Id = context.TraceIdentifier, Ip = ip, Os = os, Browser = browser, UserAgent = agent.ToString() }));
+            }));
+            return builder;
         }
     }
 }

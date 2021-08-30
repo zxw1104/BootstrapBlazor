@@ -14,25 +14,27 @@
 }
 else
 {
-    //class="form-inline"
-    <div >
-        <div class="row">
-            <CascadingValue Value="this" Name="EidtorForm">
-                @foreach (var item in FormItems)
+    <div class="@FormClassString">
+        <CascadingValue Value="this" Name="EidtorForm">
+            @foreach (var item in FormItems)
+            {
+                @if (item.EditTemplate != null)
                 {
-                    @if (item.EditTemplate != null)
-                    {
-                        @item.EditTemplate.Invoke(Model)
-                    }
-                    else
-                    {
-                        <div class="@GetCssString(item)">
-                            @AutoGenerateTemplate(item)
-                        </div>
-                    }
+                    @item.EditTemplate.Invoke(Model)
                 }
-            </CascadingValue>
-        </div>
+                else
+                {
+                    <div class="@GetCssString(item)">
+                        @AutoGenerateTemplate(item)
+                    </div>
+                }
+            }
+        </CascadingValue>
+        @if (Buttons != null)
+        {
+            <div class="col-12">
+                @Buttons
+            </div>
+        }
     </div>
-    @Buttons
 }

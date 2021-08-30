@@ -18,12 +18,15 @@ namespace BootstrapBlazor.Shared.Pages
         private IEnumerable<string> Items => new string[] { "1", "12", "123", "1234" };
 
         [NotNull]
-        private Logger? Trace { get; set; }
+        private BlockLogger? Trace { get; set; }
 
         [NotNull]
-        private Logger? Trace2 { get; set; }
+        private BlockLogger? Trace2 { get; set; }
 
-        private Task OnSearch(string searchText)
+        [NotNull]
+        private BlockLogger? Trace3 { get; set; }
+
+        private Task OnSearch1(string searchText)
         {
             Trace.Log($"SearchText: {searchText}");
             return Task.CompletedTask;
@@ -35,9 +38,15 @@ namespace BootstrapBlazor.Shared.Pages
             return Task.CompletedTask;
         }
 
+        private Task OnSearch3(string searchText)
+        {
+            Trace3.Log($"SearchText: {searchText}");
+            return Task.CompletedTask;
+        }
+
         private Task OnClear(string searchText)
         {
-            Trace2.Log($"OnClear: {searchText}");
+            Trace3.Log($"OnClear: {searchText}");
             return Task.CompletedTask;
         }
 
@@ -68,6 +77,14 @@ namespace BootstrapBlazor.Shared.Pages
                 Type = "string",
                 ValueList = " — ",
                 DefaultValue = "无匹配数据"
+            },
+            new AttributeItem()
+            {
+                Name="SearchButtonLoadingIcon",
+                Description = "正在搜索按钮图标",
+                Type = "string",
+                ValueList = " — ",
+                DefaultValue = "fa fa-fw fa-spinner fa-spin"
             },
             new AttributeItem() {
                 Name = "ClearButtonIcon",
@@ -100,6 +117,20 @@ namespace BootstrapBlazor.Shared.Pages
             new AttributeItem() {
                 Name = "IsLikeMatch",
                 Description = "是否开启模糊匹配",
+                Type = "bool",
+                ValueList = "true|false",
+                DefaultValue = "false"
+            },
+            new AttributeItem() {
+                Name = "IsAutoFocus",
+                Description = "是否自动获得焦点",
+                Type = "bool",
+                ValueList = "true|false",
+                DefaultValue = "false"
+            },
+            new AttributeItem() {
+                Name = "IsAutoClearAfterSearch",
+                Description = "点击搜索后是否自动清空搜索框",
                 Type = "bool",
                 ValueList = "true|false",
                 DefaultValue = "false"

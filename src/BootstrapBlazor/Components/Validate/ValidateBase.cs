@@ -59,7 +59,7 @@ namespace BootstrapBlazor.Components
         /// <summary>
         /// 获得 组件是否被禁用属性值
         /// </summary>
-        protected string? DisabledString => IsDisabled ? "disabled" : null;
+        protected string? Disabled => IsDisabled ? "disabled" : null;
 
         /// <summary>
         /// 是否显示 必填项标记
@@ -81,6 +81,10 @@ namespace BootstrapBlazor.Components
                     if (ValueChanged.HasDelegate)
                     {
                         _ = ValueChanged.InvokeAsync(value);
+                    }
+                    if (OnValueChanged != null)
+                    {
+                        _ = OnValueChanged.Invoke(value);
                     }
                     if (!SkipValidate && FieldIdentifier != null)
                     {
@@ -144,6 +148,12 @@ namespace BootstrapBlazor.Components
                 }
             }
         }
+
+        /// <summary>
+        /// 获得/设置 Value 改变时回调方法
+        /// </summary>
+        [Parameter]
+        public Func<TValue, Task>? OnValueChanged { get; set; }
 
         /// <summary>
         /// 获得/设置 类型转化失败格式化字符串 默认为 null
@@ -322,6 +332,11 @@ namespace BootstrapBlazor.Components
             if (IsShowLabel && DisplayText == null && FieldIdentifier.HasValue)
             {
                 DisplayText = FieldIdentifier.Value.GetDisplayName();
+            }
+
+            if (IsShowLabel && string.IsNullOrEmpty(DisplayText))
+            {
+                DisplayText = "　";
             }
 
             Required = (!string.IsNullOrEmpty(DisplayText) && (ValidateForm?.ShowRequiredMark ?? false) && !IsDisabled && !SkipValidate && HasRequired()) ? "true" : null;

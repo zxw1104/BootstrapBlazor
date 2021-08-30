@@ -18,15 +18,9 @@ namespace BootstrapBlazor.Components
         Normal,
 
         /// <summary>
-        /// 在表单中使用 Label 在上，控件充满
-        /// </summary>
-        [Description("form-row")]
-        FormRow,
-
-        /// <summary>
         /// 表单中使用 label 在左，控件不充满
         /// </summary>
-        [Description("form-inline")]
+        [Description("inline")]
         Inline
     }
 }

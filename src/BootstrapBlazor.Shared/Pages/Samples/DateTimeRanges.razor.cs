@@ -18,7 +18,7 @@ namespace BootstrapBlazor.Shared.Pages
     public sealed partial class DateTimeRanges
     {
         [NotNull]
-        private Logger? DateLogger { get; set; }
+        private BlockLogger? DateLogger { get; set; }
 
         private DateTimeRangeValue DateTimeRangeValue1 { get; set; } = new DateTimeRangeValue();
 
@@ -27,6 +27,8 @@ namespace BootstrapBlazor.Shared.Pages
         private DateTimeRangeValue DateTimeRangeValue3 { get; set; } = new DateTimeRangeValue() { Start = DateTime.Today, End = DateTime.Today.AddDays(3) };
 
         private DateTimeRangeValue DateTimeRangeValue4 { get; set; } = new DateTimeRangeValue();
+
+        private bool IsDisabled { get; set; } = true;
 
         private Task OnConfirm(DateTimeRangeValue value)
         {
@@ -51,7 +53,7 @@ namespace BootstrapBlazor.Shared.Pages
                 Name = "OnClearValue",
                 Description="清空按钮回调委托",
                 Type ="Action"
-            } 
+            }
         };
 
         /// <summary>

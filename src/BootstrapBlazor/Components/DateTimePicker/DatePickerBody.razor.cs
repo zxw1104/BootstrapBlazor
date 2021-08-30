@@ -68,13 +68,15 @@ namespace BootstrapBlazor.Components
         private string? GetDayClass(DateTime day) => CssBuilder.Default("")
             .AddClass("prev-month", day.Month < CurrentDate.Month)
             .AddClass("next-month", day.Month > CurrentDate.Month)
-            .AddClass("current", day == CurrentDate && !IsRange)
+            .AddClass("current", day == OriginaValue && !IsRange && day.Month == CurrentDate.Month)
             .AddClass("start", IsRange && day == Ranger!.SelectedValue.Start)
             .AddClass("end", IsRange && day == Ranger!.SelectedValue!.End.Date)
             .AddClass("range", IsRange && CurrentDate.Month >= Ranger!.SelectedValue.Start.Month && (Ranger!.SelectedValue.Start != DateTime.MinValue) && (Ranger!.SelectedValue.End != DateTime.MinValue) && (day.Ticks >= Ranger!.SelectedValue.Start.Ticks) && (day.Ticks <= Ranger!.SelectedValue.End.Ticks))
             .AddClass("today", day == DateTime.Today)
-            .AddClass("disabled", (MinValue != null && MaxValue != null) && (day < MinValue || day > MaxValue))
+            .AddClass("disabled", IsDisabled(day))
             .Build();
+
+        private bool IsDisabled(DateTime day) => (MinValue != null && MaxValue != null) && (day < MinValue || day > MaxValue);
 
         /// <summary>
         /// 获得 年月日时分秒视图样式
@@ -265,6 +267,8 @@ namespace BootstrapBlazor.Components
         [NotNull]
         public string? ConfirmButtonText { get; set; }
 
+        private DateTime OriginaValue { get; set; }
+
         /// <summary>
         /// 获得/设置 组件值
         /// </summary>
@@ -274,6 +278,7 @@ namespace BootstrapBlazor.Components
             get { return CurrentDate.AddTicks(CurrentTime.Ticks); }
             set
             {
+                OriginaValue = value.Date;
                 CurrentDate = value.Date;
                 CurrentTime = value - CurrentDate;
             }
@@ -428,6 +433,7 @@ namespace BootstrapBlazor.Components
         {
             ShowTimePicker = false;
             CurrentDate = d;
+            OriginaValue = d;
             Ranger?.UpdateValue(d);
             if (!IsRange)
             {
@@ -566,7 +572,7 @@ namespace BootstrapBlazor.Components
         private async Task ClickConfirmButton()
         {
             ShowTimePicker = false;
-            if (ValueChanged.HasDelegate)
+            if (Validate() && ValueChanged.HasDelegate)
             {
                 await ValueChanged.InvokeAsync(Value);
             }
@@ -575,6 +581,8 @@ namespace BootstrapBlazor.Components
                 await OnConfirm.Invoke();
             }
         }
+
+        private bool Validate() => (!MinValue.HasValue || Value >= MinValue.Value) && (!MaxValue.HasValue || Value <= MaxValue.Value);
 
         /// <summary>
         /// 

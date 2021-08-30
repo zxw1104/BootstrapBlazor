@@ -13,6 +13,7 @@
             <TableColumn @bind-Field="@context.DateTime" Text="自定义列名1" Width="180" />
             <TableColumn @bind-Field="@context.Name" Text="自定义列名2" />
             <TableColumn @bind-Field="@context.Address" Text="自定义列名3" />
+            <TableColumn @bind-Field="@context.Complete" />
         </TableColumns>
     </Table>
 </Block>
@@ -23,6 +24,7 @@
             <TableColumn @bind-Field="@context.DateTime" Width="180" />
             <TableColumn @bind-Field="@context.Name" />
             <TableColumn @bind-Field="@context.Address" />
+            <TableColumn @bind-Field="@context.Complete" />
         </TableColumns>
     </Table>
 </Block>
@@ -33,6 +35,7 @@
             <TableColumn @bind-Field="@context.DateTime" Width="180" />
             <TableColumn @bind-Field="@context.Name" />
             <TableColumn @bind-Field="@context.Address" />
+            <TableColumn @bind-Field="@context.Complete" />
         </TableColumns>
     </Table>
 </Block>
@@ -53,6 +56,7 @@
 
 <Block Title="自定义各列宽度" Introduction="通过设置 <code>TableColumn</code> <code>Width</code> 属性，来控制列宽度，行内按钮操作列宽度由 <code>ExtendButtonColumnWidth</code> 属性控制">
     <p>本例中继续上一个例子，实现了自定义四个功能按钮，并且扩展到行内，点击各个按钮时均有相对应的回调委托方法，<code>TableToolbarButton</code> 采用的是 <code>Delegate</code> 方式完成数据交换，点击工具栏按钮时设置 <code>OnClickCallback</code> 委托方法即可获取表内选中的行数据集合</p>
+    <p><code>RowButtonTemplate</code> 按钮模板默认将自定义按钮放置到内置按钮后面，如需要自定义按钮放置到内置按钮前请使用 <code>BeforeRowButtonTemplate</code> 模板</p>
     <Table TItem="Foo" @ref="TableRows" SelectedRows="@SelectedRows"
            IsPagination="true" PageItemsSource="@PageItemsSource"
            IsStriped="true" IsBordered="true"
@@ -178,8 +182,8 @@
         本例中列 <code>Count</code> 列设置为 <code>BreakPoint.Large</code> 即屏幕在大于 <code>992px</code> 时才显示
     </p>
     <p>注意：</p>
-    <p>由于 <code>Table</code> 组件默认是支持移动端适配，所以小屏幕时采用的是卡片式模式，本例中显式设置使用 <code>RenderModel="TableRenderModel.Table"</code> 模式</p>
-    <Table TItem="Foo" RenderModel="TableRenderModel.Table"
+    <p>由于 <code>Table</code> 组件默认是支持移动端适配，所以小屏幕时采用的是卡片式模式，本例中显式设置使用 <code>RenderMode="TableRenderMode.Table"</code> 模式</p>
+    <Table TItem="Foo" RenderMode="TableRenderMode.Table"
            IsPagination="true" PageItemsSource="@PageItemsSource"
            IsStriped="true" IsBordered="true"
            ShowToolbar="false" IsMultipleSelect="true" ShowExtendButtons="false"
@@ -204,9 +208,9 @@
            ShowExtendButtons="false" ShowColumnList="true"
            OnQueryAsync="@OnQueryAsync">
         <TableColumns>
-            <TableColumn @bind-Field="@context.DateTime" Width="180" Text="时间" />
-            <TableColumn @bind-Field="@context.Name" Text="姓名" />
-            <TableColumn @bind-Field="@context.Address" Text="地址" Width="290" />
+            <TableColumn @bind-Field="@context.DateTime" Width="180" />
+            <TableColumn @bind-Field="@context.Name" />
+            <TableColumn @bind-Field="@context.Address" Width="290" />
             <TableColumn @bind-Field="@context.Education" />
             <TableColumn @bind-Field="@context.Count" Visible="false" />
             <TableColumn @bind-Field="@context.Complete" ComponentType="@typeof(Switch)" />
@@ -231,7 +235,7 @@
 
 <Block Title="自定义列模板" Introduction="通过指定 <code>AllowResizing</code> 设置表格列允许调整宽度">
     <Table TItem="Foo"
-           IsPagination="true" PageItemsSource="@PageItemsSource" AllowResizing="true"
+           IsPagination="true" PageItemsSource="@PageItemsSource"
            IsStriped="true" IsBordered="true"
            ShowToolbar="false" IsMultipleSelect="true" ShowExtendButtons="false"
            OnQueryAsync="@OnQueryAsync">

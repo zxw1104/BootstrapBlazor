@@ -16,6 +16,13 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public partial class Search
     {
+        private ElementReference SearchElement { get; set; }
+
+        [NotNull]
+        private string? ButtonIcon { get; set; }
+
+        private bool IsClear { get; set; }
+
         /// <summary>
         /// 获得/设置 是否显示清除按钮 默认为 false 不显示
         /// </summary>
@@ -26,7 +33,7 @@ namespace BootstrapBlazor.Components
         /// Clear button icon
         /// </summary>
         [Parameter]
-        public string ClearButtonIcon { get; set; } = "fa fa-trash";
+        public string ClearButtonIcon { get; set; } = "fa fa-fw fa-trash";
 
         /// <summary>
         /// Clear button text
@@ -50,7 +57,25 @@ namespace BootstrapBlazor.Components
         /// 获得/设置 搜索按钮图标
         /// </summary>
         [Parameter]
-        public string SearchButtonIcon { get; set; } = "fa fa-search";
+        public string SearchButtonIcon { get; set; } = "fa fa-fw fa-search";
+
+        /// <summary>
+        /// 获得/设置 正在搜索按钮图标
+        /// </summary>
+        [Parameter]
+        public string SearchButtonLoadingIcon { get; set; } = "fa fa-fw fa-spinner fa-spin";
+
+        /// <summary>
+        /// 获得/设置 是否自动获得焦点
+        /// </summary>
+        [Parameter]
+        public bool IsAutoFocus { get; set; }
+
+        /// <summary>
+        /// 获得/设置 点击搜索后是否自动清空搜索框
+        /// </summary>
+        [Parameter]
+        public bool IsAutoClearAfterSearch { get; set; }
 
         /// <summary>
         /// 获得/设置 搜索按钮文字
@@ -83,6 +108,22 @@ namespace BootstrapBlazor.Components
             base.OnInitialized();
 
             SearchButtonText ??= Localizer[nameof(SearchButtonText)];
+            ButtonIcon = SearchButtonIcon;
+        }
+
+        /// <summary>
+        /// OnAfterRenderAsync 方法
+        /// </summary>
+        /// <param name="firstRender"></param>
+        /// <returns></returns>
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            await base.OnAfterRenderAsync(firstRender);
+
+            if (firstRender && IsAutoFocus)
+            {
+                await FocusAsync();
+            }
         }
 
         /// <summary>
@@ -91,8 +132,25 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         protected async Task OnSearchClick()
         {
-            if (OnSearch != null) await OnSearch(CurrentValueAsString);
+            if (OnSearch != null)
+            {
+                ButtonIcon = SearchButtonLoadingIcon;
+                await OnSearch(CurrentValueAsString);
+                ButtonIcon = SearchButtonIcon;
+            }
+            if (IsAutoClearAfterSearch)
+            {
+                CurrentValueAsString = "";
+            }
+
+            await FocusAsync();
         }
+
+        /// <summary>
+        /// 自动获得焦点方法
+        /// </summary>
+        /// <returns></returns>
+        public ValueTask FocusAsync() => SearchElement.FocusAsync();
 
         /// <summary>
         /// 点击搜索按钮时触发此方法
@@ -100,7 +158,10 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         protected async Task OnClearClick()
         {
-            if (OnClear != null) await OnClear(CurrentValueAsString);
+            if (OnClear != null)
+            {
+                await OnClear(CurrentValueAsString);
+            }
             CurrentValueAsString = "";
         }
 

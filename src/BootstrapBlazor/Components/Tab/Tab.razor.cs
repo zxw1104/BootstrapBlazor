@@ -75,6 +75,12 @@ namespace BootstrapBlazor.Components
         public bool IsBorderCard { get; set; }
 
         /// <summary>
+        /// 获得/设置 是否仅渲染 Active 标签
+        /// </summary>
+        [Parameter]
+        public bool IsOnlyRenderActiveTab { get; set; }
+
+        /// <summary>
         /// 获得/设置 组件高度 默认值为 0 高度自动
         /// </summary>
         [Parameter]
@@ -117,6 +123,12 @@ namespace BootstrapBlazor.Components
         public RenderFragment? NotAuthorized { get; set; }
 
         /// <summary>
+        /// 获得/设置 NotFound 模板
+        /// </summary>
+        [Parameter]
+        public RenderFragment? NotFound { get; set; }
+
+        /// <summary>
         /// 获得/设置 TabItems 模板
         /// </summary>
         [Parameter]
@@ -140,6 +152,13 @@ namespace BootstrapBlazor.Components
         /// </summary>
         [Parameter]
         public Func<TabItem, Task>? OnClickTab { get; set; }
+
+        /// <summary>
+        /// 获得/设置 NotFound 标签文本
+        /// </summary>
+        [Parameter]
+        [NotNull]
+        public string? NotFoundTabText { get; set; }
 
         /// <summary>
         /// 获得/设置 关闭当前 TabItem 菜单文本
@@ -202,6 +221,7 @@ namespace BootstrapBlazor.Components
             CloseOtherTabsText ??= Localizer[nameof(CloseOtherTabsText)];
             CloseAllTabsText ??= Localizer[nameof(CloseAllTabsText)];
             CloseCurrentTabText ??= Localizer[nameof(CloseCurrentTabText)];
+            NotFoundTabText ??= Localizer[nameof(NotFoundTabText)];
 
             if (!OperatingSystem.IsBrowser() && AdditionalAssemblies == null)
             {
@@ -445,35 +465,45 @@ namespace BootstrapBlazor.Components
 
         private void AddTabItem(string url, string? text = null, string? icon = null, bool? active = null, bool? closable = null)
         {
+            if (TryGetTabItemText(url, out var tabText))
+            {
+                text = tabText;
+            }
+            text ??= Options.Text;
+            icon ??= Options.Icon ?? string.Empty;
+            active ??= Options.IsActive ?? true;
+            closable ??= Options.Closable ?? true;
+            Options.Reset();
+
+            var parameters = new Dictionary<string, object?>()
+            {
+                [nameof(TabItem.Url)] = url,
+                [nameof(TabItem.Icon)] = icon,
+                [nameof(TabItem.Closable)] = closable,
+                [nameof(TabItem.IsActive)] = active
+            };
             var context = RouteTableFactory.Create(AdditionalAssemblies, url);
             if (context.Handler != null)
             {
-                if (TryGetTabItemText(url, out var tabText))
+                parameters.Add(nameof(TabItem.Text), GetTabText(text, context.Segments));
+                parameters.Add(nameof(TabItem.ChildContent), new RenderFragment(builder =>
                 {
-                    text = tabText;
-                }
-                text ??= Options.Text;
-                icon ??= Options.Icon ?? string.Empty;
-                active ??= Options.IsActive ?? true;
-                closable ??= Options.Closable ?? true;
-                Options.Reset();
-
-                AddTabItem(new Dictionary<string, object?>
-                {
-                    [nameof(TabItem.Text)] = GetTabText(text, context.Segments),
-                    [nameof(TabItem.Url)] = url,
-                    [nameof(TabItem.Icon)] = icon,
-                    [nameof(TabItem.Closable)] = closable,
-                    [nameof(TabItem.IsActive)] = active,
-                    [nameof(TabItem.ChildContent)] = new RenderFragment(builder =>
-                    {
-                        builder.OpenComponent<BootstrapBlazorAuthorizeView>(0);
-                        builder.AddAttribute(1, nameof(BootstrapBlazorAuthorizeView.RouteContext), context);
-                        builder.AddAttribute(2, nameof(BootstrapBlazorAuthorizeView.NotAuthorized), NotAuthorized);
-                        builder.CloseComponent();
-                    })
-                });
+                    builder.OpenComponent<BootstrapBlazorAuthorizeView>(0);
+                    builder.AddAttribute(1, nameof(BootstrapBlazorAuthorizeView.RouteContext), context);
+                    builder.AddAttribute(2, nameof(BootstrapBlazorAuthorizeView.NotAuthorized), NotAuthorized);
+                    builder.CloseComponent();
+                }));
             }
+            else
+            {
+                parameters.Add(nameof(TabItem.Text), text ?? NotFoundTabText);
+                parameters.Add(nameof(TabItem.ChildContent), new RenderFragment(builder =>
+                {
+                    builder.AddContent(0, NotFound);
+                }));
+            }
+
+            AddTabItem(parameters);
         }
 
         private string GetTabText(string? text, string[]? segments)
@@ -561,6 +591,19 @@ namespace BootstrapBlazor.Components
             ActiveTabItem(item);
 
             StateHasChanged();
+        }
+
+        /// <summary>
+        /// 设置指定 TabItem 为激活状态设置指定 TabItem 为激活状态
+        /// </summary>
+        /// <param name="index"></param>
+        public void ActiveTab(int index)
+        {
+            var item = _items.ElementAtOrDefault(index);
+            if (item != null)
+            {
+                ActiveTab(item);
+            }
         }
 
         private void ActiveTabItem(TabItem item)

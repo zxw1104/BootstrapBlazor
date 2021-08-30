@@ -1,7 +1,7 @@
 ﻿@namespace BootstrapBlazor.Components
 @typeparam TItem
 
-<div class="float-left table-toolbar-button">
+<div class="float-start table-toolbar-button">
     <CascadingValue Value="this" IsFixed="true">
         @ChildContent
     </CascadingValue>
@@ -32,7 +32,7 @@
                 }
             </div>
             <div class="btn-gear btn-group d-sm-none">
-                <button class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" type="button">
+                <button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" type="button">
                     <i class="fa fa-fw fa-gear"></i>
                 </button>
                 <div class="dropdown-menu">
@@ -41,13 +41,27 @@
                         @if (button is TableToolbarButton<TItem> b)
                         {
                             <div class="dropdown-item" @onclick="@(e => OnToolbarButtonClick(b))">
-                                <i class="@b.Icon"></i>
+								@if(string.IsNullOrEmpty(b.Icon))
+								{
+									<span>@b.Text</span>
+								}
+								else
+								{
+									<i class="@b.Icon"></i>
+								}
                             </div>
                         }
                         else if (button is TableToolbarPopconfirmButton<TItem> pb)
                         {
                             <div class="dropdown-item" @onclick="@pb.OnConfirm">
-                                <i class="@pb.Icon"></i>
+								@if(string.IsNullOrEmpty(pb.Icon))
+								{
+									<span>@pb.Text</span>
+								}
+								else
+								{
+									<i class="@pb.Icon"></i>
+								}
                             </div>
                         }
                     }

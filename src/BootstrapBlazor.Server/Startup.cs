@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace BootstrapBlazor.Server
 {
@@ -51,6 +52,8 @@ namespace BootstrapBlazor.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             services.AddCors();
             services.AddResponseCompression();
 
@@ -158,6 +161,7 @@ namespace BootstrapBlazor.Server
             app.UseRouting();
             app.UseCors(builder => builder.WithOrigins(Configuration["AllowOrigins"].Split(',', StringSplitOptions.RemoveEmptyEntries)).AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
+            app.UseBootstrapBlazor();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();

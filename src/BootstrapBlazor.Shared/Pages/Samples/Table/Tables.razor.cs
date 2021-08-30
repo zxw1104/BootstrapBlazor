@@ -20,8 +20,15 @@ namespace BootstrapBlazor.Shared.Pages.Table
         [NotNull]
         private IStringLocalizer<Foo>? Localizer { get; set; }
 
+        [Inject]
+        [NotNull]
+        private IStringLocalizer<Tables>? TablesLocalizer { get; set; }
+
         [NotNull]
         private List<Foo>? Items { get; set; }
+
+        [NotNull]
+        private string? RefreshText { get; set; }
 
         /// <summary>
         /// OnInitialized 方法
@@ -30,6 +37,13 @@ namespace BootstrapBlazor.Shared.Pages.Table
         {
             base.OnInitialized();
 
+            Items = Foo.GenerateFoo(Localizer);
+
+            RefreshText ??= TablesLocalizer[nameof(RefreshText)];
+        }
+
+        private void OnClick()
+        {
             Items = Foo.GenerateFoo(Localizer);
         }
 
@@ -128,8 +142,8 @@ namespace BootstrapBlazor.Shared.Pages.Table
             },
             new AttributeItem() {
                 Name = "Formatter",
-                Description = "TableHeader 实例",
-                Type = "RenderFragment<TItem>",
+                Description = "格式化回调委托",
+                Type = "Func<object?, Task<string>>",
                 ValueList = " — ",
                 DefaultValue = " — "
             },
@@ -237,9 +251,9 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 DefaultValue = "Popup"
             },
             new AttributeItem() {
-                Name = "HeaderTemplate",
-                Description = "TableHeader 实例",
-                Type = "RenderFragment<TItem>",
+                Name = "MultiHeaderTemplate",
+                Description = "表头分组模板",
+                Type = "RenderFragment",
                 ValueList = " — ",
                 DefaultValue = " — "
             },
@@ -272,8 +286,15 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 DefaultValue = " — "
             },
             new AttributeItem() {
+                Name = "BeforeRowButtonTemplate",
+                Description = "Table 行按钮模板 放置到按钮前",
+                Type = "RenderFragment<TItem>",
+                ValueList = " — ",
+                DefaultValue = " — "
+            },
+            new AttributeItem() {
                 Name = "RowButtonTemplate",
-                Description = "Table 行按钮模板",
+                Description = "Table 行按钮模板 默认放置到按钮后",
                 Type = "RenderFragment<TItem>",
                 ValueList = " — ",
                 DefaultValue = " — "
@@ -370,18 +391,39 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 DefaultValue = "false"
             },
             new AttributeItem() {
-                Name = "ShowResetSearch",
+                Name = "ShowSearchText",
+                Description = "显示搜索文本框",
+                Type = "boolean",
+                ValueList = "true / false",
+                DefaultValue = "false"
+            },
+            new AttributeItem() {
+                Name = "ShowResetButton",
                 Description = "显示清空搜索按钮",
                 Type = "boolean",
                 ValueList = "true / false",
                 DefaultValue = "true"
             },
             new AttributeItem() {
-                Name = "ShowAdvancedSearch",
-                Description = "显示高级搜索按钮",
+                Name = "ShowSearchButton",
+                Description = "显示搜索按钮",
                 Type = "boolean",
                 ValueList = "true / false",
                 DefaultValue = "true"
+            },
+            new AttributeItem() {
+                Name = "ShowSearchButton",
+                Description = "显示搜索按钮",
+                Type = "boolean",
+                ValueList = "true / false",
+                DefaultValue = "true"
+            },
+            new AttributeItem() {
+                Name = "SearchMode",
+                Description = "搜索栏渲染方式",
+                Type = "SearchMode",
+                ValueList = "Popup / Top",
+                DefaultValue = "Popup"
             },
             new AttributeItem() {
                 Name = "ShowToolbar",
@@ -442,6 +484,13 @@ namespace BootstrapBlazor.Shared.Pages.Table
             new AttributeItem() {
                 Name = "ShowColumnList",
                 Description = "是否显示列显示/隐藏控制按钮",
+                Type = "boolean",
+                ValueList = "true / false",
+                DefaultValue = "false"
+            },
+            new AttributeItem() {
+                Name = "ShowEmpty",
+                Description = "是否显示无数据提示",
                 Type = "boolean",
                 ValueList = "true / false",
                 DefaultValue = "false"
@@ -524,6 +573,13 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 DefaultValue = " — "
             },
             new AttributeItem() {
+                Name = "OnAfterSaveAsync",
+                Description = "保存数据后异步回调方法",
+                Type = "Func<TItem, Task>",
+                ValueList = " — ",
+                DefaultValue = " — "
+            },
+            new AttributeItem() {
                 Name = "OnTreeExpand",
                 Description = "树形数据节点展开式回调委托方法",
                 Type = "Func<TItem, Task<IEnumerable<TItem>>>",
@@ -580,12 +636,69 @@ namespace BootstrapBlazor.Shared.Pages.Table
                 DefaultValue = " — "
             },
             new AttributeItem() {
-                Name = "RenderModel",
+                Name = "UnsetText",
+                Description = "未设置排序时 tooltip 显示文字",
+                Type = "string",
+                ValueList = " — ",
+                DefaultValue = "点击升序"
+            },
+            new AttributeItem() {
+                Name = "SortAscText",
+                Description = "升序排序时 tooltip 显示文字",
+                Type = "string",
+                ValueList = " — ",
+                DefaultValue = "点击降序"
+            },
+            new AttributeItem() {
+                Name = "SortDescText",
+                Description = "降序排序时 tooltip 显示文字",
+                Type = "string",
+                ValueList = " — ",
+                DefaultValue = "取消排序"
+            },
+            new AttributeItem() {
+                Name = "EmptyText",
+                Description = "无数据时显示文本",
+                Type = "string",
+                ValueList = " — ",
+                DefaultValue = " — "
+            },
+            new AttributeItem() {
+                Name = "RenderMode",
                 Description = "Table 组件布局模式设置",
-                Type = "TableRenderModel",
+                Type = "TableRenderMode",
                 ValueList = "Auto|Table|CardView",
                 DefaultValue = "Auto"
+            },
+            new AttributeItem() {
+                Name = "EmptyTemplate",
+                Description = "无数据时显示模板",
+                Type = "RenderFragment",
+                ValueList = " — ",
+                DefaultValue = " — "
+            },
+            new AttributeItem() {
+                Name = "EditDialogItemsPerRow",
+                Description = "每行显示组件数量",
+                Type = "int?",
+                ValueList = " — ",
+                DefaultValue = " — "
+            },
+            new AttributeItem() {
+                Name = "EditDialogRowType",
+                Description = "设置组件布局方式",
+                Type = "RowType",
+                ValueList = "Row|Inline",
+                DefaultValue = "Row"
+            },
+            new AttributeItem() {
+                Name = "EditDialogLabelAlign",
+                Description = "Inline 布局模式下标签对齐方式",
+                Type = "Alignment",
+                ValueList = "None|Left|Center|Right",
+                DefaultValue = "None"
             }
+
         };
 
         private static IEnumerable<MethodItem> GetMethods() => new MethodItem[]

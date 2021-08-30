@@ -29,6 +29,7 @@ namespace BootstrapBlazor.Components
             .AddClass("modal-dialog-scrollable", IsScrolling)
             .AddClass("is-draggable", IsDraggable)
             .AddClass("d-none", !IsShown)
+            .AddClass(Class, !string.IsNullOrEmpty(Class))
             .Build();
 
         /// <summary>
@@ -41,6 +42,12 @@ namespace BootstrapBlazor.Components
         /// </summary>
         [Parameter]
         public string? Title { get; set; }
+
+        /// <summary>
+        /// 获得/设置 弹窗自定义样式
+        /// </summary>
+        [Parameter]
+        public string? Class { get; set; }
 
         /// <summary>
         /// 获得/设置 弹窗大小
@@ -101,6 +108,12 @@ namespace BootstrapBlazor.Components
         /// </summary>
         [Parameter]
         public RenderFragment? FooterTemplate { get; set; }
+
+        /// <summary>
+        /// 获得/设置 ModalHeader 组件
+        /// </summary>
+        [Parameter]
+        public RenderFragment? HeaderTemplate { get; set; }
 
         /// <summary>
         /// 获得/设置 关闭弹窗是回调委托

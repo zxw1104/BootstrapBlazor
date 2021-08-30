@@ -3,6 +3,7 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -27,6 +28,7 @@ namespace BootstrapBlazor.Localization.Json
         private readonly string _typeName;
         private readonly ILogger _logger;
         private readonly JsonLocalizationOptions _options;
+        private readonly IServiceProvider _provider;
 
         private string _searchedLocation = "";
 
@@ -39,12 +41,14 @@ namespace BootstrapBlazor.Localization.Json
         /// <param name="baseName"></param>
         /// <param name="logger"></param>
         /// <param name="options"></param>
-        public JsonStringLocalizer(JsonStringLocalizerFactory factory, Assembly assembly, string typeName, string baseName, ILogger logger, JsonLocalizationOptions options) : base(new ResourceManager(baseName, assembly), assembly, baseName, factory.GetCache(), logger)
+        /// <param name="provider"></param>
+        public JsonStringLocalizer(JsonStringLocalizerFactory factory, Assembly assembly, string typeName, string baseName, ILogger logger, JsonLocalizationOptions options, IServiceProvider provider) : base(new ResourceManager(baseName, assembly), assembly, baseName, factory.GetCache(), logger)
         {
             _assembly = assembly;
             _typeName = typeName;
             _logger = logger;
             _options = options;
+            _provider = provider;
         }
 
         /// <summary>
@@ -56,10 +60,33 @@ namespace BootstrapBlazor.Localization.Json
         {
             get
             {
-                var value = base.GetStringSafely(name, CultureInfo.CurrentUICulture) ?? GetJsonStringSafely(name);
+                var value = GetStringFromInject(name)
+                    ?? GetStringSafely(name, CultureInfo.CurrentUICulture)
+                    ?? GetJsonStringSafely(name);
 
                 return new LocalizedString(name, value ?? name, resourceNotFound: value == null, searchedLocation: _searchedLocation);
             }
+        }
+
+        private string? GetStringFromInject(string name)
+        {
+            string? ret = null;
+            var factorys = _provider.GetService<IEnumerable<IStringLocalizerFactory>>();
+            if (factorys != null)
+            {
+                var factory = factorys.LastOrDefault(a => a is not JsonStringLocalizerFactory);
+                if (factory != null)
+                {
+                    var type = _assembly.GetType(_typeName);
+                    if (type != null)
+                    {
+                        var localizer = factory.Create(type);
+                        var l = localizer[name];
+                        ret = l.ResourceNotFound ? null : l.Value;
+                    }
+                }
+            }
+            return ret;
         }
 
         /// <summary>
@@ -72,9 +99,10 @@ namespace BootstrapBlazor.Localization.Json
         {
             get
             {
-                var format = base.GetStringSafely(name, CultureInfo.CurrentUICulture) ?? GetJsonStringSafely(name);
+                var format = GetStringFromInject(name)
+                    ?? GetStringSafely(name, CultureInfo.CurrentUICulture)
+                    ?? GetJsonStringSafely(name);
                 var value = !string.IsNullOrEmpty(format) ? string.Format(format, arguments) : name;
-
                 return new LocalizedString(name, value, resourceNotFound: format == null, searchedLocation: _searchedLocation);
             }
         }
@@ -86,12 +114,41 @@ namespace BootstrapBlazor.Localization.Json
         /// <returns></returns>
         public override IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
-            // 获得 resx 资源文件中的信息
-            var ret = GetAllStrings(includeParentCultures, CultureInfo.CurrentUICulture);
+            var ret = GetAllStringFromInject(includeParentCultures);
+            if (ret == null)
+            {
+                try
+                {
+                    ret = base.GetAllStrings(includeParentCultures).ToList();
+                }
+                catch (MissingManifestResourceException)
+                {
+                    ret = Enumerable.Empty<LocalizedString>();
+                }
+            }
             if (!ret.Any())
             {
-                // 获取 json 资源文件中的信息
-                ret = GetAllJsonStrings(includeParentCultures, CultureInfo.CurrentUICulture);
+                ret = GetAllJsonStrings(includeParentCultures);
+            }
+            return ret;
+        }
+
+        private IEnumerable<LocalizedString>? GetAllStringFromInject(bool includeParentCultures)
+        {
+            IEnumerable<LocalizedString>? ret = null;
+            var factorys = _provider.GetService<IEnumerable<IStringLocalizerFactory>>();
+            if (factorys != null)
+            {
+                var factory = factorys.LastOrDefault(a => a is not JsonStringLocalizerFactory);
+                if (factory != null)
+                {
+                    var type = _assembly.GetType(_typeName);
+                    if (type != null)
+                    {
+                        var localizer = factory.Create(type);
+                        ret = localizer.GetAllStrings(includeParentCultures);
+                    }
+                }
             }
             return ret;
         }
@@ -100,19 +157,29 @@ namespace BootstrapBlazor.Localization.Json
         /// 
         /// </summary>
         /// <param name="includeParentCultures"></param>
-        /// <param name="culture"></param>
         /// <returns></returns>
-        protected virtual IEnumerable<LocalizedString> GetAllJsonStrings(bool includeParentCultures, CultureInfo culture)
+        protected virtual IEnumerable<LocalizedString> GetAllJsonStrings(bool includeParentCultures)
         {
+            var cultureInfoName = GetCultureInfoName(CultureInfo.CurrentUICulture);
             var resourceNames = includeParentCultures
-                ? GetAllStringsFromCultureHierarchy(culture)
-                : GetAllResourceStrings(culture);
+                ? GetAllStringsFromCultureHierarchy(CultureInfo.CurrentUICulture)
+                : GetAllResourceStrings(cultureInfoName);
 
             foreach (var name in resourceNames)
             {
                 var value = GetJsonStringSafely(name);
                 yield return new LocalizedString(name, value ?? name, resourceNotFound: value == null, searchedLocation: _searchedLocation);
             }
+        }
+
+        private string GetCultureInfoName(CultureInfo culture)
+        {
+            var cultureInfoName = culture.Name;
+            if (string.IsNullOrEmpty(cultureInfoName) && _options.FallBackToParentUICultures)
+            {
+                cultureInfoName = _options.FallbackCulture;
+            }
+            return cultureInfoName;
         }
 
         /// <summary>
@@ -125,9 +192,10 @@ namespace BootstrapBlazor.Localization.Json
         private string? GetStringByCulture(CultureInfo culture, string name)
         {
             string? value = null;
-            BuildResourcesCache(culture);
+            var cultureName = GetCultureInfoName(culture);
+            BuildResourcesCache(cultureName);
 
-            if (_resourcesCache.TryGetValue(culture.Name, out var resources))
+            if (_resourcesCache.TryGetValue(cultureName, out var resources))
             {
                 var resource = resources?.FirstOrDefault(s => s.Key == name);
                 value = resource?.Value ?? null;
@@ -136,36 +204,27 @@ namespace BootstrapBlazor.Localization.Json
             return value;
         }
 
-        private IEnumerable<string> GetAllStringsFromCultureHierarchy(CultureInfo startingCulture)
+        private IEnumerable<string> GetAllStringsFromCultureHierarchy(CultureInfo culture)
         {
-            var currentCulture = startingCulture;
+            var currentCulture = culture;
             var resourceNames = new HashSet<string>();
-
             while (currentCulture != currentCulture.Parent)
             {
-                var cultureResourceNames = GetAllResourceStrings(currentCulture);
-
+                var cultureResourceNames = GetAllResourceStrings(GetCultureInfoName(currentCulture));
                 foreach (var resourceName in cultureResourceNames)
                 {
                     resourceNames.Add(resourceName);
                 }
-
                 currentCulture = currentCulture.Parent;
             }
-
             return resourceNames;
         }
 
-        private IEnumerable<string> GetAllResourceStrings(CultureInfo culture)
+        private IEnumerable<string> GetAllResourceStrings(string cultureInfoName)
         {
-            BuildResourcesCache(culture);
-
-            var ret = Enumerable.Empty<string>();
-            if (_resourcesCache.TryGetValue(culture.Name, out var resources))
-            {
-                ret = resources.Select(r => r.Key);
-            }
-            return ret;
+            BuildResourcesCache(cultureInfoName);
+            _resourcesCache.TryGetValue(cultureInfoName, out var resources);
+            return resources?.Select(r => r.Key) ?? Enumerable.Empty<string>();
         }
 
         private static StringSegment GetParentCultureName(StringSegment cultureInfoName)
@@ -223,9 +282,9 @@ namespace BootstrapBlazor.Localization.Json
             return ret;
         }
 
-        private void BuildResourcesCache(CultureInfo culture)
+        private void BuildResourcesCache(string cultureInfoName)
         {
-            _resourcesCache.GetOrAdd(culture.Name, key =>
+            _resourcesCache.GetOrAdd(cultureInfoName, key =>
             {
                 // 获得程序集中的资源文件 stream
                 var langHandler = GetLangHandlers(key);

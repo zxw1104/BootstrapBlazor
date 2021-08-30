@@ -31,7 +31,6 @@ namespace BootstrapBlazor.Components
 
         private string? ClassString => CssBuilder.Default("multi-select")
             .AddClass("show", IsShow)
-            .AddClass("disabled", IsDisabled)
             .Build();
 
         private string? ToggleClassString => CssBuilder.Default("dropdown-menu-toggle")
@@ -204,22 +203,19 @@ namespace BootstrapBlazor.Components
             await base.OnParametersSetAsync();
 
             // 通过 Value 对集合进行赋值
-            if (!string.IsNullOrEmpty(CurrentValueAsString))
+            var list = CurrentValueAsString.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var item in Items)
             {
-                var list = CurrentValueAsString.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                foreach (var item in Items)
+                item.Active = false;
+                var v = item.Value;
+                if (!string.IsNullOrEmpty(v))
                 {
-                    item.Active = false;
-                    var v = item.Value;
-                    if (!string.IsNullOrEmpty(v))
+                    foreach (var l in list)
                     {
-                        foreach (var l in list)
+                        if (v == l.ToString())
                         {
-                            if (v == l.ToString())
-                            {
-                                item.Active = true;
-                                break;
-                            }
+                            item.Active = true;
+                            break;
                         }
                     }
                 }
@@ -461,19 +457,6 @@ namespace BootstrapBlazor.Components
                     Items = Enumerable.Empty<SelectedItem>();
                 }
             }
-        }
-
-        /// <summary>
-        /// 更改组件数据源方法
-        /// </summary>
-        /// <param name="items"></param>
-        [Obsolete("更改数据源 Items 参数即可，下一个版本移除此方法")]
-        public void SetItems(List<SelectedItem>? items)
-        {
-            Items = items;
-            ResetItems();
-
-            StateHasChanged();
         }
 
         /// <summary>

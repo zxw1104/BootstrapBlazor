@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,8 +13,6 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public class TreeItem
     {
-        private readonly List<TreeItem> _items = new(20);
-
         /// <summary>
         /// 获得 父级节点
         /// </summary>
@@ -64,7 +63,13 @@ namespace BootstrapBlazor.Components
         /// 获得/设置 是否被禁用 默认 false
         /// </summary>
         /// <value></value>
+        [Obsolete("请使用 IsDisabled 属性，本属性已过期", true)]
         public bool Disabled { get; set; }
+
+        /// <summary>
+        /// 获得/设置 是否被禁用 默认 false
+        /// </summary>
+        public bool IsDisabled { get; set; }
 
         /// <summary>
         /// 获得/设置 是否展开 默认 false 不展开
@@ -105,7 +110,7 @@ namespace BootstrapBlazor.Components
         /// <returns></returns>
         public IEnumerable<TreeItem> GetAllSubItems() => Items.Concat(GetSubItems(Items));
 
-        private static IEnumerable<TreeItem> GetSubItems(IEnumerable<TreeItem> items) => items.SelectMany(i => i.Items.Any() ? i.Items.Concat(GetSubItems(i.Items)) : i.Items);
+        private static IEnumerable<TreeItem> GetSubItems(List<TreeItem> items) => items.SelectMany(i => i.Items.Any() ? i.Items.Concat(GetSubItems(i.Items)) : i.Items);
 
         /// <summary>
         /// 级联设置复选状态
@@ -115,7 +120,10 @@ namespace BootstrapBlazor.Components
             foreach (var item in Items)
             {
                 item.Checked = isChecked;
-                if (item.Items.Any()) item.CascadeSetCheck(isChecked);
+                if (item.Items.Any())
+                {
+                    item.CascadeSetCheck(isChecked);
+                }
             }
         }
 

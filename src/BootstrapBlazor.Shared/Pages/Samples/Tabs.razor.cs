@@ -62,6 +62,12 @@ namespace BootstrapBlazor.Shared.Pages
             return Task.CompletedTask;
         }
 
+        private static Task Active(Tab tabset)
+        {
+            tabset.ActiveTab(0);
+            return Task.CompletedTask;
+        }
+
         private bool RemoveEndable => (TabSet?.Items.Count() ?? 4) < 4;
 
         private static Task RemoveTab(Tab tabset)
@@ -129,6 +135,13 @@ namespace BootstrapBlazor.Shared.Pages
             new AttributeItem() {
                 Name = "IsCard",
                 Description = "是否为卡片样式",
+                Type = "boolean",
+                ValueList = "true/false",
+                DefaultValue = "false"
+            },
+            new AttributeItem() {
+                Name = "IsOnlyRenderActiveTab",
+                Description = "是否仅渲染 Active 标签",
                 Type = "boolean",
                 ValueList = "true/false",
                 DefaultValue = "false"

@@ -23,9 +23,13 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        private string? GetCssString(IEditorItem item) => CssBuilder.Default("form-group col-12")
-            .AddClass("col-sm-6", item.Data == null && ItemsPerRow == null && item.Rows == 0)
+        private string? GetCssString(IEditorItem item) => CssBuilder.Default("col-12")
             .AddClass($"col-sm-6 col-md-{Math.Floor(12d / (ItemsPerRow ?? 1))}", item.Data == null && ItemsPerRow != null && item.Rows == 0)
+            .Build();
+
+        private string? FormClassString => CssBuilder.Default("row g-3")
+            .AddClass("form-inline", RowType == RowType.Inline)
+            .AddClass($"is-{LabelAlign.ToDescriptionString()}", RowType == RowType.Inline && LabelAlign != Alignment.None)
             .Build();
 
         /// <summary>
@@ -33,6 +37,18 @@ namespace BootstrapBlazor.Components
         /// </summary>
         [Parameter]
         public int? ItemsPerRow { get; set; }
+
+        /// <summary>
+        /// 获得/设置 设置行格式 默认 Row 布局
+        /// </summary>
+        [Parameter]
+        public RowType RowType { get; set; }
+
+        /// <summary>
+        /// 获得/设置 设置 <see cref="RowType" /> Inline 模式下标签对齐方式 默认 None 等效于 Left 左对齐
+        /// </summary>
+        [Parameter]
+        public Alignment LabelAlign { get; set; }
 
         /// <summary>
         /// 获得/设置 列模板
@@ -72,16 +88,16 @@ namespace BootstrapBlazor.Components
         public bool AutoGenerateAllItem { get; set; } = true;
 
         /// <summary>
+        /// 获得/设置 级联上下文绑定字段信息集合
+        /// </summary>
+        [Parameter]
+        public IEnumerable<IEditorItem>? Items { get; set; }
+
+        /// <summary>
         /// 获得/设置 级联上下文 EditContext 实例 内置于 EditForm 或者 ValidateForm 时有值
         /// </summary>
         [CascadingParameter]
         private EditContext? CascadedEditContext { get; set; }
-
-        /// <summary>
-        /// 获得/设置 级联上下文绑定字段信息集合
-        /// </summary>
-        [CascadingParameter]
-        private IEnumerable<IEditorItem>? CascadeEditorItems { get; set; }
 
         /// <summary>
         /// 获得 ValidateForm 实例
@@ -161,10 +177,10 @@ namespace BootstrapBlazor.Components
             {
                 FirstRender = false;
 
-                if (CascadeEditorItems != null)
+                if (Items != null)
                 {
                     // 通过级联参数渲染组件
-                    FormItems.AddRange(CascadeEditorItems);
+                    FormItems.AddRange(Items);
                 }
                 else
                 {
@@ -194,6 +210,7 @@ namespace BootstrapBlazor.Components
                                     item.Data = el.Data;
                                     item.Lookup = el.Lookup;
                                     item.ComponentType = el.ComponentType;
+                                    item.ComponentParameters = el.ComponentParameters;
                                     item.SkipValidate = el.SkipValidate;
                                 }
                             }
@@ -211,7 +228,7 @@ namespace BootstrapBlazor.Components
 
         private RenderFragment AutoGenerateTemplate(IEditorItem item) => builder =>
         {
-            if (IsDisplay)
+            if (IsDisplay || item.Readonly)
             {
                 builder.CreateDisplayByFieldType(this, item, Model, ShowLabel);
             }

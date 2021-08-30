@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
+using Microsoft.AspNetCore.Components;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,7 +14,7 @@ namespace BootstrapBlazor.Components
     /// <summary>
     /// 
     /// </summary>
-    public partial class Dropdown<TItem>
+    public partial class Dropdown<TValue>
     {
         /// <summary>
         /// 获得 按钮弹出方向集合
@@ -60,38 +64,73 @@ namespace BootstrapBlazor.Components
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        private string? ActiveItem(SelectedItem item) => CssBuilder.Default("dropdown-item")
+        protected string? ActiveItem(SelectedItem item) => CssBuilder.Default("dropdown-item")
             .AddClass("active", () => item.Value == CurrentValueAsString)
             .Build();
 
         /// <summary>
-        /// OnInitialized 方法
+        /// 是否开启分裂式
         /// </summary>
-        protected override void OnInitialized()
-        {
-            base.OnInitialized();
+        [Parameter]
+        public bool ShowSplit { get; set; }
 
+        /// <summary>
+        /// 获取菜单对齐方式
+        /// </summary>
+        [Parameter]
+        public Alignment MenuAlignment { get; set; }
+
+        /// <summary>
+        /// 下拉选项方向 
+        /// </summary>
+        [Parameter]
+        public Direction Direction { get; set; }
+
+        /// <summary>
+        /// 组件尺寸
+        /// </summary>
+        [Parameter]
+        public Size Size { get; set; }
+
+        /// <summary>
+        /// 下拉框渲染类型
+        /// </summary>
+        [Parameter]
+        public DropdownType DropdownType { get; set; }
+
+        [NotNull]
+        private List<SelectedItem>? DataSource { get; set; }
+
+        /// <summary>
+        /// OnParametersSet 方法
+        /// </summary>
+        protected override void OnParametersSet()
+        {
+            base.OnParametersSet();
+
+            // 合并 Items 与 Options 集合
             Items ??= Enumerable.Empty<SelectedItem>();
 
-            SelectedItem = Items.FirstOrDefault(i => i.Value == CurrentValueAsString)
-                ?? Items.FirstOrDefault(i => i.Active)
-                ?? Items.FirstOrDefault();
+            if (!Items.Any() && typeof(TValue).IsEnum())
+            {
+                Items = typeof(TValue).ToSelectList();
+            }
+
+            DataSource = Items.ToList();
+
+            SelectedItem = DataSource.FirstOrDefault(i => i.Value.Equals(CurrentValueAsString, StringComparison.OrdinalIgnoreCase))
+                ?? DataSource.FirstOrDefault(i => i.Active)
+                ?? DataSource.FirstOrDefault();
         }
 
         /// <summary>
         /// 下拉框选项点击时调用此方法
         /// </summary>
-        private async Task OnItemClick(SelectedItem item)
+        protected async Task OnItemClick(SelectedItem item)
         {
-            if (!item.IsDisabled)
+            if (!IsDisabled && !item.IsDisabled)
             {
-                var i = Items.FirstOrDefault(i => i.Active);
-                if (i != null)
-                {
-                    i.Active = false;
-                }
                 item.Active = true;
-
                 SelectedItem = item;
                 CurrentValueAsString = item.Value;
 
