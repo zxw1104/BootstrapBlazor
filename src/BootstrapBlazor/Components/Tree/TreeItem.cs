@@ -24,9 +24,13 @@ namespace BootstrapBlazor.Components
         public bool ShowLoading { get; set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        protected List<TreeItem> _items = new List<TreeItem>();
+        /// <summary>
         /// 获得/设置 子节点数据源
         /// </summary>
-        public virtual List<TreeItem> Items { get; set; } = new List<TreeItem>();
+        public virtual List<TreeItem> Items { get => _items; set => _items = value; } 
 
         /// <summary>
         /// 获得/设置 TreeItem 标识
@@ -90,7 +94,7 @@ namespace BootstrapBlazor.Components
         public void AddItem(TreeItem item)
         {
             item.Parent = this;
-            Items.Add(item);
+            _items.Add(item);
         }
         /// <summary>
         /// 移除 TreeItem
