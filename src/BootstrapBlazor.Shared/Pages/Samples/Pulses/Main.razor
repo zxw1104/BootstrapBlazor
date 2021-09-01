@@ -1,0 +1,44 @@
+﻿@page "/pulses/main"
+<style>
+    .left {
+        float: left;
+        width: auto
+    }
+</style>
+<h3>Pulse 按钮</h3>
+
+<h4>带有心跳效果的按钮</h4>
+@* 整个下面可以写成一个通用模板，按整个组件文件夹来获取示例 *@
+<div style="width:100%">
+    <div style="float: left; width: calc(100% - 150px)">
+        <div id="anchor1">
+            <Example01></Example01>
+        </div>
+        <div>此处编写获取razor与razor.cs的代码</div>
+        <Divider></Divider>
+        <div id="anchor2">
+            <Example02></Example02>
+        </div>
+        <div>此处编写获取razor与razor.cs的代码</div>
+        <Divider></Divider>
+        <div id="anchor3">
+            <Example01></Example01>
+        </div>
+        <div>此处编写获取razor与razor.cs的代码</div>
+        <Divider></Divider>
+        <div id="anchor4">
+            <Example02></Example02>
+        </div>
+        <div>此处编写获取razor与razor.cs的代码</div>
+    </div>
+    <div style="float: right; width: 150px;position:relative">
+        <ul>
+            <li><Anchor Target="anchor1" Offset="50">基础用法</Anchor></li>
+            <li><Anchor Target="anchor2" Offset="50">高阶用法</Anchor></li>
+            <li><Anchor Target="anchor3" Offset="50">设置文字</Anchor></li>
+            <li><Anchor Target="anchor4" Offset="50">设置图标</Anchor></li>
+        </ul>
+    </div>
+</div>
+<div style="clear:both"></div>
+<AttributeTable Items="@GetAttributes()" />
