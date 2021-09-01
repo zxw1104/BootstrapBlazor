@@ -104,7 +104,7 @@ namespace BootstrapBlazor.Components
         {
             if (item.Parent!=null)
             {
-                item.Parent.Items.Remove(item);
+                item.Parent._items.Remove(item);
             }
         }
 
