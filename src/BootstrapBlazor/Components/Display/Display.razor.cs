@@ -18,7 +18,7 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public partial class Display<TValue>
     {
-        private string? ClassString => CssBuilder.Default("form-control is-display")
+        protected string? ClassString => CssBuilder.Default("form-control is-display")
             .AddClassFromAttributes(AdditionalAttributes)
             .Build();
 
