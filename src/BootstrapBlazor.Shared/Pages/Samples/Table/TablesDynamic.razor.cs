@@ -137,11 +137,5 @@ namespace BootstrapBlazor.Shared.Pages.Table
             }
             return Task.CompletedTask;
         }
-
-        private Task<DynamicObject> OnAddAsync() => DataTableDynamicContext.AddAsync();
-
-        private Task<bool> OnSaveAsync(DynamicObject item) => DataTableDynamicContext.SaveAsync(item);
-
-        private Task<bool> OnDeleteAsync(IEnumerable<DynamicObject> items) => DataTableDynamicContext.DeleteAsync(items);
     }
 }
