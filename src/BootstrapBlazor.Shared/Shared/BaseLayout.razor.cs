@@ -86,6 +86,7 @@ namespace BootstrapBlazor.Shared.Shared
             if (firstRender)
             {
                 await JSRuntime.InvokeVoidAsync("$.bb_tooltip_site", MsLearnElement);
+                await JSRuntime.InvokeVoidAsync("search");
             }
         }
 

@@ -22,6 +22,7 @@
     <link rel="apple-touch-icon" href="favicon.png">
     <base href="~/">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docs-searchbar.js@1.3.2/dist/cdn/docs-searchbar.min.css" />
     <link rel="stylesheet" href="_content/BootstrapBlazor/css/bootstrap.blazor.bundle.min.css" asp-append-version="true">
     <link rel="stylesheet" href="_content/BootstrapBlazor.Chart/css/bootstrap.blazor.chart.bundle.min.css" asp-append-version="true">
     <link rel="stylesheet" href="_content/BootstrapBlazor.Markdown/css/bootstrap.blazor.markdown.min.css" asp-append-version="true">
@@ -40,6 +41,7 @@
     </environment>
 </head>
 <body>
+    @*<input type="search" id="search-bar-input" />*@
     <app>
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
@@ -64,5 +66,17 @@
     <script src="_content/BootstrapBlazor.Shared/lib/summernote/summernote-zh-CN.min.js" asp-append-version="true"></script>
     <script src="_content/BootstrapBlazor.Shared/js/common.js" asp-append-version="true"></script>
     <script src="_framework/blazor.server.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docs-searchbar.js@1.3.2/dist/cdn/docs-searchbar.min.js"></script>
+    <script>
+        function search() {
+            docsSearchBar({
+                hostUrl: 'http://39.105.219.168',
+                apiKey: ' ',
+                indexUid: 'blazor',
+                inputSelector: '#search-bar-input',
+                debug: true,
+            })
+        }
+    </script>
 </body>
 </html>
