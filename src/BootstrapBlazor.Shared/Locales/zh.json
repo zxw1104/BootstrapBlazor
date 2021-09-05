@@ -390,7 +390,8 @@
     "SweetAlertText": "模态弹窗 SweetAlert",
     "SearchDialogText": "搜索弹窗 SearchDialog",
     "ToastText": "轻量弹窗 Toast",
-    "TimerText": "计时器 Timer"
+    "TimerText": "计时器 Timer",
+    "ScreenCaptureText": "屏幕捕捉 ScreenCapture"
   },
   "BootstrapBlazor.Shared.Pages.GlobalException": {
     "Title": "全局异常",
