@@ -282,5 +282,9 @@
     "StartCaptureButtonText": "屏幕捕捉",
     "StartCameraCaptureButtonText": "摄像头",
     "StopCaptureButtonText": "停止"
+    },
+  "BootstrapBlazor.Components.Handwritten": {
+    "SaveButtonText": "保存",
+    "ClearButtonText": "清除"
   }
 }

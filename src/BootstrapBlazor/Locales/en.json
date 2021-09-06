@@ -282,5 +282,9 @@
     "StartCaptureButtonText": "Start Capture",
     "StartCameraCaptureButtonText": "Camera",
     "StopCaptureButtonText": "Stop"
+  },
+  "BootstrapBlazor.Components.Handwritten": {
+    "SaveButtonText": "Save",
+    "ClearButtonText": "Clear"
   }
 }
