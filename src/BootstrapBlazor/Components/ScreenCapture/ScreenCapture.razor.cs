@@ -17,11 +17,25 @@ namespace BootstrapBlazor.Components
         private ElementReference ScreenCaptureElement { get; set; }
 
         /// <summary>
-        /// 获得/设置 全屏按钮文字 默认为 全屏
+        /// 获得/设置 屏幕捕捉按钮文字 默认为 屏幕捕捉
         /// </summary>
         [Parameter]
         [NotNull]
-        public string? ScreenCaptureButtonText { get; set; }
+        public string? StartCaptureButtonText { get; set; }
+
+        /// <summary>
+        /// 获得/设置 摄像头捕捉按钮文字 默认为 摄像头
+        /// </summary>
+        [Parameter]
+        [NotNull]
+        public string? StartCameraCaptureButtonText { get; set; }
+
+        /// <summary>
+        /// 获得/设置 停止按钮文字 默认为 停止
+        /// </summary>
+        [Parameter]
+        [NotNull]
+        public string? StopCaptureButtonText { get; set; }
 
         [Inject]
         [NotNull]
@@ -34,12 +48,37 @@ namespace BootstrapBlazor.Components
         {
             base.OnInitialized();
 
-            ScreenCaptureButtonText ??= Localizer[nameof(ScreenCaptureButtonText)]; 
-        }  
+            StartCaptureButtonText ??= Localizer[nameof(StartCaptureButtonText)];
+            StartCameraCaptureButtonText ??= Localizer[nameof(StartCameraCaptureButtonText)];
+            StopCaptureButtonText ??= Localizer[nameof(StopCaptureButtonText)]; 
+        }
 
-        private async Task ToggleScreenCapture()
+        ///// <summary>
+        ///// OnAfterRenderAsync 方法
+        ///// </summary>
+        ///// <param name="firstRender"></param>
+        ///// <returns></returns>
+        //protected override async Task OnAfterRenderAsync(bool firstRender)
+        //{
+        //    if (firstRender && JSRuntime != null)
+        //    {
+        //        await JSRuntime.InvokeVoidAsync(ScreenCaptureElement, "bb_screencapture");
+        //    }
+        //}
+
+        private async Task StartCapture()
         {
-            await JSRuntime.InvokeVoidAsync(ScreenCaptureElement, "bb_toggleScreenCapture");
+            await JSRuntime.InvokeVoidAsync(ScreenCaptureElement, "bb_screencapture","start");
+        }
+
+        private async Task StartCameraCapture()
+        {
+            await JSRuntime.InvokeVoidAsync(ScreenCaptureElement, "bb_screencapture","start", "camera");
+        }
+
+        private async Task StopCapture()
+        {
+            await JSRuntime.InvokeVoidAsync(ScreenCaptureElement, "bb_screencapture","stop");
         }
     }
     }

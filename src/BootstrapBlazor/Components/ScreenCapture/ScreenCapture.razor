@@ -1,6 +1,23 @@
 ﻿@namespace BootstrapBlazor.Components
 @inherits BootstrapComponentBase
 
-<div @ref="FullScreenElement">
-<Button  Text="@FullScreenButtonText" OnClick="ToggleFullScreen"></Button>
+<div @ref="ScreenCaptureElement" width="640" height="680">
+
+	<p>Shows you the contents of the selected part of your display. Click the Start Capture button to begin.</p>
+
+	<p>
+		<Button Text="@StartCaptureButtonText" OnClick="StartCapture"></Button>
+		&nbsp;
+		<Button Text="@StartCameraCaptureButtonText" OnClick="StartCameraCapture"></Button>
+		&nbsp;
+		<Button Text="@StopCaptureButtonText" OnClick="StopCapture"></Button>
+	</p>
+
+	<video id="video" autoplay></video>
+	<br>
+
+	<strong>Log:</strong>
+	<br>
+	<pre id="log"></pre>
+
 </div>
