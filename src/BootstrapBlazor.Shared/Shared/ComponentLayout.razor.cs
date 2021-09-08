@@ -111,6 +111,11 @@ namespace BootstrapBlazor.Shared.Shared
             await base.OnAfterRenderAsync(firstRender);
 
             TabSet.ActiveTab(TabSet.Items.First());
+
+            if (firstRender)
+            {
+                await JSRuntime.InvokeVoidAsync(identifier: "window.algolia_search");
+            }
         }
     }
 }
