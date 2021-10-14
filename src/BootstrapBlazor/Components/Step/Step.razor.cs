@@ -4,6 +4,7 @@
 
 using Microsoft.AspNetCore.Components;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BootstrapBlazor.Components
 {
@@ -12,9 +13,11 @@ namespace BootstrapBlazor.Components
     /// </summary>
     public sealed partial class Step
     {
-        private string? ClassString => CssBuilder.Default("step is-horizontal")
-            .AddClass("is-flex", IsLast && !((Steps?.IsCenter ?? false) || IsCenter))
-            .AddClass("is-center", (Steps?.IsCenter ?? false) || IsCenter)
+        private string? ClassString => CssBuilder.Default("step")
+            .AddClass("is-flex", IsLast && !(Steps.IsCenter || IsCenter))
+            .AddClass("is-center", Steps.IsCenter || IsCenter)
+            .AddClass("is-horizontal", !Steps.IsVertical)
+            .AddClass("is-horizontal", Steps.IsVertical)
             .Build();
 
         private string? StyleString => CssBuilder.Default("margin-right: 0px;")
@@ -108,6 +111,7 @@ namespace BootstrapBlazor.Components
         /// 获得/设置 父级组件 Steps 实例
         /// </summary>
         [CascadingParameter]
+        [NotNull]
         private Steps? Steps { get; set; }
 
         /// <summary>
