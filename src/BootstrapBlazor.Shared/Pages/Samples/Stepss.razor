@@ -9,6 +9,18 @@
 
 <p>@((MarkupString)Localizer["p2"].Value)</p>
 
+<div class="row">
+	<div class="col-md-8">
+		...
+	</div>
+	<div class="col-md-4">
+		<Steps IsVertical="true">
+			<Step Title="Step 1 title" Status="StepStatus.Process" Description="Desc 1" StepIndex="0"></Step>
+			<Step Title="Step 2 title" Status="StepStatus.Finish" Description="Desc 2" StepIndex="1"></Step>
+		</Steps>
+	</div>
+</div>
+
 <Block Title="@Localizer["Block1Title"]" Introduction="@Localizer["Block1Intro"]">
     <Steps Items="@Items" OnStatusChanged="@OnStatusChanged" />
     <div class="mt-1">
