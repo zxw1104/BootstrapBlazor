@@ -761,7 +761,7 @@ RenderFragment RenderSearch =>
             <div class="table-search-title">@SearchModalTitle</div>
             @if (ShowSearchText)
             {
-                <div class="input-group">
+                @*<div class="input-group">
                     <BootstrapInput class="table-toolbar-search" placeholder="@SearchPlaceholderText" @bind-Value="@SearchText">
                         <Tooltip Placement="Placement.Top" Title="@SearchTooltip" IsHtml="true" />
                     </BootstrapInput>
@@ -774,7 +774,7 @@ RenderFragment RenderSearch =>
                             <span class="d-none d-sm-inline-block">@ResetSearchButtonText</span>
                         </Button>
                     }
-                </div>
+                </div>*@
             }
             <div class="table-search-buttons">
                 @if (ShowResetButton)

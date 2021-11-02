@@ -1,0 +1,15 @@
+﻿@namespace BootstrapBlazor.Components
+@if (isShowDefaultTemplate)
+{
+    if (DefaultTemplate != null)
+    {
+        @DefaultTemplate
+    }
+}
+else
+{
+    if (SecondTemplate != null)
+    {
+        @SecondTemplate
+    }
+}

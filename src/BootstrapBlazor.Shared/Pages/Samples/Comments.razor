@@ -1,0 +1,95 @@
+﻿@using Microsoft.AspNetCore.Components
+@page "/comments"
+
+<h3>Comment 评论组件</h3>
+
+<h4>显示树形结构的评论信息</h4>
+
+<Block Title="基础用法" Introduction="显示评论内容，并支持创建和回复功能">
+    <div class="row g-3">
+        <div class="col-auto col-form-label">
+            <span>基本用法</span>
+        </div>
+        <div class="col-12">
+            <CommentWrapper OnCreateComment="OnCreateComment" TopLevelPlaceHolder="请输入..." PlaceHolder="回复内容...">
+                @foreach (var item in CommentList)
+                {
+                    <CommentDisplay CommentItem="item"></CommentDisplay>
+                }
+                <CommentReplay IsTopLevelReplay="true"></CommentReplay>
+            </CommentWrapper>
+        </div>
+    </div>
+</Block>
+
+<Block Title="使用自定义模板用法" Introduction="使用Markdown组件作为回复的组件">
+    <div class="row g-3">
+        <div class="col-12">
+            <CommentWrapper OnCreateComment="OnCreateMarkdownComment" TopLevelPlaceHolder="使用Markdown创建评论..." PlaceHolder="使用Markdown回复...">
+                <ChildContent>
+                    @foreach (var item in MarkdowmCommentList)
+                    {
+                        <CommentDisplay CommentItem="item"></CommentDisplay>
+                    }
+                    <CommentReplay IsTopLevelReplay="true"></CommentReplay>
+                </ChildContent>
+
+                @*评论显示的三个模板*@
+                <CommentDisplayHeaderTemplate>
+                <div class="d-flex align-items-center">
+                    @if (context.IndentLevel > 0)
+                    {
+                        <Avatar Size="Size.ExtraSmall" Url="@context.CommentItem.AvatorUrl"></Avatar>
+                        <span class="px-3">
+                            这里是<Tag>子级</Tag>回复的Header
+                        </span>
+
+                    }
+                    else
+                    {
+                        <Avatar Size="Size.Small" Url="@context.CommentItem.AvatorUrl"></Avatar>
+                        <span class="px-3">这里是 <Tag Color="Color.Warning">顶级</Tag>回复的Header</span>
+                    }
+                </div>
+                </CommentDisplayHeaderTemplate>
+
+                <CommentDisplayBodyTemplate>
+                    @(new MarkupString(context.CommentItem.Content))
+                </CommentDisplayBodyTemplate>
+
+                <CommentDisplayFooterTemplate>
+                    <Button Color="Color.Danger" Size="Size.ExtraSmall" Text="回复" OnClick="@context.OnClickReplay"></Button>
+                </CommentDisplayFooterTemplate>
+
+                @*回复的三个模板*@
+                <CommentReplayHeaderTemplate>
+                    <Alert Color="Color.Primary">请在下方输入您的评论内容</Alert>
+                </CommentReplayHeaderTemplate>
+
+                <CommentReplayBodyTemplate>
+                        @if (context.IsTopLevelReplay)
+                        {
+                            <Markdown @bind-Html="@context.Param.TopContent" Placeholder="@context.Param.TopLevelPlaceHolder" />
+                        }
+                        else
+                        {
+                            <Markdown @bind-Html="@context.Param.ReplayContent" Placeholder="@context.Param.PlaceHolder" />
+                        }
+                </CommentReplayBodyTemplate>
+
+                <CommentReplayFooterTemplate>
+                    <Button Color="Color.Danger" Text="提交" OnClick="@context.OnClickConfirm"></Button>
+                    <Button Color="Color.Warning" Text="取消" OnClick="@context.OnClickCancel"></Button>
+                    <Button Color="Color.Info" Text="自定义按钮"></Button>
+                </CommentReplayFooterTemplate>
+            </CommentWrapper>
+        </div>
+    </div>
+</Block>
+
+
+<EventTable Items="@GetCommentWrapperEvents()"/>
+
+<AttributeTable Items="@GetCommentDisplayAttributes()" Title="CommentDisplay 属性" />
+
+<AttributeTable Items="@GetCommentReplayAttributes()" Title="CommentReplay 属性" />

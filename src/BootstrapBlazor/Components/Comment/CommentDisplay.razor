@@ -1,0 +1,94 @@
+﻿@namespace BootstrapBlazor.Components
+
+@if (CommentItem != null && Param != null)
+{
+    <div class="@Pt">
+
+        @if (Param.CommentDisplayHeaderTemplate != null)
+        {
+            @Param.CommentDisplayHeaderTemplate(this);
+        }
+        else
+        {
+                <div class="row">
+                    <div class="col-auto">
+                        @if (IndentLevel > 0)
+                        {
+                            <Avatar Url="@CommentItem.AvatorUrl" IsCircle="true" Size="Size.ExtraSmall" />
+                        }
+                        else
+                        {
+                            <Avatar Url="@CommentItem.AvatorUrl" IsCircle="true" Size="Size.Small" />
+                        }
+
+                    </div>
+                    <div class="col">
+                        <table style="height:100%">
+                            <tbody>
+                                <tr>
+                                    <td class="align-middle">@CommentItem.UserName</td>
+                                    <td class="align-middle px-2">@CommentItem.CreateTime</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+        }
+
+        <div class="@Pt">
+            @if (Param.CommentDisplayBodyTemplate != null)
+            {
+                @Param.CommentDisplayBodyTemplate(this);
+            }
+            else
+            {
+                @CommentItem.Content
+            }
+        </div>
+
+        <div class="@Pt">
+            @if (isInReplyStatus)
+            {
+                <CommentReplay IsTopLevelReplay="false" OnCancel="OnClickCancel" OnConfirm="OnConfirm"></CommentReplay>
+            }
+            else
+            {
+                if (Param.CommentDisplayFooterTemplate != null)
+                {
+                    @Param.CommentDisplayFooterTemplate(this);
+                }
+                else
+                {
+                    <Button Size="Size.Small" Text="回复" Color="Color.Secondary" OnClick="OnClickReplay"></Button>
+                }
+            }
+        </div>
+
+        <div class="@Pt">
+            @if (CommentItem.Children != null && CommentItem.Children.Count > 0)
+            {
+                <SwitchDisplay @ref="switchControl">
+                    <DefaultTemplate>
+                            <div class="row">
+                                <div class="col-auto @Pt">
+                                    <Button Size="Size.Medium" Icon="fa fa-minus-square-o" Color="Color.None" OnClickWithoutRender="OnSwitchDisplay"></Button>
+                                </div>
+                                <div class="col" >
+                                    @foreach (var item in CommentItem.Children)
+                                    {
+                                        <CommentDisplay CommentItem="item" IndentLevel="IndentLevel+1"></CommentDisplay>
+                                    }
+                                </div>
+                            </div>
+                    </DefaultTemplate>
+
+                    <SecondTemplate>
+                            <Button Size="Size.Medium" Icon="fa fa-plus-square-o" Color="Color.None" Text="展开隐藏的评论" OnClickWithoutRender="OnSwitchDisplay"></Button>
+                    </SecondTemplate>
+                </SwitchDisplay>
+            }
+        </div>
+    </div>
+}
+
