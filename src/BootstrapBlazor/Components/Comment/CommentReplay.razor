@@ -1,0 +1,44 @@
+﻿@namespace BootstrapBlazor.Components
+
+@if (Param != null)
+{
+    <div class="pt-3">
+
+
+        @if (Param.CommentReplayHeaderTemplate != null)
+        {
+            @Param.CommentReplayHeaderTemplate.Invoke(this);
+        }
+
+        @if (Param.CommentReplayBodyTemplate != null)
+        {
+            @Param.CommentReplayBodyTemplate.Invoke(this);
+        }
+        else
+        {
+            @if (IsTopLevelReplay)
+            {
+                <Textarea @bind-Value="Param.TopContent" placeholder="@Param.TopLevelPlaceHolder"></Textarea>
+            }
+            else
+            {
+                <Textarea @bind-Value="Param.ReplayContent" placeholder="@Param.PlaceHolder"></Textarea>
+            }
+        }
+
+        <div class="pt-3">
+            @if (Param.CommentReplayFooterTemplate != null)
+            {
+                @Param.CommentReplayFooterTemplate(this);
+            }
+            else
+            {
+                <Button Size="Size.Small" Color="Color.Success" OnClick="OnClickConfirm" Text="提交"></Button>
+                <Button Size="Size.Small" Color="Color.None" Text="取消" OnClick="OnClickCancel"></Button>
+            }
+        </div>
+    </div>
+}
+
+
+
