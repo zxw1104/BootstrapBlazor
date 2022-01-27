@@ -314,6 +314,18 @@ public static class Utility
         {
             builder.AddAttribute(7, nameof(CheckboxList<IEnumerable<string>>.Items), item.Items.Clone());
         }
+        else if (item.Items != null && item.ComponentType == typeof(CheckboxList<string>))
+        {
+            // 增加手动设定 ComponentType 为 CheckboxList<string> 并且 Items 有值 自动生成组件
+
+            builder.AddAttribute(1, nameof(CheckboxList<string>.DisplayText), displayName);
+            builder.AddAttribute(2, nameof(CheckboxList<string>.ShowLabel), true);
+            builder.AddAttribute(2, nameof(CheckboxList<string>.Value), fieldValue);
+            //builder.AddAttribute(3, nameof(CheckboxList<IEnumerable<SelectedItem>>.OnValueChanged), fieldValueChanged);
+            builder.AddAttribute(4, nameof(CheckboxList<IEnumerable<SelectedItem>>.ValueExpression), valueExpression);
+            builder.AddAttribute(7, nameof(CheckboxList<string>.Items), item.Items.Clone());
+        }
+
 
         // Lookup
         if (lookup != null && item.Items == null)
