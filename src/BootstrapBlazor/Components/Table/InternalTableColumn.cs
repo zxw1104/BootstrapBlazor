@@ -102,6 +102,11 @@ internal class InternalTableColumn : ITableColumn
     public Type? ComponentType { get; set; }
 
     /// <summary>
+    /// 获得/设置 额外数据源一般用于 Select 或者 CheckboxList 这种需要额外配置数据源组件使用
+    /// </summary>
+    public Type? ComponentItems { get; set; }
+
+    /// <summary>
     /// 获得/设置 组件自定义类型参数集合 默认为 null
     /// </summary>
     public IEnumerable<KeyValuePair<string, object>>? ComponentParameters { get; set; }
@@ -241,6 +246,7 @@ internal class InternalTableColumn : ITableColumn
         if (source.Align != Alignment.None) dest.Align = source.Align;
         if (source.TextWrap) dest.TextWrap = source.TextWrap;
         if (source.ComponentType != null) dest.ComponentType = source.ComponentType;
+        if (source.ComponentItems != null) dest.ComponentItems = source.ComponentItems;
         if (source.ComponentParameters != null) dest.ComponentParameters = source.ComponentParameters;
         if (!string.IsNullOrEmpty(source.CssClass)) dest.CssClass = source.CssClass;
         if (source.DefaultSort) dest.DefaultSort = source.DefaultSort;

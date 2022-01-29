@@ -80,6 +80,11 @@ public interface IEditorItem
     Type? ComponentType { get; set; }
 
     /// <summary>
+    /// 获得/设置 额外数据源一般用于 Select 或者 CheckboxList 这种需要额外配置数据源组件使用
+    /// </summary>
+    Type? ComponentItems { get; set; }
+
+    /// <summary>
     /// 获得/设置 组件自定义类型参数集合 默认为 null
     /// </summary>
     IEnumerable<KeyValuePair<string, object>>? ComponentParameters { get; set; }
