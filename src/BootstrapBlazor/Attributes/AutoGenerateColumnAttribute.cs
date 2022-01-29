@@ -57,7 +57,24 @@ public class AutoGenerateColumnAttribute : AutoGenerateBaseAttribute, ITableColu
     /// </summary>
     public SortOrder DefaultSortOrder { get; set; }
 
-    IEnumerable<SelectedItem>? IEditorItem.Items { get; set; }
+    /// <summary>
+    /// 获得/设置 额外数据源一般用于 Select 或者 CheckboxList 这种需要额外配置数据源组件使用
+    /// </summary>
+    public Type? ComponentItems { get; set; }
+
+    IEnumerable<SelectedItem>? Items;
+    IEnumerable<SelectedItem>? IEditorItem.Items
+    {
+        get
+        {
+            if (ComponentItems != null)
+            { 
+                    Items = ComponentItems.ToSelectList();
+            }
+            return Items;
+       }
+        set => Items = value;
+    }
 
     /// <summary>
     /// 获得/设置 列宽
