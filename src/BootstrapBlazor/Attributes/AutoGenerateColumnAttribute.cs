@@ -62,19 +62,19 @@ public class AutoGenerateColumnAttribute : AutoGenerateBaseAttribute, ITableColu
     /// </summary>
     public Type? ComponentItems { get; set; }
 
-    IEnumerable<SelectedItem>? Items;
-    IEnumerable<SelectedItem>? IEditorItem.Items
-    {
-        get
-        {
-            if (ComponentItems != null)
-            { 
-                    Items = ComponentItems.ToSelectList();
-            }
-            return Items;
-       }
-        set => Items = value;
-    }
+    //IEnumerable<SelectedItem>? Items;
+    IEnumerable<SelectedItem>? IEditorItem.Items{ get; set; }
+    // {
+    //     get
+    //     {
+    //         if (ComponentItems != null)
+    //         { 
+    //             Items = ComponentItems.ToSelectList();
+    //         }
+    //         return Items;
+    //    }
+    //     set => Items = value;
+    // }
 
     /// <summary>
     /// 获得/设置 列宽
