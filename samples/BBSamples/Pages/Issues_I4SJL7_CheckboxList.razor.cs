@@ -45,6 +45,7 @@ namespace BBSamples.Pages
             {
                 if (col.GetFieldName() == nameof(SiteItem.workplan))
                 {
+                    //TODO: 企图优雅的实现自动渲染CheckboxList组件,未解决新添自动渲染,下一步再整
                     col.ComponentType = typeof(CheckboxList<string>);
                     //col.ComponentItems = typeof(SiteItem.Timezone);
                     col.Items = typeof(SiteItem.Timezone).ToSelectList();
@@ -94,6 +95,7 @@ namespace BBSamples.Pages
         {
             var items = Utility.GenerateEditorItems<SiteItem>();
 
+            //优雅的实现自动渲染CheckboxList组件新添对话框
             //var col = items.First(i => i.GetFieldName() == nameof(SiteItem.workplan));//查找到workplan列
             ////col.ComponentType = typeof(CheckboxList<IEnumerable<string>>);
             ////col.ComponentItems = typeof(SiteItem.Timezone);
