@@ -50,10 +50,10 @@
         builder.AddAttribute(1, nameof(CheckboxList<string>.DisplayText), "长沙市");
         builder.AddAttribute(2, nameof(CheckboxList<string>.ShowLabel), true);
         builder.AddAttribute(2, nameof(CheckboxList<string>.Value), Value1);
-    //builder.AddAttribute(3, nameof(CheckboxList<IEnumerable<SelectedItem>>.OnSelectedChanged),OnSelectedChanged);
-    //builder.AddAttribute(4, nameof(CheckboxList<IEnumerable<SelectedItem>>.ValueExpression), valueExpression);
-    builder.AddAttribute(7, nameof(CheckboxList<string>.Items), Items3);  //IEnumerable<SelectedItem>
-    builder.CloseComponent();
+        //builder.AddAttribute(3, nameof(CheckboxList<IEnumerable<SelectedItem>>.OnSelectedChanged),OnSelectedChanged);
+        //builder.AddAttribute(4, nameof(CheckboxList<IEnumerable<SelectedItem>>.ValueExpression), valueExpression);
+        builder.AddAttribute(7, nameof(CheckboxList<string>.Items), Items3);  //IEnumerable<SelectedItem>
+        builder.CloseComponent();
     };
 
     private Task OnSelectedChanged(IEnumerable<SelectedItem> items, string value)

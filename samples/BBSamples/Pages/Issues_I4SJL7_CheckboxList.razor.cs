@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace BBSamples.Pages
 {
-    public partial class GenTableDynamicCheckboxList
+    public partial class Issues_I4SJL7_CheckboxList
     {
 
         private DataTableDynamicContext? DataTableDynamicContext { get; set; }
