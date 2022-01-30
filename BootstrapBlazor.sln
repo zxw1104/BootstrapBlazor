@@ -118,6 +118,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BootstrapBlazor.Middleware"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest.Localization", "test\UnitTest.Localization\UnitTest.Localization.csproj", "{99B55645-0E89-43F8-938F-2304B486AD2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBSamples", "samples\BBSamples\BBSamples.csproj", "{F725DC3B-5B47-44FE-9204-C3C11B876A1F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -180,6 +182,10 @@ Global
 		{99B55645-0E89-43F8-938F-2304B486AD2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99B55645-0E89-43F8-938F-2304B486AD2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99B55645-0E89-43F8-938F-2304B486AD2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F725DC3B-5B47-44FE-9204-C3C11B876A1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F725DC3B-5B47-44FE-9204-C3C11B876A1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F725DC3B-5B47-44FE-9204-C3C11B876A1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F725DC3B-5B47-44FE-9204-C3C11B876A1F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
