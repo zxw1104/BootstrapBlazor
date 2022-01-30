@@ -18,7 +18,7 @@ namespace BBSamples.Pages
         private DialogService? DialogService { get; set; }
 
 
-        private SiteItem? Model { get; set; }  
+        private SiteItem? Model { get; set; }
 
 
         protected override void OnInitialized()
@@ -35,7 +35,7 @@ namespace BBSamples.Pages
 
             for (int i = 0; i < 5; i++)
             {
-                UserData.Rows.Add("H2,H3",i);
+                UserData.Rows.Add("H2,H3", i);
             }
         }
 
@@ -60,7 +60,7 @@ namespace BBSamples.Pages
                     await ShowAddDia(args);
                 }
             };
-            
+
             var method = DataTableDynamicContext.OnValueChanged;
             DataTableDynamicContext.OnValueChanged = async (model, col, val) =>
             {
@@ -94,10 +94,10 @@ namespace BBSamples.Pages
         {
             var items = Utility.GenerateEditorItems<SiteItem>();
 
-            var col = items.First(i => i.GetFieldName() == nameof(SiteItem.workplan));//查找到workplan列
-            //col.ComponentType = typeof(CheckboxList<IEnumerable<string>>);
-            //col.ComponentItems = typeof(SiteItem.Timezone);
-            col.Items = typeof(SiteItem.Timezone).ToSelectList();
+            //var col = items.First(i => i.GetFieldName() == nameof(SiteItem.workplan));//查找到workplan列
+            ////col.ComponentType = typeof(CheckboxList<IEnumerable<string>>);
+            ////col.ComponentItems = typeof(SiteItem.Timezone);
+            //col.Items = typeof(SiteItem.Timezone).ToSelectList();
 
             Model = new SiteItem();
 
@@ -129,7 +129,7 @@ namespace BBSamples.Pages
             await DialogService.ShowEditDialog(option);
         }
 
-      
+
 
         public class SiteItem
         {
@@ -139,18 +139,18 @@ namespace BBSamples.Pages
 
             [Required(ErrorMessage = "Please choose workplan")]
             //[AutoGenerateColumn(Order = 30, Filterable = true, Searchable = true)]
-            //[AutoGenerateColumn(ComponentType = typeof(CheckboxList<string>), ComponentItems = typeof(Timezone) )]
-            [AutoGenerateColumn(ComponentType = typeof(CheckboxList<string>) )]
+            [AutoGenerateColumn(ComponentType = typeof(CheckboxList<string>), ComponentItems = typeof(Timezone))]
+            //[AutoGenerateColumn(ComponentType = typeof(CheckboxList<string>) )]
             [Display(Name = "workplan")]
             public string? workplan { get; set; }
 
-            public static IEnumerable<SelectedItem> timezone = new List<SelectedItem>(new List<SelectedItem>
-            {
-                new SelectedItem { Text = "0:00H", Value = "0" },
-                new SelectedItem { Text = "1:00H", Value = "1" },
-                new SelectedItem { Text = "2:00H", Value = "2" },
-                new SelectedItem { Text = "3:00H", Value = "3" },
-            });
+            //public static IEnumerable<SelectedItem> timezone = new List<SelectedItem>(new List<SelectedItem>
+            //{
+            //    new SelectedItem { Text = "0:00H", Value = "0" },
+            //    new SelectedItem { Text = "1:00H", Value = "1" },
+            //    new SelectedItem { Text = "2:00H", Value = "2" },
+            //    new SelectedItem { Text = "3:00H", Value = "3" },
+            //});
 
             public enum Timezone
             {
