@@ -7,6 +7,11 @@
         <GenCheckboxList />
     </TabItem>
     <TabItem Text="I4SJL7">
+        @((MarkupString)GotoIssue("I4SJL7"))
         <Issues_I4SJL7_CheckboxList />
     </TabItem>
 </Tab>
+
+@code{
+    string GotoIssue(string code) => $@"<a href='https://gitee.com/LongbowEnterprise/BootstrapBlazor/issues/{code}' target='_blank'>{code}</a>";
+}
