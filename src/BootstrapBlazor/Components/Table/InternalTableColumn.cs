@@ -210,7 +210,7 @@ internal class InternalTableColumn : ITableColumn
             {
                 CopyValue(col, tc);
             }
-            tc.Items=tc.ComponentItems?.ToSelectList();
+            if (tc.ComponentItems!=null) tc.Items=tc.ComponentItems?.ToSelectList();
             cols.Add(tc);
         }
 
