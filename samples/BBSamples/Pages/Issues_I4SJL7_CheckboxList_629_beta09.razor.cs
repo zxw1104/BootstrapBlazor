@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace BBSamples.Pages
 {
-    public partial class Issues_I4SJL7_CheckboxList
+    public partial class Issues_I4SJL7_CheckboxList_629_beta09
     {
 
         private DataTableDynamicContext? DataTableDynamicContext { get; set; }
@@ -36,7 +36,7 @@ namespace BBSamples.Pages
 
             for (int i = 0; i < 5; i++)
             {
-                UserData.Rows.Add("H2,H3", i);
+                UserData.Rows.Add("2,3", i);
             }
         }
 
@@ -49,7 +49,7 @@ namespace BBSamples.Pages
                     //TODO: 企图优雅的实现自动渲染CheckboxList组件,未解决新添自动渲染,下一步再整
                     col.ComponentType = typeof(CheckboxList<string>);
                     //col.ComponentItems = typeof(SiteItem.Timezone);
-                    col.Items = typeof(SiteItem.Timezone).ToSelectList();
+                    col.Items = SiteItem.timezone;
                     col.Width = 150;
                 }
 
@@ -98,10 +98,10 @@ namespace BBSamples.Pages
             var items = Utility.GenerateEditorItems<SiteItem>();
 
             //优雅的实现自动渲染CheckboxList组件新添对话框
-            //var col = items.First(i => i.GetFieldName() == nameof(SiteItem.workplan));//查找到workplan列
-            ////col.ComponentType = typeof(CheckboxList<IEnumerable<string>>);
-            ////col.ComponentItems = typeof(SiteItem.Timezone);
-            //col.Items = typeof(SiteItem.Timezone).ToSelectList();
+            var col = items.First(i => i.GetFieldName() == nameof(SiteItem.workplan));//查找到workplan列
+            //col.ComponentType = typeof(CheckboxList<IEnumerable<string>>);
+            //col.ComponentItems = typeof(SiteItem.Timezone);
+            col.Items = SiteItem.timezone;
 
             Model = new SiteItem();
 
@@ -144,42 +144,42 @@ namespace BBSamples.Pages
 
             [Required(ErrorMessage = "Please choose workplan")]
             //[AutoGenerateColumn(Order = 30, Filterable = true, Searchable = true)]
-            [AutoGenerateColumn(ComponentType = typeof(CheckboxList<string>), ComponentItems = typeof(Timezone))]
-            //[AutoGenerateColumn(ComponentType = typeof(CheckboxList<string>) )]
+            //[AutoGenerateColumn(ComponentType = typeof(CheckboxList<string>), ComponentItems = typeof(Timezone))]
+            [AutoGenerateColumn(ComponentType = typeof(CheckboxList<string>) )]
             [Display(Name = "workplan")]
             public string? workplan { get; set; }
 
-            //public static IEnumerable<SelectedItem> timezone = new List<SelectedItem>(new List<SelectedItem>
-            //{
-            //    new SelectedItem { Text = "0:00H", Value = "0" },
-            //    new SelectedItem { Text = "1:00H", Value = "1" },
-            //    new SelectedItem { Text = "2:00H", Value = "2" },
-            //    new SelectedItem { Text = "3:00H", Value = "3" },
-            //});
-
-            public enum Timezone
+            public static IEnumerable<SelectedItem> timezone = new List<SelectedItem>(new List<SelectedItem>
             {
-                /// <summary>
-                /// 0:00H
-                /// </summary>
-                [Description("0:00H")]
-                H0,
-                /// <summary>
-                /// 1:00H
-                /// </summary>
-                [Description("1:00H")]
-                H1,
-                /// <summary>
-                /// 2:00H
-                /// </summary>
-                [Description("2:00H")]
-                H2,
-                /// <summary>
-                /// 3:00H
-                /// </summary>
-                [Description("3:00H")]
-                H3,
-            }
+                new SelectedItem { Text = "0:00H", Value = "0" },
+                new SelectedItem { Text = "1:00H", Value = "1" },
+                new SelectedItem { Text = "2:00H", Value = "2" },
+                new SelectedItem { Text = "3:00H", Value = "3" },
+            });
+
+            //public enum Timezone
+            //{
+            //    /// <summary>
+            //    /// 0:00H
+            //    /// </summary>
+            //    [Description("0:00H")]
+            //    H0,
+            //    /// <summary>
+            //    /// 1:00H
+            //    /// </summary>
+            //    [Description("1:00H")]
+            //    H1,
+            //    /// <summary>
+            //    /// 2:00H
+            //    /// </summary>
+            //    [Description("2:00H")]
+            //    H2,
+            //    /// <summary>
+            //    /// 3:00H
+            //    /// </summary>
+            //    [Description("3:00H")]
+            //    H3,
+            //}
 
         }
 
