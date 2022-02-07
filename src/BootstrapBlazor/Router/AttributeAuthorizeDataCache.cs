@@ -3,12 +3,11 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using Microsoft.AspNetCore.Authorization;
-using System;
 using System.Collections.Concurrent;
-using System.Linq;
 
 namespace BootstrapBlazor.Components;
 
+[ExcludeFromCodeCoverage]
 internal static class AttributeAuthorizeDataCache
 {
     private static readonly ConcurrentDictionary<Type, IAuthorizeData[]?> _cache = new();

@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
-using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
+[ExcludeFromCodeCoverage]
 #if NET5_0
 internal abstract class RouteConstraint
 {

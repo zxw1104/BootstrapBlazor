@@ -4,14 +4,9 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components;
 
@@ -442,7 +437,7 @@ public static class Utility
         var ret = false;
         if (componentType != null)
         {
-            ret = componentType.GetGenericTypeDefinition() == typeof(CheckboxList<>);
+            ret = componentType.IsGenericType && componentType.GetGenericTypeDefinition() == typeof(CheckboxList<>);
         }
         if (!ret)
         {

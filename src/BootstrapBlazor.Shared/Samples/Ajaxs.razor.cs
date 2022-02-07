@@ -4,9 +4,7 @@
 
 using BootstrapBlazor.Components;
 using Microsoft.AspNetCore.Components;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Shared.Samples;
 
@@ -77,5 +75,15 @@ public partial class Ajaxs
                 await SwalService.Show(new SwalOption() { Content = $"登录失败:{doc.RootElement.GetProperty("message").GetString()}", Category = SwalCategory.Error });
             }
         }
+    }
+
+    private async Task Goto()
+    {
+        await AjaxService.Goto("/introduction");
+    }
+
+    private async Task GotoSelf()
+    {
+        await AjaxService.Goto("/ajaxs");
     }
 }

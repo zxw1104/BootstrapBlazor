@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace BootstrapBlazor.Components;
 
+[ExcludeFromCodeCoverage]
 #if NET5_0
 internal static class RouteTableFactory
 {
@@ -21,7 +20,7 @@ internal static class RouteTableFactory
     /// <param name="assemblies"></param>
     /// <param name="url"></param>
     /// <returns></returns>
-    public static RouteContext Create(IEnumerable<Assembly> assemblies, string url)
+    public static RouteContext Create(IEnumerable<Assembly>? assemblies, string url)
     {
         RefreshRouteTable(assemblies);
         if (url.IndexOf("?") > 0) url = url[..url.IndexOf("?")];
@@ -35,8 +34,9 @@ internal static class RouteTableFactory
         };
     }
 
-    private static void RefreshRouteTable(IEnumerable<Assembly> assemblies)
+    private static void RefreshRouteTable(IEnumerable<Assembly>? assemblies)
     {
+        assemblies ??= Enumerable.Empty<Assembly>();
         var assembliesSet = new HashSet<Assembly>(assemblies);
         if (!_assemblies.SetEquals(assembliesSet))
         {

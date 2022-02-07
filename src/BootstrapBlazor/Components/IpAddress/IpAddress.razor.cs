@@ -3,7 +3,6 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using Microsoft.AspNetCore.Components;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components;
 
@@ -37,8 +36,8 @@ public partial class IpAddress
     {
         base.OnParametersSet();
 
-        var ipSegments = CurrentValueAsString.SpanSplit(".", System.StringSplitOptions.RemoveEmptyEntries);
-        if (ipSegments.Count == 4)
+        var ipSegments = CurrentValueAsString.Split(".", System.StringSplitOptions.RemoveEmptyEntries);
+        if (ipSegments.Length == 4)
         {
             Value1 = ipSegments[0];
             Value2 = ipSegments[1];

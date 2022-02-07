@@ -5,11 +5,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components;
 
@@ -73,6 +68,12 @@ public partial class BarcodeReader : IAsyncDisposable
     public ScanType ScanType { get; set; }
 
     /// <summary>
+    /// 获得/设置 摄像头设备切换回调方法 默认 null
+    /// </summary>
+    [Parameter]
+    public Func<DeviceItem, Task>? OnDeviceChanged { get; set; }
+
+    /// <summary>
     /// 获得/设置 初始化摄像头回调方法
     /// </summary>
     [Parameter]
@@ -114,8 +115,6 @@ public partial class BarcodeReader : IAsyncDisposable
     [Parameter]
     public Func<Task>? OnClose { get; set; }
 
-    private string DeviceId { get; set; } = "";
-
     private ElementReference ScannerElement { get; set; }
 
     private IEnumerable<SelectedItem> Devices { get; set; } = Enumerable.Empty<SelectedItem>();
@@ -146,7 +145,7 @@ public partial class BarcodeReader : IAsyncDisposable
     /// <returns></returns>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && JSRuntime != null)
+        if (firstRender)
         {
             Interop = new JSInterop<BarcodeReader>(JSRuntime);
             await Interop.InvokeVoidAsync(this, ScannerElement, "bb_barcode", "init", AutoStart);
@@ -211,6 +210,14 @@ public partial class BarcodeReader : IAsyncDisposable
         if (OnClose != null) await OnClose.Invoke();
     }
 
+    private async Task OnSelectedItemChanged(SelectedItem item)
+    {
+        if (OnDeviceChanged != null)
+        {
+            await OnDeviceChanged(new DeviceItem() { DeviceId = item.Value, Label = item.Text });
+        }
+    }
+
     /// <summary>
     /// DisposeAsyncCore 方法
     /// </summary>
@@ -218,11 +225,14 @@ public partial class BarcodeReader : IAsyncDisposable
     /// <returns></returns>
     protected virtual async ValueTask DisposeAsyncCore(bool disposing)
     {
-        if (disposing && Interop != null)
+        if (disposing)
         {
-            await Interop.InvokeVoidAsync(this, ScannerElement, "bb_barcode", "dispose");
-            Interop.Dispose();
-            Interop = null;
+            if (Interop != null)
+            {
+                await Interop.InvokeVoidAsync(this, ScannerElement, "bb_barcode", "dispose");
+                Interop.Dispose();
+                Interop = null;
+            }
         }
     }
 

@@ -3,8 +3,6 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using Microsoft.AspNetCore.Components;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components;
 
@@ -63,11 +61,6 @@ public class SwalOption : PopupOptionBase
     /// </summary>
     /// <remarks>此属性给模态弹窗时使用</remarks>
     public bool IsConfirm { get; set; }
-
-    /// <summary>
-    /// 获得/设置 是否保持弹窗内组件状态 默认为 false 不保持
-    /// </summary>
-    public bool KeepChildrenState { get; set; }
 
     /// <summary>
     /// 获得/设置 按钮模板

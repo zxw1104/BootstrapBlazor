@@ -4,18 +4,13 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components;
 
 /// <summary>
 /// Layout 组件基类
 /// </summary>
-public abstract class LayoutBase : BootstrapComponentBase, IDisposable
+public abstract class LayoutBase : BootstrapComponentBase, IAsyncDisposable
 {
     /// <summary>
     /// 
@@ -115,13 +110,6 @@ public abstract class LayoutBase : BootstrapComponentBase, IDisposable
     public bool IsOnlyRenderActiveTab { get; set; }
 
     /// <summary>
-    /// 获得/设置 TabItem 显示文本字典 默认 null 未设置时取侧边栏菜单显示文本
-    /// </summary>
-    [Parameter]
-    [Obsolete("已弃用；请使用 [TabItemOptionAttribute] 标签替换此功能 详细说明见 更新日志 V6.2 https://gitee.com/LongbowEnterprise/BootstrapBlazor/wikis/%E6%9B%B4%E6%96%B0%E5%8E%86%E5%8F%B2/V6.2.0", true)]
-    public Dictionary<string, string>? TabItemTextDictionary { get; set; }
-
-    /// <summary>
     /// 获得/设置 是否固定 Footer 组件
     /// </summary>
     [Parameter]
@@ -140,7 +128,7 @@ public abstract class LayoutBase : BootstrapComponentBase, IDisposable
     public bool ShowCollapseBar { get; set; }
 
     /// <summary>
-    /// 获得/设置 是否显示 Footer 模板
+    /// 获得/设置 是否显示 Footer 模板 默认 false
     /// </summary>
     [Parameter]
     public bool ShowFooter { get; set; }
@@ -181,9 +169,12 @@ public abstract class LayoutBase : BootstrapComponentBase, IDisposable
     [Parameter]
     public string NotAuthorizeUrl { get; set; } = "/Account/Login";
 
+    /// <summary>
+    /// 
+    /// </summary>
     [Inject]
     [NotNull]
-    private NavigationManager? Navigation { get; set; }
+    protected NavigationManager? Navigation { get; set; }
 
     /// <summary>
     /// OnInitializedAsync 方法
@@ -201,10 +192,13 @@ public abstract class LayoutBase : BootstrapComponentBase, IDisposable
 
     private async void Navigation_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        var auth = await OnAuthorizing!(e.Location);
-        if (!auth)
+        if (OnAuthorizing != null)
         {
-            Navigation.NavigateTo(NotAuthorizeUrl, true);
+            var auth = await OnAuthorizing(e.Location);
+            if (!auth)
+            {
+                Navigation.NavigateTo(NotAuthorizeUrl, true);
+            }
         }
     }
 
@@ -245,10 +239,11 @@ public abstract class LayoutBase : BootstrapComponentBase, IDisposable
     };
 
     /// <summary>
-    /// 
+    /// DisposeAsyncCore 方法
     /// </summary>
     /// <param name="disposing"></param>
-    protected virtual void Dispose(bool disposing)
+    /// <returns></returns>
+    protected virtual ValueTask DisposeAsyncCore(bool disposing)
     {
         if (disposing)
         {
@@ -257,14 +252,16 @@ public abstract class LayoutBase : BootstrapComponentBase, IDisposable
                 Navigation.LocationChanged -= Navigation_LocationChanged;
             }
         }
+        return ValueTask.CompletedTask;
     }
 
     /// <summary>
     /// 
     /// </summary>
-    public void Dispose()
+    /// <returns></returns>
+    public async ValueTask DisposeAsync()
     {
-        Dispose(true);
+        await DisposeAsyncCore(true);
         GC.SuppressFinalize(this);
     }
 }

@@ -3,10 +3,6 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using Microsoft.AspNetCore.Components;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components;
 
@@ -18,7 +14,12 @@ public class AjaxService
     /// <summary>
     /// 获得 回调委托缓存集合
     /// </summary>
-    private List<(IComponent Key, Func<AjaxOption, Task<string?>> Callback)> Cache { get; set; } = new();
+    private List<(IComponent Key, Func<AjaxOption, Task<string?>> Callback)> Cache { get; } = new();
+
+    /// <summary>
+    /// 获得 跳转其他页面的回调委托缓存集合
+    /// </summary>
+    private List<(IComponent Key, Func<string, Task> Callback)> GotoCache { get; } = new();
 
     /// <summary>
     /// 注册服务
@@ -40,6 +41,25 @@ public class AjaxService
     }
 
     /// <summary>
+    /// 注册服务
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="callback"></param>
+    internal void RegisterGoto(IComponent key, Func<string, Task> callback) => GotoCache.Add((key, callback));
+
+    /// <summary>
+    /// 注销事件
+    /// </summary>
+    internal void UnRegisterGoto(IComponent key)
+    {
+        var item = GotoCache.FirstOrDefault(i => i.Key == key);
+        if (item.Key != null)
+        {
+            GotoCache.Remove(item);
+        }
+    }
+
+    /// <summary>
     /// 调用Ajax方法发送请求
     /// </summary>
     /// <param name="option"></param>
@@ -48,5 +68,18 @@ public class AjaxService
     {
         var cb = Cache.FirstOrDefault().Callback;
         return cb == null ? null : await cb.Invoke(option);
+    }
+
+    /// <summary>
+    /// 调用 Goto 方法跳转其他页面
+    /// </summary>
+    /// <param name="url"></param>
+    public async Task Goto(string url)
+    {
+        var cb = GotoCache.FirstOrDefault().Callback;
+        if (cb != null)
+        {
+            await cb.Invoke(url);
+        }
     }
 }

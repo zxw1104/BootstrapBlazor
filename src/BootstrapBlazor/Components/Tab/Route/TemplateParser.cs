@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
-using System;
-
 namespace Microsoft.AspNetCore.Components.Routing;
 
 // This implementation is temporary, in the future we'll want to have
@@ -19,6 +17,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 // * Literal path segments. (Like /Path/To/Some/Page)
 // * Parameter path segments (Like /Customer/{Id}/Orders/{OrderId})
 // * Catch-all parameters (Like /blog/{*slug})
+[ExcludeFromCodeCoverage]
 internal class TemplateParser
 {
     public static readonly char[] InvalidParameterNameCharacters =

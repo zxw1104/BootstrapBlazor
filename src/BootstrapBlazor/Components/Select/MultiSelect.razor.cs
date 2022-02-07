@@ -5,20 +5,15 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 using Microsoft.JSInterop;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components;
 
 /// <summary>
 /// MultiSelect 组件
 /// </summary>
-public partial class MultiSelect<TValue> : IDisposable
+public partial class MultiSelect<TValue>
 {
     private ElementReference SelectElement { get; set; }
 
@@ -203,19 +198,7 @@ public partial class MultiSelect<TValue> : IDisposable
         var list = CurrentValueAsString.Split(',', StringSplitOptions.RemoveEmptyEntries);
         foreach (var item in Items)
         {
-            item.Active = false;
-            var v = item.Value;
-            if (!string.IsNullOrEmpty(v))
-            {
-                foreach (var l in list)
-                {
-                    if (v == l.ToString())
-                    {
-                        item.Active = true;
-                        break;
-                    }
-                }
-            }
+            item.Active = list.Any(i => i.Equals(item.Value, StringComparison.OrdinalIgnoreCase));
         }
     }
 
@@ -408,12 +391,18 @@ public partial class MultiSelect<TValue> : IDisposable
         if (Items == null)
         {
             // 判断 IEnumerable<T> 泛型 T 是否为 Enum
-            Type? innerType = null;
-            if (typeof(IEnumerable).IsAssignableFrom(typeof(TValue)))
+            // 特别注意 string 是 IEnumerable 的实例
+            var type = typeof(TValue);
+            Type? innerType;
+            if (type.IsGenericType && type.IsAssignableTo(typeof(IEnumerable)))
             {
-                innerType = typeof(TValue).GetGenericArguments()[0];
+                innerType = type.GetGenericArguments()[0];
             }
-            if (innerType != null && innerType.IsEnum)
+            else
+            {
+                innerType = NullableUnderlyingType ?? type;
+            }
+            if (innerType.IsEnum)
             {
                 Items = innerType.ToSelectList();
             }
@@ -428,21 +417,17 @@ public partial class MultiSelect<TValue> : IDisposable
     /// Dispose 方法
     /// </summary>
     /// <param name="disposing"></param>
-    protected virtual void Dispose(bool disposing)
+    protected override async ValueTask DisposeAsyncCore(bool disposing)
     {
-        if (disposing && Interop != null)
-        {
-            Interop.Dispose();
-            Interop = null;
-        }
-    }
+        await base.DisposeAsyncCore(disposing);
 
-    /// <summary>
-    /// Dispose 方法
-    /// </summary>
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
+        if (disposing)
+        {
+            if (Interop != null)
+            {
+                Interop.Dispose();
+                Interop = null;
+            }
+        }
     }
 }

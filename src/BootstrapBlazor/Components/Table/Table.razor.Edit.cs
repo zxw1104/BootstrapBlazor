@@ -4,11 +4,6 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components;
 
@@ -443,7 +438,7 @@ public partial class Table<TItem>
                 SearchText = SearchText,
                 SortOrder = SortOrder,
                 SortName = SortName,
-                SortList = SortString?.SpanSplit(",", StringSplitOptions.RemoveEmptyEntries),
+                SortList = string.IsNullOrEmpty(SortString) ? null : new List<string>(SortString.Split(",", StringSplitOptions.RemoveEmptyEntries)),
                 Filters = Filters.Values,
                 Searchs = GetSearchs(),
                 AdvanceSearchs = GetAdvanceSearchs(),

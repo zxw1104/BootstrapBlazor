@@ -3,14 +3,13 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using Microsoft.AspNetCore.Components;
-using System.Collections.Generic;
 
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// Divider 组件基类
+/// Divider 组件
 /// </summary>
-public abstract class DividerBase : ComponentBase
+public partial class Divider
 {
     /// <summary>
     /// 获得 class 样式集合
@@ -29,13 +28,6 @@ public abstract class DividerBase : ComponentBase
         .AddClass("is-center", Alignment.Center == Alignment)
         .AddClass("is-right", Alignment.Right == Alignment)
         .Build();
-
-    /// <summary>
-    /// 获得/设置 用户自定义属性
-    /// </summary>
-    /// <returns></returns>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public IDictionary<string, object>? AdditionalAttributes { get; set; }
 
     /// <summary>
     /// 获得/设置 是否为垂直显示 默认为 false 

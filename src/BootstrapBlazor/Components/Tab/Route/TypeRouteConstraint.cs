@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.AspNetCore.Components.Routing;
 
 #if NET5_0
@@ -12,6 +9,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// A route constraint that requires the value to be parseable as a specified type.
 /// </summary>
 /// <typeparam name="T">The type to which the value must be parseable.</typeparam>
+[ExcludeFromCodeCoverage]
 internal class TypeRouteConstraint<T> : RouteConstraint
 {
     public delegate bool TryParseDelegate(string str, [MaybeNullWhen(false)] out T result);

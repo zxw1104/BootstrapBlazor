@@ -3,7 +3,6 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using Microsoft.AspNetCore.Components;
-using System.Collections.Generic;
 
 namespace BootstrapBlazor.Components;
 
@@ -22,6 +21,7 @@ public class TabItem : ComponentBase
     /// 获得/设置 请求地址
     /// </summary>
     [Parameter]
+    [NotNull]
     public string? Url { get; set; }
 
     /// <summary>
@@ -73,6 +73,7 @@ public class TabItem : ComponentBase
     {
         base.OnInitialized();
 
+        Url ??= "";
         TabSet?.AddItem(this);
     }
 
@@ -97,10 +98,4 @@ public class TabItem : ComponentBase
         var _ = item.SetParametersAsync(ParameterView.FromDictionary(parameters!));
         return item;
     }
-
-    /// <summary>
-    /// 内置 TabItem 显示文字
-    /// </summary>
-    /// <param name="text"></param>
-    internal void SetText(string text) => Text = text;
 }

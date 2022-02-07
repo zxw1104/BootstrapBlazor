@@ -8,12 +8,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Components;
 
@@ -102,12 +97,6 @@ public partial class Layout : IAsyncDisposable
     public string? TooltipText { get; set; }
 
     /// <summary>
-    /// 获得/设置 是否启用全局异常捕获 默认 true 启用
-    /// </summary>
-    [Parameter]
-    public bool IsErrorHandler { get; set; } = true;
-
-    /// <summary>
     /// 获得/设置 自定义错误处理回调方法
     /// </summary>
     [Parameter]
@@ -147,10 +136,6 @@ public partial class Layout : IAsyncDisposable
     [Inject]
     private IAuthorizationService? AuthorizationService { get; set; }
 
-    [Inject]
-    [NotNull]
-    private NavigationManager? Navigator { get; set; }
-
     private bool IsInit { get; set; }
 
     /// <summary>
@@ -161,13 +146,10 @@ public partial class Layout : IAsyncDisposable
         base.OnInitialized();
 
         TooltipText ??= Localizer[nameof(TooltipText)];
-
-        if (!OperatingSystem.IsBrowser() && AdditionalAssemblies == null)
+        if (!OperatingSystem.IsBrowser())
         {
-            AdditionalAssemblies = new[] { Assembly.GetEntryAssembly()! };
+            AdditionalAssemblies ??= new[] { Assembly.GetEntryAssembly()! };
         }
-
-        AdditionalAssemblies ??= Enumerable.Empty<Assembly>();
     }
 
     /// <summary>
@@ -181,7 +163,7 @@ public partial class Layout : IAsyncDisposable
         // 需要认证并且未认证
         if (AuthenticationStateTask != null)
         {
-            var url = Navigator.ToBaseRelativePath(Navigator.Uri);
+            var url = Navigation.ToBaseRelativePath(Navigation.Uri);
             var context = RouteTableFactory.Create(AdditionalAssemblies, url);
             if (context.Handler != null)
             {
@@ -222,11 +204,6 @@ public partial class Layout : IAsyncDisposable
     }
 
     /// <summary>
-    /// 获得/设置 组件是否已经 Render
-    /// </summary>
-    protected bool IsRendered { get; set; }
-
-    /// <summary>
     /// 调用 Update 回调方法
     /// </summary>
     /// <param name="key"></param>
@@ -244,23 +221,18 @@ public partial class Layout : IAsyncDisposable
     /// </summary>
     /// <param name="disposing"></param>
     /// <returns></returns>
-    protected virtual async ValueTask DisposeAsyncCore(bool disposing)
+    protected override async ValueTask DisposeAsyncCore(bool disposing)
     {
-        if (disposing && IsRendered && Interop != null)
+        if (disposing)
         {
-            await Interop.InvokeVoidAsync(this, null, "bb_layout", "dispose");
-            Interop.Dispose();
-            Interop = null;
-        }
-    }
+            await base.DisposeAsyncCore(disposing);
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    public async ValueTask DisposeAsync()
-    {
-        await DisposeAsyncCore(true);
-        GC.SuppressFinalize(this);
+            if (Interop != null)
+            {
+                await Interop.InvokeVoidAsync(this, null, "bb_layout", "dispose");
+                Interop.Dispose();
+                Interop = null;
+            }
+        }
     }
 }

@@ -5,10 +5,6 @@
 using BootstrapBlazor.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BootstrapBlazor.Shared.Samples.Table;
 
@@ -81,7 +77,7 @@ public partial class TablesFilter
         });
     }
 
-    private string OnSort(string sortName, SortOrder sortOrder)
+    private static string OnSort(string sortName, SortOrder sortOrder)
     {
         string sortString = "";
         if (sortName == nameof(Foo.DateTime))
