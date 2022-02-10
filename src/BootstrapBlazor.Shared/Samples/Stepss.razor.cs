@@ -13,38 +13,38 @@ namespace BootstrapBlazor.Shared.Samples;
 /// </summary>
 public sealed partial class Stepss
 {
-    private IEnumerable<StepItem> Items { get; set; } = new StepItem[3]
-    {
-            new StepItem() { Title = "步骤一" , Template = builder => { builder.OpenElement(0, "div"); builder.AddContent(1, "步骤一"); builder.CloseElement(); } },
-            new StepItem() { Title = "步骤二", Template = builder => { builder.OpenElement(0, "div"); builder.AddContent(1, "步骤二"); builder.CloseElement(); } },
-            new StepItem() { Title = "步骤三", Template = builder => { builder.OpenElement(0, "div"); builder.AddContent(1, "步骤三"); builder.CloseElement(); } }
-    };
+    //private IEnumerable<StepItem> Items { get; set; } = new StepItem[3]
+    //{
+    //        new StepItem() { Title = "步骤一" , Template = builder => { builder.OpenElement(0, "div"); builder.AddContent(1, "步骤一"); builder.CloseElement(); } },
+    //        new StepItem() { Title = "步骤二", Template = builder => { builder.OpenElement(0, "div"); builder.AddContent(1, "步骤二"); builder.CloseElement(); } },
+    //        new StepItem() { Title = "步骤三", Template = builder => { builder.OpenElement(0, "div"); builder.AddContent(1, "步骤三"); builder.CloseElement(); } }
+    //};
 
     private void NextStep()
     {
-        var item = Items.FirstOrDefault(i => i.Status == StepStatus.Process);
-        if (item != null)
-        {
-            item.Status = StepStatus.Success;
-            var index = Items.ToList().IndexOf(item) + 1;
-            if (index < Items.Count())
-            {
-                Items.ElementAt(index).Status = StepStatus.Process;
-            }
-        }
-        else
-        {
-            ResetStep();
-            Items.ElementAt(0).Status = StepStatus.Process;
-        }
+        //var item = Items.FirstOrDefault(i => i.Status == StepStatus.Process);
+        //if (item != null)
+        //{
+        //    item.Status = StepStatus.Success;
+        //    var index = Items.ToList().IndexOf(item) + 1;
+        //    if (index < Items.Count())
+        //    {
+        //        Items.ElementAt(index).Status = StepStatus.Process;
+        //    }
+        //}
+        //else
+        //{
+        //    ResetStep();
+        //    Items.ElementAt(0).Status = StepStatus.Process;
+        //}
     }
 
     private void ResetStep()
     {
-        Items.ToList().ForEach(i =>
-        {
-            i.Status = StepStatus.Wait;
-        });
+        //Items.ToList().ForEach(i =>
+        //{
+        //    i.Status = StepStatus.Wait;
+        //});
     }
 
     /// <summary>

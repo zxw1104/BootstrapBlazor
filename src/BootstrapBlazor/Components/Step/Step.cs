@@ -9,46 +9,8 @@ namespace BootstrapBlazor.Components;
 /// <summary>
 /// Step 组件
 /// </summary>
-public sealed partial class Step
+public class Step : ComponentBase
 {
-    private string? ClassString => CssBuilder.Default("step is-horizontal")
-        .AddClass("is-flex", IsLast && !((Steps?.IsCenter ?? false) || IsCenter))
-        .AddClass("is-center", (Steps?.IsCenter ?? false) || IsCenter)
-        .Build();
-
-    private string? StyleString => CssBuilder.Default("margin-right: 0px;")
-        .AddClass($"flex-basis: {Space};", !string.IsNullOrEmpty(Space))
-        .Build();
-
-    private string? HeadClassString => CssBuilder.Default("step-head")
-        .AddClass($"is-{Status.ToDescriptionString()}")
-        .Build();
-
-    private string? LineStyleString => CssBuilder.Default()
-        .AddClass("transition-delay: 150ms; border-width: 1px; width: 100%;", Status == StepStatus.Finish || Status == StepStatus.Success)
-        .Build();
-
-    private string? StepIconClassString => CssBuilder.Default("step-icon")
-        .AddClass("is-text", !IsIcon)
-        .AddClass("is-icon", IsIcon)
-        .Build();
-
-    private string? IconClassString => CssBuilder.Default("step-icon-inner")
-        .AddClass(Icon, IsIcon || Status == StepStatus.Finish || Status == StepStatus.Success)
-        .AddClass("fa fa-times", IsIcon || Status == StepStatus.Error)
-        .AddClass("is-status", !IsIcon && (Status == StepStatus.Finish || Status == StepStatus.Success || Status == StepStatus.Error))
-        .Build();
-
-    private string? TitleClassString => CssBuilder.Default("step-title")
-        .AddClass($"is-{Status.ToDescriptionString()}")
-        .Build();
-
-    private string? DescClassString => CssBuilder.Default("step-description")
-        .AddClass($"is-{Status.ToDescriptionString()}")
-        .Build();
-
-    private string? StepString => (Status == StepStatus.Process || Status == StepStatus.Wait) && !IsIcon ? (StepIndex + 1).ToString() : null;
-
     /// <summary>
     /// 获得/设置 步骤显示文字
     /// </summary>
@@ -120,4 +82,23 @@ public sealed partial class Step
     /// </summary>
     [Parameter]
     public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
+    /// 获得/设置 每个 step 的内容
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// OnInitialized 方法
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (Steps != null)
+        {
+            Steps.AddItem(this);
+        }
+    }
 }

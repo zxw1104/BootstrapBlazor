@@ -18,13 +18,52 @@ public partial class Steps
         .AddClassFromAttributes(AdditionalAttributes)
         .Build();
 
-    private StepItem? CurrentStep { get; set; }
+    private string? StepClassString(Step step) => CssBuilder.Default("step is-horizontal")
+        .AddClass("is-flex", step.IsLast && !IsCenter)
+        .AddClass("is-center", IsCenter || step.IsCenter)
+        .Build();
+
+    private static string? StepStyleString(Step step) => CssBuilder.Default("margin-right: 0px;")
+        .AddClass($"flex-basis: {step.Space};", !string.IsNullOrEmpty(step.Space))
+        .Build();
+
+    private string? HeadClassString => CssBuilder.Default("step-head")
+        .AddClass($"is-{Status.ToDescriptionString()}")
+        .Build();
+
+    private string? LineStyleString => CssBuilder.Default()
+        .AddClass("transition-delay: 150ms; border-width: 1px; width: 100%;", Status == StepStatus.Finish || Status == StepStatus.Success)
+        .Build();
+
+    private static string? StepIconClassString(Step step) => CssBuilder.Default("step-icon")
+        .AddClass("is-text", step.IsIcon)
+        .AddClass("is-icon", step.IsIcon)
+        .Build();
+
+    private string? IconClassString(Step step) => CssBuilder.Default("step-icon-inner")
+        .AddClass(step.Icon, step.IsIcon || Status == StepStatus.Finish || Status == StepStatus.Success)
+        .AddClass("fa fa-times", step.IsIcon || Status == StepStatus.Error)
+        .AddClass("is-status", !step.IsIcon && (Status == StepStatus.Finish || Status == StepStatus.Success || Status == StepStatus.Error))
+        .Build();
+
+    private string? TitleClassString => CssBuilder.Default("step-title")
+        .AddClass($"is-{Status.ToDescriptionString()}")
+        .Build();
+
+    private string? DescClassString => CssBuilder.Default("step-description")
+        .AddClass($"is-{Status.ToDescriptionString()}")
+        .Build();
+
+    private string? StepString(Step step) => (Status == StepStatus.Process || Status == StepStatus.Wait) && !step.IsIcon ? (step.StepIndex + 1).ToString() : null;
+
+    private Step? CurrentStep { get; set; }
 
     /// <summary>
     /// 获得/设置 步骤集合
     /// </summary>
     [Parameter]
-    public IEnumerable<StepItem> Items { get; set; } = Array.Empty<StepItem>();
+    [NotNull]
+    public List<Step>? Items { get; set; }
 
     /// <summary>
     /// 获得/设置 是否垂直渲染 默认 false 水平渲染
@@ -57,37 +96,17 @@ public partial class Steps
     public Func<StepStatus, Task>? OnStatusChanged { get; set; }
 
     /// <summary>
-    /// OnInitialized 方法
+    /// 获得/设置 步骤组模板
     /// </summary>
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
+    [Parameter]
+    public RenderFragment? StepTemplate { get; set; }
 
-        var origiContent = ChildContent;
-        ChildContent = new RenderFragment(builder =>
-        {
-            var index = 0;
-            builder.OpenElement(index++, "div");
-            builder.AddAttribute(index++, "class", CssBuilder.Default("steps-header")
-                .AddClass("steps-horizontal", !IsVertical)
-                .AddClass("steps-vertical", IsVertical)
-                .Build());
-            foreach (var item in Items)
-            {
-                builder.AddContent(index++, RenderStep(item));
-            }
-            builder.AddContent(index++, origiContent);
-            builder.CloseElement();
+    private bool Init { get; set; }
 
-            if (CurrentStep?.Template != null)
-            {
-                builder.OpenElement(index++, "div");
-                builder.AddAttribute(index++, "class", "steps-body");
-                builder.AddContent(index++, CurrentStep.Template);
-                builder.CloseElement();
-            }
-        });
-    }
+    private string? StepHeaderClassString => CssBuilder.Default("steps-header")
+        .AddClass("steps-horizontal", !IsVertical)
+        .AddClass("steps-vertical", IsVertical)
+        .Build();
 
     /// <summary>
     /// OnParametersSetAsync 方法
@@ -96,48 +115,43 @@ public partial class Steps
     {
         await base.OnParametersSetAsync();
 
-        CurrentStep = null;
-        if (Items.Any())
+        Items ??= new();
+        CurrentStep = Items.Where(i => i.Status == StepStatus.Process).FirstOrDefault();
+    }
+
+    /// <summary>
+    /// OnAfterRender
+    /// </summary>
+    /// <param name="firstRender"></param>
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
         {
-            CurrentStep = Items.Where(i => i.Status != StepStatus.Wait).LastOrDefault();
-            var status = CurrentStep?.Status ?? StepStatus.Wait;
-            if (Status != status)
-            {
-                Status = status;
-                if (OnStatusChanged != null)
-                {
-                    await OnStatusChanged.Invoke(Status);
-                }
-            }
+            Init = true;
         }
     }
 
     /// <summary>
-    /// 渲染 Step 组件方法
+    /// Step 组件 OnInitialize 调用添加组件到集合中统一渲染
     /// </summary>
-    /// <param name="item"></param>
-    /// <returns></returns>
-    protected virtual RenderFragment RenderStep(StepItem item) => new(builder =>
+    /// <param name="step"></param>
+    internal void AddItem(Step step)
     {
-        item.Space = ParseSpace(item.Space);
-        var index = 0;
-        builder.OpenComponent<Step>(index++);
-        builder.SetKey(item);
-        builder.AddAttribute(index++, nameof(Step.Title), item.Title);
-        builder.AddAttribute(index++, nameof(Step.Icon), item.Icon);
-        builder.AddAttribute(index++, nameof(Step.Description), item.Description);
-        builder.AddAttribute(index++, nameof(Step.Space), item.Space);
-        builder.AddAttribute(index++, nameof(Step.Status), item.Status);
-        builder.AddAttribute(index++, nameof(Step.IsLast), item == Items.Last());
-        builder.AddAttribute(index++, nameof(Step.IsCenter), IsCenter);
-        builder.AddAttribute(index++, nameof(Step.StepIndex), Items.ToList().IndexOf(item));
-        builder.CloseComponent();
-    });
+        Items.Add(step);
+    }
 
     private string ParseSpace(string? space)
     {
-        if (!string.IsNullOrEmpty(space) && !double.TryParse(space.TrimEnd('%'), out _)) space = null;
-        if (string.IsNullOrEmpty(space)) space = $"{Math.Round(100 * 1.0d / Math.Max(1, Items.Count() - 1), 2)}%";
+        if (!string.IsNullOrEmpty(space) && !double.TryParse(space.TrimEnd('%'), out _))
+        {
+            space = null;
+        }
+
+        if (string.IsNullOrEmpty(space))
+        {
+            space = $"{Math.Round(100 * 1.0d / Math.Max(1, Items.Count() - 1), 2)}%";
+        }
+
         return space;
     }
 }
