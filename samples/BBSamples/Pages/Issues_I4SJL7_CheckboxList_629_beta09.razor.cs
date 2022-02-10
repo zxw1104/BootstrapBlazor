@@ -18,6 +18,7 @@ namespace BBSamples.Pages
         private DialogService? DialogService { get; set; }
         [Inject] private ToastService? ToastService { get; set; }
 
+        private List<DynamicObject> SelectedItems { get; set; } = new List<DynamicObject>();
 
         private SiteItem? Model { get; set; }
 

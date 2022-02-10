@@ -11,5 +11,13 @@
        IsStriped="true" 
        ShowToolbar="true" 
        ShowExtendButtons="true"
+       @bind-SelectedRows="SelectedItems"
        >
 </Table>
+
+<ul class="ul-demo">
+    @foreach (var item in SelectedItems)
+    {
+        <li>@item.GetValue("id")</li>
+    }
+</ul>
