@@ -289,6 +289,11 @@ public sealed partial class NavMenu
                 },
                 new()
                 {
+                    Text = Localizer["InputGroup"],
+                    Url = "inputgroups"
+                },
+                new()
+                {
                     Text = Localizer["Markdown"],
                     Url = "markdowns"
                 },
@@ -446,6 +451,12 @@ public sealed partial class NavMenu
             },
             new()
             {
+                IsNew= true,
+                Text = Localizer["Geolocation"],
+                Url = "geolocations"
+            },
+            new()
+            {
                 Text = Localizer["GroupBox"],
                 Url = "groupboxs"
             },
@@ -523,7 +534,7 @@ public sealed partial class NavMenu
             {
                 Text = Localizer["Transition"],
                 Url = "transitions"
-            },
+            }
         };
         AddBadge(item);
     }
@@ -885,6 +896,12 @@ public sealed partial class NavMenu
     {
         item.Items = new List<DemoMenuItem>
         {
+            new()
+            {
+                IsNew = true,
+                Text = Localizer["Dragdrop"],
+                Url = "dragdrops"
+            },
             new()
             {
                 Text = Localizer["Divider"],

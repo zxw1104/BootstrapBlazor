@@ -48,17 +48,19 @@ public static class BootstrapBlazorServiceCollectionExtensions
         services.TryAddScoped<DownloadService>();
         services.TryAddScoped<WebClientService>();
         services.TryAddScoped<AjaxService>();
+        services.TryAddScoped(typeof(DragDropService<>));
 
         services.TryAddSingleton<IConfigureOptions<BootstrapBlazorOptions>, ConfigureOptions<BootstrapBlazorOptions>>();
         services.ConfigureBootstrapBlazorOption(configureOptions);
 
+        services.TryAddSingleton<GeolocationService>();
         services.TryAddSingleton<IIPLocatorProvider, DefaultIPLocatorProvider>();
         services.TryAddSingleton<IConfigureOptions<IPLocatorOption>, ConfigureOptions<IPLocatorOption>>();
         return services;
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="services"></param>
     /// <param name="locatorAction"></param>
@@ -70,7 +72,7 @@ public static class BootstrapBlazorServiceCollectionExtensions
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="services"></param>
     /// <param name="options"></param>
@@ -93,7 +95,7 @@ public static class BootstrapBlazorServiceCollectionExtensions
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="services"></param>
     /// <param name="localizationAction"></param>
