@@ -1,0 +1,46 @@
+﻿@namespace BootstrapBlazor.Components
+@inherits BootstrapComponentBase
+
+<div @attributes="@AdditionalAttributes" class="@ClassString">
+    <CascadingValue Value="this" IsFixed="true">
+        @StepTemplate
+    </CascadingValue>
+    @foreach (var item in Items)
+    {
+        @RenderStep(item)
+    }
+    @if (CurrentStep != null)
+    {
+        <div class="steps-body">
+            @CurrentStep.ChildContent
+        </div>
+    }
+</div>
+
+@code {
+    RenderFragment<StepItem> RenderStep => item =>
+    @<div class="@StepHeaderClassString">
+        <div @attributes="@AdditionalAttributes" class="@ClassString" style="@StepStyleString(item)">
+            <div class="@HeadClassString">
+                <div class="step-line" style="margin-right: 0px;">
+                    <i class="step-line-inner" style="@LineStyleString">
+                    </i>
+                </div>
+                <div class="@StepIconClassString(item)">
+                    <i class="@IconClassString(item)">@StepString(item)</i>
+                </div>
+            </div>
+            <div class="step-main">
+                <div class="@TitleClassString">@item.Title</div>
+                @if (item.DescriptionTemplate != null)
+                {
+                    @item.DescriptionTemplate
+                }
+                else
+                {
+                    <div class="@DescClassString">@item.Description</div>
+                }
+            </div>
+        </div>
+    </div>;
+}

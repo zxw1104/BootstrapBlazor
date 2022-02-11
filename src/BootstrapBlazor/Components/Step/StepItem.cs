@@ -9,7 +9,7 @@ namespace BootstrapBlazor.Components;
 /// <summary>
 /// Step 组件
 /// </summary>
-public class Step : ComponentBase
+public class StepItem : ComponentBase
 {
     /// <summary>
     /// 获得/设置 步骤显示文字
@@ -69,7 +69,7 @@ public class Step : ComponentBase
     /// 获得/设置 父级组件 Steps 实例
     /// </summary>
     [CascadingParameter]
-    private Steps? Steps { get; set; }
+    private Step? Steps { get; set; }
 
     /// <summary>
     /// 获得/设置 步骤组件状态改变时回调委托

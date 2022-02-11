@@ -9,7 +9,7 @@ namespace BootstrapBlazor.Components;
 /// <summary>
 /// Step 组件类
 /// </summary>
-public partial class Steps
+public partial class Step
 {
     /// <summary>
     /// 获得 组件样式字符串
@@ -18,12 +18,12 @@ public partial class Steps
         .AddClassFromAttributes(AdditionalAttributes)
         .Build();
 
-    private string? StepClassString(Step step) => CssBuilder.Default("step is-horizontal")
+    private string? StepClassString(StepItem step) => CssBuilder.Default("step is-horizontal")
         .AddClass("is-flex", step.IsLast && !IsCenter)
         .AddClass("is-center", IsCenter || step.IsCenter)
         .Build();
 
-    private static string? StepStyleString(Step step) => CssBuilder.Default("margin-right: 0px;")
+    private static string? StepStyleString(StepItem step) => CssBuilder.Default("margin-right: 0px;")
         .AddClass($"flex-basis: {step.Space};", !string.IsNullOrEmpty(step.Space))
         .Build();
 
@@ -35,12 +35,12 @@ public partial class Steps
         .AddClass("transition-delay: 150ms; border-width: 1px; width: 100%;", Status == StepStatus.Finish || Status == StepStatus.Success)
         .Build();
 
-    private static string? StepIconClassString(Step step) => CssBuilder.Default("step-icon")
+    private static string? StepIconClassString(StepItem step) => CssBuilder.Default("step-icon")
         .AddClass("is-text", step.IsIcon)
         .AddClass("is-icon", step.IsIcon)
         .Build();
 
-    private string? IconClassString(Step step) => CssBuilder.Default("step-icon-inner")
+    private string? IconClassString(StepItem step) => CssBuilder.Default("step-icon-inner")
         .AddClass(step.Icon, step.IsIcon || Status == StepStatus.Finish || Status == StepStatus.Success)
         .AddClass("fa fa-times", step.IsIcon || Status == StepStatus.Error)
         .AddClass("is-status", !step.IsIcon && (Status == StepStatus.Finish || Status == StepStatus.Success || Status == StepStatus.Error))
@@ -54,16 +54,16 @@ public partial class Steps
         .AddClass($"is-{Status.ToDescriptionString()}")
         .Build();
 
-    private string? StepString(Step step) => (Status == StepStatus.Process || Status == StepStatus.Wait) && !step.IsIcon ? (step.StepIndex + 1).ToString() : null;
+    private string? StepString(StepItem step) => (Status == StepStatus.Process || Status == StepStatus.Wait) && !step.IsIcon ? (step.StepIndex + 1).ToString() : null;
 
-    private Step? CurrentStep { get; set; }
+    private StepItem? CurrentStep { get; set; }
 
     /// <summary>
     /// 获得/设置 步骤集合
     /// </summary>
     [Parameter]
     [NotNull]
-    public List<Step>? Items { get; set; }
+    public List<StepItem>? Items { get; set; }
 
     /// <summary>
     /// 获得/设置 是否垂直渲染 默认 false 水平渲染
@@ -101,8 +101,6 @@ public partial class Steps
     [Parameter]
     public RenderFragment? StepTemplate { get; set; }
 
-    private bool Init { get; set; }
-
     private string? StepHeaderClassString => CssBuilder.Default("steps-header")
         .AddClass("steps-horizontal", !IsVertical)
         .AddClass("steps-vertical", IsVertical)
@@ -127,7 +125,10 @@ public partial class Steps
     {
         if (firstRender)
         {
-            Init = true;
+            if (Items.Any())
+            {
+                StateHasChanged();
+            }
         }
     }
 
@@ -135,7 +136,7 @@ public partial class Steps
     /// Step 组件 OnInitialize 调用添加组件到集合中统一渲染
     /// </summary>
     /// <param name="step"></param>
-    internal void AddItem(Step step)
+    internal void AddItem(StepItem step)
     {
         Items.Add(step);
     }
@@ -151,7 +152,6 @@ public partial class Steps
         {
             space = $"{Math.Round(100 * 1.0d / Math.Max(1, Items.Count() - 1), 2)}%";
         }
-
         return space;
     }
 }
