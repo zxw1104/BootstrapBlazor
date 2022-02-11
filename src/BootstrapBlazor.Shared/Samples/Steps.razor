@@ -1,5 +1,5 @@
-﻿@page "/stepss"
-@inject IStringLocalizer<Stepss> Localizer
+﻿@page "/steps"
+@inject IStringLocalizer<Steps> Localizer
 
 <h3>@Localizer["Title"]</h3>
 
@@ -19,15 +19,16 @@
     </DemoBlock>
 *@
 <DemoBlock Title="@Localizer["Block2Title"]" Introduction="@Localizer["Block2Intro"]" Name="Step">
-    <Steps>
+    <Step>
         <StepTemplate>
-            <Step Title="@Localizer["Step1Title"]" Status="StepStatus.Success">1</Step>
-            <Step Title="@Localizer["Step2Title"]" Status="StepStatus.Process">2</Step>
-            <Step Title="@Localizer["Step3Title"]" Status="StepStatus.Error">3</Step>
-            <Step Title="@Localizer["Step4Title"]" Status="StepStatus.Finish">4</Step>
-            <Step Title="@Localizer["Step5Title"]">5</Step>
+            <StepItem Title="@Localizer["Step1Title"]" Status="StepStatus.Success">1</StepItem>
+            <StepItem Title="@Localizer["Step2Title"]" Status="StepStatus.Process">2</StepItem>
+            <StepItem Title="@Localizer["Step3Title"]" Status="StepStatus.Error">3</StepItem>
+            <StepItem Title="@Localizer["Step4Title"]" Status="StepStatus.Finish">4</StepItem>
+            <StepItem Title="@Localizer["Step5Title"]">5</StepItem>
         </StepTemplate>
-    </Steps>
+    </Step>
+    <Button OnClick="() => StateHasChanged()">Test</Button>
 </DemoBlock>
 
 @*<DemoBlock Title="@Localizer["Block3Title"]" Introduction="@Localizer["Block3Intro"]" Name="Desc">

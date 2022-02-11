@@ -11,7 +11,7 @@ namespace BootstrapBlazor.Shared.Samples;
 /// <summary>
 /// 
 /// </summary>
-public sealed partial class Stepss
+public sealed partial class Steps
 {
     //private IEnumerable<StepItem> Items { get; set; } = new StepItem[3]
     //{
