@@ -880,7 +880,7 @@ public sealed partial class NavMenu
             new()
             {
                 Text = Localizer["Steps"],
-                Url = "stepss"
+                Url = "steps"
             },
             new()
             {

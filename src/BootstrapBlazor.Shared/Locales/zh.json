@@ -629,7 +629,7 @@
     "LabelString": "标签信息",
     "SelectItemsText": "分页选择器信息"
   },
-  "BootstrapBlazor.Shared.Samples.Stepss": {
+  "BootstrapBlazor.Shared.Samples.Steps": {
     "Title": "Steps 步骤条",
     "H1": "引导用户按照流程完成任务的导航条",
     "P1": "引导用户按照流程完成任务的分步导航条，可根据实际应用场景设定步骤，步骤不得少于 2 步",
@@ -2581,7 +2581,7 @@
     "Menu": "菜单 Menu",
     "Nav": "导航栏 Nav",
     "Pagination": "分页 Pagination",
-    "Steps": "步骤条 Steps",
+    "Step": "步骤条 Step",
     "Tab": "标签页 Tab",
     "NotificationComponents": "通知组件",
     "Alert": "警告框 Alert",
