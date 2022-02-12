@@ -104,16 +104,16 @@ public partial class Dialog : IDisposable
 
         parameters.Add(nameof(ModalDialog.OnClose), new Func<Task>(async () =>
         {
-                // 回调 OnClose 方法
-                // 移除当前对话框
-                if (option.OnCloseAsync != null)
+            // 回调 OnClose 方法
+            // 移除当前对话框
+            if (option.OnCloseAsync != null)
             {
                 await option.OnCloseAsync();
             }
             DialogParameters.Remove(parameters);
 
-                // 支持多级弹窗
-                await ModalContainer.CloseOrPopDialog();
+            // 支持多级弹窗
+            await ModalContainer.CloseOrPopDialog();
             StateHasChanged();
         }));
 
@@ -126,15 +126,10 @@ public partial class Dialog : IDisposable
         return Task.CompletedTask;
     }
 
-    private RenderFragment RenderDialog(IEnumerable<KeyValuePair<string, object>> parameter) => builder =>
+    private static RenderFragment RenderDialog(IEnumerable<KeyValuePair<string, object>> parameter) => builder =>
     {
         builder.OpenComponent<ModalDialog>(0);
         builder.AddMultipleAttributes(1, parameter);
-        builder.AddComponentReferenceCapture(2, dialog =>
-        {
-            var modal = (ModalDialog)dialog;
-            ModalContainer.ShowDialog(modal);
-        });
         builder.CloseComponent();
     };
 
