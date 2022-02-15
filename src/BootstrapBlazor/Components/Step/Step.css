@@ -1,14 +1,17 @@
-﻿.steps-header {
+﻿.step-header {
     display: flex;
+    justify-content: space-between;
 }
 
-.steps-horizontal {
+.step-horizontal {
     white-space: nowrap;
 }
 
 .step {
     position: relative;
     flex-shrink: 1;
+    display: flex;
+    justify-content: space-between;
 }
 
     .step.is-horizontal {

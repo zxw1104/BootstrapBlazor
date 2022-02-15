@@ -14,7 +14,7 @@ public partial class Step
     /// <summary>
     /// 获得 组件样式字符串
     /// </summary>
-    private string? ClassString => CssBuilder.Default("steps")
+    private string? ClassString => CssBuilder.Default("step")
         .AddClassFromAttributes(AdditionalAttributes)
         .Build();
 
@@ -27,7 +27,7 @@ public partial class Step
         .AddClass($"flex-basis: {step.Space};", !string.IsNullOrEmpty(step.Space))
         .Build();
 
-    private string? HeadClassString => CssBuilder.Default("step-head")
+    private string? HeadClassString => CssBuilder.Default("step-header")
         .AddClass($"is-{Status.ToDescriptionString()}")
         .Build();
 
@@ -54,7 +54,7 @@ public partial class Step
         .AddClass($"is-{Status.ToDescriptionString()}")
         .Build();
 
-    private string? StepString(StepItem step) => (Status == StepStatus.Process || Status == StepStatus.Wait) && !step.IsIcon ? (step.StepIndex + 1).ToString() : null;
+    private string? StepString(StepItem step) => (Status == StepStatus.Process || Status == StepStatus.Wait) && !step.IsIcon ? step.StepIndex.ToString() : null;
 
     private StepItem? CurrentStep { get; set; }
 
@@ -64,6 +64,12 @@ public partial class Step
     [Parameter]
     [NotNull]
     public List<StepItem>? Items { get; set; }
+
+    /// <summary>
+    /// 获得/设置 当前步骤索引从 0 开始
+    /// </summary>
+    [Parameter]
+    public int CurrentStepIndex { get; set; }
 
     /// <summary>
     /// 获得/设置 是否垂直渲染 默认 false 水平渲染
@@ -101,9 +107,9 @@ public partial class Step
     [Parameter]
     public RenderFragment? StepTemplate { get; set; }
 
-    private string? StepHeaderClassString => CssBuilder.Default("steps-header")
-        .AddClass("steps-horizontal", !IsVertical)
-        .AddClass("steps-vertical", IsVertical)
+    private string? StepHeaderClassString => CssBuilder.Default("step-head")
+        .AddClass("step-horizontal", !IsVertical)
+        .AddClass("step-vertical", IsVertical)
         .Build();
 
     /// <summary>
@@ -114,7 +120,6 @@ public partial class Step
         await base.OnParametersSetAsync();
 
         Items ??= new();
-        CurrentStep = Items.Where(i => i.Status == StepStatus.Process).FirstOrDefault();
     }
 
     /// <summary>

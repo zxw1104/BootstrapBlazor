@@ -62,8 +62,7 @@ public class StepItem : ComponentBase
     /// <summary>
     /// 获得/设置 Step 顺序
     /// </summary>
-    [Parameter]
-    public int StepIndex { get; set; }
+    internal int StepIndex { get; set; }
 
     /// <summary>
     /// 获得/设置 父级组件 Steps 实例
@@ -99,6 +98,7 @@ public class StepItem : ComponentBase
         if (Steps != null)
         {
             Steps.AddItem(this);
+            StepIndex = Steps.Items.Count;
         }
     }
 }
