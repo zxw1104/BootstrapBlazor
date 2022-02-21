@@ -1,0 +1,20 @@
+﻿@page "/drivers"
+
+<h3>Drivers</h3>
+
+<DemoBlock Title="基本步骤" Introduction="多步使用">
+    <Driver @ref="Driver" DriverOptions="DriverOptions" StepOptions="StepOptionsList"></Driver>
+	<Button OnClick="@DriverCardAsync">Card介绍</Button>
+    <Card id="a">
+		<CardHeader>
+			<div id="b">这里是Header</div>
+		</CardHeader>
+        <CardBody>
+            <div id="c">这里是Body</div>
+        </CardBody>
+		<CardFooter>
+			<div id="d">这里是Footer</div>
+		</CardFooter>
+    </Card>
+</DemoBlock>
+
