@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace BootstrapBlazor.Shared.Samples;
 public partial class Drivers
 {
-
+    [NotNull]
     private Driver? Driver { get; set; }
 
     private DriverOptions DriverOptions { get; set; } = new DriverOptions();
@@ -52,10 +52,39 @@ public partial class Drivers
 
     private async Task DriverCardAsync()
     {
-        if (Driver != null)
+        await Driver.StartAsync();
+
+    }
+
+    private async Task AutoDriverCardAsync()
+    {
+        await Driver.StartAsync();
+        await Task.Delay(1000);
+        while (await Driver.HasNextStepAsync())
         {
-            await Driver.Start();
+            await Driver.MoveNextAsync();
+            await Task.Delay(1000);
         }
-        
+        await Driver.ResetAsync();
+    }
+
+    private bool _popoverState = true;
+
+    private async Task SwitchPopover()
+    {
+        if (_popoverState)
+        {
+            await Driver.HidePopoverAsync();
+        }
+        else
+        {
+            await Driver.ShowPopoverAsync();
+        }
+        _popoverState = !_popoverState;
+    }
+
+    private void ChangeParameter()
+    {
+        DriverOptions.Opacity = 0f;
     }
 }

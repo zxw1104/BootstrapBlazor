@@ -5,6 +5,8 @@
 <DemoBlock Title="基本步骤" Introduction="多步使用">
     <Driver @ref="Driver" DriverOptions="DriverOptions" StepOptions="StepOptionsList"></Driver>
 	<Button OnClick="@DriverCardAsync">Card介绍</Button>
+    <Button OnClick="@AutoDriverCardAsync">Card自动介绍</Button>
+    <Button OnClick="@ChangeParameter">重设透明度</Button>
     <Card id="a">
 		<CardHeader>
 			<div id="b">这里是Header</div>
@@ -13,7 +15,9 @@
             <div id="c">这里是Body</div>
         </CardBody>
 		<CardFooter>
-			<div id="d">这里是Footer</div>
+			<div id="d">这里是Footer
+				<Button OnClick="@SwitchPopover">切换信息弹窗状态</Button>
+			</div>
 		</CardFooter>
     </Card>
 </DemoBlock>
