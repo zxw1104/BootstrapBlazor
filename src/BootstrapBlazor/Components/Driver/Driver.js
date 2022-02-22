@@ -28,10 +28,6 @@
             var driver = $(el).data('bb_driver');
             driver.moveNext();
         },
-        bb_driver_reset: function (el) {
-            var driver = $(el).data('bb_driver');
-            driver.reset();
-        },
         bb_driver_isActivated: function (el) {
             var driver = $(el).data('bb_driver');
             return driver.isActivated();
@@ -61,6 +57,6 @@
             if (activeElement) {
                 activeElement.showPopover();
             }
-        },
+        }
     });
 })(jQuery);
