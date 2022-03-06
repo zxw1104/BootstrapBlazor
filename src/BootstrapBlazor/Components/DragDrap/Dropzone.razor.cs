@@ -18,7 +18,7 @@ public partial class Dropzone<TItem> : IDisposable
     /// </summary>
     [Parameter]
     [NotNull]
-    public IList<TItem?>? Items { get; set; }
+    public List<TItem>? Items { get; set; }
 
     /// <summary>
     /// 获取/设置 最大数量，Null为不限制
@@ -263,7 +263,7 @@ public partial class Dropzone<TItem> : IDisposable
         OnItemDrop.InvokeAsync(activeItem);
     }
 
-    private void OnDragStart(TItem? item)
+    private void OnDragStart(TItem item)
     {
         DragDropService.OldIndex = Items.IndexOf(item);
         DragDropService.ActiveItem = item;
@@ -271,7 +271,7 @@ public partial class Dropzone<TItem> : IDisposable
         Items.Remove(item);
         if (DragDropService.OldIndex >= Items.Count)
         {
-            Items.Add(default);
+            Items.Add(default!);
         }
     }
 
@@ -282,8 +282,7 @@ public partial class Dropzone<TItem> : IDisposable
             DragDropService.Items.Insert(DragDropService.OldIndex.Value, DragDropService.ActiveItem);
             StateHasChanged();
         }
-
-        Items.Remove(default);
+        Items.Remove(default!);
     }
 
     private void OnDragEnter(TItem? item)

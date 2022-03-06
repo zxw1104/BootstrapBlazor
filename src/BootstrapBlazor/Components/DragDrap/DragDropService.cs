@@ -23,7 +23,7 @@ internal class DragDropService<T>
     /// <summary>
     /// 被拖拽的Items
     /// </summary>
-    public IList<T?>? Items { get; set; }
+    public IList<T>? Items { get; set; }
 
     /// <summary>
     /// 活动的Id
