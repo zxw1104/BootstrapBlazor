@@ -77,14 +77,32 @@ public sealed partial class PageLayout
         Menus = new List<MenuItem>
             {
                 new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
+                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "layouts" },
                 new MenuItem()
                 {
                     Text = "后台模拟器",
                     Icon = "fa fa-fw fa-desktop",
-                    Items= new List<MenuItem>()
-                    {
-                        new() { Text = "后台模拟器", Icon = "fa fa-fw fa-laptop", Url = "layout-page" }
-                    }
+                    Items= Enumerable.Range(1,40).Select(x=>
+                        new MenuItem() { Text = "后台模拟器", Icon = "fa fa-fw fa-laptop", Url = "layout-page" }
+                    )
                 },
                 new MenuItem()
                 {
@@ -94,7 +112,17 @@ public sealed partial class PageLayout
                     {
                         new() { Text = "示例网页", Icon = "fa fa-fw fa-laptop", Url = "layout-demo/text=Parameter1" },
                         new() { Text = "菜单组件", Icon = "fa fa-fw fa-laptop", Url = "layout-demo/menus" },
-                        new() { Text = "布局组件", Icon = "fa fa-fw fa-laptop", Url = "layout-demo/layouts" }
+                        new()
+                        {
+                            Text = "示例网页",
+                            Icon = "fa fa-fw fa-laptop",
+                            Items= new List<MenuItem>()
+                            {
+                                new() { Text = "示例网页", Icon = "fa fa-fw fa-laptop", Url = "layout-demo/text=Parameter1" },
+                                new() { Text = "菜单组件", Icon = "fa fa-fw fa-laptop", Url = "layout-demo/menus" },
+                                new() { Text = "布局组件", Icon = "fa fa-fw fa-laptop", Url = "layout-demo/layouts" }
+                            }
+                        }
                     }
                 }
             };
