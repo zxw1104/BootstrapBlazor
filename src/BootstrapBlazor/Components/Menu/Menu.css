@@ -188,6 +188,21 @@
     .layout-side.is-collapsed:not(:hover) .menu.is-collapsed .submenu .text {
         width: 0;
     }
+
+    /*宽度大于768时且收缩时*/
+    .menu.is-vertical.is-collapsed.has-tipmenu {
+        padding: 0;
+    }
+
+        /*宽度大于768时且收缩时不显示标准菜单*/
+        .menu.is-vertical.is-collapsed.has-tipmenu > .submenu {
+            display: none;
+        }
+
+    /*宽度大于768时且展开时不显示提示菜单*/
+    .menu.is-vertical.has-tipmenu:not(.is-collapsed) > .tipmenu {
+        display: none;
+    }
 }
 
 .menu.is-bottom {
@@ -212,3 +227,30 @@
     .menu.is-bottom .dropdown-menu-arrow:after {
         content: none;
     }
+
+/*提示菜单最大宽度为侧栏宽度*/
+.tipmenu {
+    max-width: var(--bb-layout-sidebar-collapse-width);
+}
+
+    /*提示菜单选中和激活时字体颜色设置*/
+    .tipmenu .nav-link:hover,
+    .tipmenu .nav-link.active {
+        color: white !important;
+        background-color: #009ef7;
+    }
+
+.tipmenu-item .tooltip-inner {
+    padding: 0;
+}
+
+.tipmenu-item .tooltip-arrow {
+    display: none;
+}
+
+@media (max-width: 769px) {
+    /*宽度小于769时不显示侧栏提示菜单*/
+    .menu.is-vertical > .tipmenu {
+        display: none;
+    }
+}
