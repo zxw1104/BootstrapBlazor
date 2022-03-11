@@ -1,0 +1,49 @@
+﻿@namespace BootstrapBlazor.Components
+@inherits BootstrapComponentBase
+
+<li class="@ClassString" @ref="@MenuElemenet" @onclick:stopPropagation @onclick="() => OnClickItem(Item)">
+    <a class="@LinkClassString">
+        <i class="@GetIconString(Item.Icon)"></i>
+        @if (Parent.IsBreadcrumb)
+        {
+            @Item.Text
+            @if (Item.Items.Any())
+            {
+                <i class="fa fa-angle-down"></i>
+            }
+        }
+    </a>
+
+    @if (!Item.IsDisabled)
+    {
+        <div class="d-none">
+            <div class="tip-select">
+                <div class="cascade menu dropdown-menu show">
+                    @if (Item.Items.Any())
+                    {
+                        @foreach (var item in Item.Items)
+                        {
+                            @if (item.Items.Any())
+                            {
+                                <SubMenu Item="@item" OnClick="OnClickItem" class="dropdown-item"/>
+                            }
+                            else
+                            {
+                                <div class="nav-item" @onclick:stopPropagation @onclick="() => OnClickItem(item)">
+                                    <MenuLink Item="@item" />
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <div class="nav-link">
+                            <i class="@GetIconString(Item.Icon)"></i>
+                            <span class="text">@Item.Text</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</li>
