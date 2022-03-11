@@ -82,6 +82,82 @@
 
             // 自动展开
             $.bb_auto_expand($el);
+        },
+        bb_tip_menu: function (el, interop, isBreadcrumb, method) {
+            //记录状态
+            var state = { hoverTipMenu: false, hoverTipSelect: false };
+
+            //禁用链接为#的点击
+            el.querySelectorAll('a[href="#"],a.has-leaf')
+                .forEach(function (link) {
+                    link.onclick = function () { return false; }
+                });
+
+            //光标移入
+            el.addEventListener('mouseenter', function (e) {
+                var target = this.querySelector('.tip-select');
+                if (target == null) {
+                    return false;
+                }
+
+                var tipbar = this;
+                var element = target.cloneNode(true);//每次重新拷贝
+                var tooltip = new bootstrap.Tooltip(tipbar, {
+                    html: true,
+                    sanitize: false,
+                    trigger: 'manual',
+                    placement: isBreadcrumb ? 'bottom' : 'right',
+                    offset: [isBreadcrumb ? 0 : -34, 0],
+                    customClass: 'tipmenu-item',
+                    title: element
+                });
+                this.addEventListener('show.bs.tooltip', function () {
+                    element.addEventListener('mouseenter', function (e) {
+                        state.hoverTipMenu = false;
+                        state.hoverTipSelect = true;
+                        e.stopImmediatePropagation();
+                    });
+                    element.addEventListener('mouseleave', function (e) {
+                        tooltip.dispose();
+                        state.hoverTipMenu = false;
+                        state.hoverTipSelect = false;
+                        e.stopImmediatePropagation();
+                    });
+
+                    //点击触发回发
+                    element.querySelectorAll('a.nav-link:not(.dropdown-item)')
+                        .forEach(function (a) {
+                            a.onclick = function () {
+                                interop.invokeMethodAsync(method, a.dataset.key);
+                                tooltip.dispose();
+                                state.hoverTipMenu = false;
+                                state.hoverTipSelect = false;
+                                e.stopImmediatePropagation();
+                            }
+                        });
+                });
+
+                tooltip.show();
+                state.hasPopper = true;
+                state.hoverTipSelect = false;
+                e.stopImmediatePropagation();
+            });
+
+            //光标移出
+            el.addEventListener('mouseleave', function (e) {
+                var tipbar = this;
+                var handler = window.setTimeout(function () {
+                    var tooltip = bootstrap.Tooltip.getInstance(tipbar);
+                    if (tooltip != null) {
+                        state.hoverTipMenu = false;
+                        if (state.hoverTipSelect === false) {
+                            tooltip.dispose();
+                        }
+                    }
+                    window.clearInterval(handler);
+                }, isBreadcrumb ? 50 : 30);//值必须调整合适，不然会出现切换未隐藏的情况
+                e.stopImmediatePropagation();
+            });
         }
     });
 
