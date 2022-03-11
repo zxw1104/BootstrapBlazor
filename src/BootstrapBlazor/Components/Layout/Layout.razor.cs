@@ -56,6 +56,7 @@ public partial class Layout : IAsyncDisposable
         .AddClass("is-collapsed", IsCollapsed)
         .AddClass("is-fixed-header", IsFixedHeader)
         .AddClass("is-fixed-footer", IsFixedFooter)
+        .AddClass("has-tipmenu", UseTipMenu)
         .Build();
 
     /// <summary>
