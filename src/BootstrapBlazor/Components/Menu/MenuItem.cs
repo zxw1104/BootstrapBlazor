@@ -42,9 +42,17 @@ public class MenuItem : NodeItem
     public int Indent { get; private set; }
 
     /// <summary>
+    /// 获得 当前菜单标识健
+    /// </summary>
+    public string Key { get; private set; }
+
+    /// <summary>
     /// 默认构造函数
     /// </summary>
-    public MenuItem() { }
+    public MenuItem()
+    {
+        Key = Guid.NewGuid().ToString("N");
+    }
 
     /// <summary>
     /// 带参数构造函数
@@ -52,7 +60,7 @@ public class MenuItem : NodeItem
     /// <param name="text">显示文本</param>
     /// <param name="url">菜单地址</param>
     /// <param name="icon">菜单图标</param>
-    public MenuItem(string text, string? url = null, string? icon = null)
+    public MenuItem(string text, string? url = null, string? icon = null) : this()
     {
         Text = text;
         Url = url;
