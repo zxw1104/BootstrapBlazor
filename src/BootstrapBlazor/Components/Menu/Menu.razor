@@ -3,9 +3,18 @@
 
 <nav @attributes="@AdditionalAttributes" class="@ClassString" @ref="MenuElemenet">
     <CascadingValue Value="this" IsFixed="true">
-        @if (IsVertical)
+        @if (IsBreadcrumb)
+        {
+            <TipMenu Items="@Items" OnClick="@OnClickMenu"></TipMenu>
+        }
+        else if (IsVertical && !IsBreadcrumb)
         {
             <SideMenu Items="@Items" OnClick="@OnClickMenu" />
+
+            @if (UseTipMenu)
+            {
+                <TipMenu Items="@Items" OnClick="@OnClickMenu"></TipMenu>
+            }
         }
         else
         {
