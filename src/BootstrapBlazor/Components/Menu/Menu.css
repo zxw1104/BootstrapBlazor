@@ -189,6 +189,12 @@
         width: 0;
     }
 
+    /*宽度大于768时侧边栏hover时切换宽度*/
+    .layout-side.is-collapsed.has-tipmenu,
+    .menu.is-vertical.is-collapsed.has-tipmenu {
+        width: var(--bb-layout-sidebar-collapse-width) !important;
+    }
+
     /*宽度大于768时且收缩时*/
     .menu.is-vertical.is-collapsed.has-tipmenu {
         padding: 0;
