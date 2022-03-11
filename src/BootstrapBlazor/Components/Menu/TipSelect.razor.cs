@@ -18,18 +18,10 @@ public partial class TipSelect
     private JSInterop<TipSelect>? Interop { get; set; }
 
     /// <summary>
-    /// 获得 组件样式
-    /// </summary>
-    private string? ClassString => CssBuilder.Default()
-        .AddClass("breadcrumb-item", Parent.IsBreadcrumb)
-        .AddClass("nav-item", !Parent.IsBreadcrumb)
-        .Build();
-
-    /// <summary>
     /// 
     /// </summary>
-    private string? LinkClassString => CssBuilder.Default()
-        .AddClass("nav-link py-3 fs-3 m-0 justify-content-center", !Parent.IsBreadcrumb)
+    private string? LinkClassString => CssBuilder.Default("nav-link")
+        .AddClass("py-3 fs-4 m-0 justify-content-center")
         .AddClass("disabled", Item.IsDisabled)
         .AddClass("active", Item.IsActive)
         .Build();
@@ -40,8 +32,8 @@ public partial class TipSelect
     /// <param name="icon"></param>
     /// <returns></returns>
     protected static string GetIconString(string? icon) => string.IsNullOrWhiteSpace(icon)
-        ? "fa-fw fa-bars py-1"
-        : $"{(icon.Contains("fa-fw", StringComparison.OrdinalIgnoreCase) ? icon : $"{icon} fa-fw")} py-1";
+        ? "fa-fw fa-bars"
+        : icon.Contains("fa-fw", StringComparison.OrdinalIgnoreCase) ? icon : $"{icon} fa-fw";
 
     /// <summary>
     /// 获得/设置 组件数据源
@@ -95,7 +87,6 @@ public partial class TipSelect
         {
             Interop = new JSInterop<TipSelect>(JSRuntime);
             await Interop.InvokeVoidAsync(this, MenuElemenet, "bb_tip_menu"
-                , Parent.IsBreadcrumb
                 , nameof(ClickAsync));
         }
     }

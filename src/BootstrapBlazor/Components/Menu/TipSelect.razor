@@ -1,17 +1,9 @@
 ﻿@namespace BootstrapBlazor.Components
 @inherits BootstrapComponentBase
 
-<li class="@ClassString" @ref="@MenuElemenet" @onclick:stopPropagation @onclick="() => OnClickItem(Item)">
+<li class="nav-item" @ref="@MenuElemenet" @onclick:stopPropagation @onclick="() => OnClickItem(Item)">
     <a class="@LinkClassString">
         <i class="@GetIconString(Item.Icon)"></i>
-        @if (Parent.IsBreadcrumb)
-        {
-            @Item.Text
-            @if (Item.Items.Any())
-            {
-                <i class="fa fa-angle-down"></i>
-            }
-        }
     </a>
 
     @if (!Item.IsDisabled)

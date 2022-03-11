@@ -83,7 +83,7 @@
             // 自动展开
             $.bb_auto_expand($el);
         },
-        bb_tip_menu: function (el, interop, isBreadcrumb, method) {
+        bb_tip_menu: function (el, interop, method) {
             //记录状态
             var state = { hoverTipMenu: false, hoverTipSelect: false };
 
@@ -106,8 +106,8 @@
                     html: true,
                     sanitize: false,
                     trigger: 'manual',
-                    placement: isBreadcrumb ? 'bottom' : 'right',
-                    offset: [isBreadcrumb ? 0 : -34, 0],
+                    placement: 'right',
+                    offset: [-28, 0],
                     customClass: 'tipmenu-item',
                     title: element
                 });
@@ -155,7 +155,7 @@
                         }
                     }
                     window.clearInterval(handler);
-                }, isBreadcrumb ? 50 : 30);//值必须调整合适，不然会出现切换未隐藏的情况
+                }, 30);//值必须调整合适，不然会出现切换未隐藏的情况
                 e.stopImmediatePropagation();
             });
         }

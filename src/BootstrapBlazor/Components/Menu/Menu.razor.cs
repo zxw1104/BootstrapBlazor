@@ -18,7 +18,6 @@ public partial class Menu
     /// </summary>
     protected string? ClassString => CssBuilder.Default("menu")
         .AddClass("is-bottom", IsBottom)
-        .AddClass("is-breadcrumb", IsBreadcrumb)
         .AddClass("is-vertical", IsVertical)
         .AddClass("is-collapsed", IsVertical && IsCollapsed)
         .AddClass("accordion", IsVertical && IsAccordion)
@@ -105,20 +104,12 @@ public partial class Menu
     [Parameter]
     public bool IsCollapsed { get; set; }
 
-    private bool _vertical;
     /// <summary>
     /// 获得/设置 侧栏垂直模式 默认 false
     /// </summary>
     /// <value></value>
     [Parameter]
-    public bool IsVertical
-    {
-        get => _vertical;
-        set
-        {
-            _vertical = !IsBreadcrumb && value;
-        }
-    } 
+    public bool IsVertical { get; set; }
 
     /// <summary>
     /// 获得/设置 侧边栏垂直模式在底部 默认 false
@@ -137,22 +128,6 @@ public partial class Menu
     /// </summary>
     [Parameter]
     public bool DisableNavigation { get; set; }
-
-    private bool _breadcrumb;
-    /// <summary>
-    /// 获得/设置 是否是 面包屑菜单 默认 false 不是
-    /// 面包屑菜单不能是垂直模式
-    /// </summary>
-    [Parameter]
-    public bool IsBreadcrumb
-    {
-        get => _breadcrumb;
-        set
-        {
-            _breadcrumb = value;
-            IsVertical = !value;
-        }
-    }
 
     /// <summary>
     /// 获得/设置 侧边栏收起时使用 提示菜单 默认为 false 不使用
