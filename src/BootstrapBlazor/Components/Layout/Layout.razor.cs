@@ -112,6 +112,12 @@ public partial class Layout : IAsyncDisposable
     public bool ShowToast { get; set; } = true;
 
     /// <summary>
+    /// 获得/设置 是否使用 提示菜单 默认 true 使用
+    /// </summary>
+    [Parameter]
+    public bool UseTipMenu { get; set; } = true;
+
+    /// <summary>
     /// 获得/设置 Error Toast 弹窗标题
     /// </summary>
     [Parameter]
