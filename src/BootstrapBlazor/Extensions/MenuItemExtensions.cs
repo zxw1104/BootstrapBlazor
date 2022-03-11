@@ -25,4 +25,46 @@ public static class MenuItemExtensions
             current = current.Parent;
         }
     }
+
+    /// <summary>
+    /// 级联向下设置 <see cref="MenuItem"/> Active 状态
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="active"></param>
+    public static void CascadingSetChildActive(MenuItem item, bool active = true)
+    {
+        if (item.IsActive != active)
+        {
+            item.IsActive = active;
+        }
+        foreach (var menu in item.Items)
+        {
+            CascadingSetChildActive(menu, active);
+        }
+    }
+
+    /// <summary>
+    /// 级联向下查找 <see cref="MenuItem"/>
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="func">判定条件</param>
+    /// <returns></returns>
+    public static MenuItem? CascadingFindChild(MenuItem item, Func<MenuItem, bool> func)
+    {
+        if (func(item))
+        {
+            return item;
+        }
+
+        MenuItem? result = null;
+        foreach (var menu in item.Items)
+        {
+            result = CascadingFindChild(menu, func);
+            if (result != null)
+            {
+                break;
+            }
+        }
+        return result;
+    }
 }
