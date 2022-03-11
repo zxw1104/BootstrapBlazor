@@ -1,0 +1,32 @@
+﻿@namespace BootstrapBlazor.Components
+
+@if (Parent.IsBreadcrumb)
+{
+    @if(BreadcrumbItems.Count > 0)
+    {
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                @for (var index = BreadcrumbItems.Count - 1; index >= 0; index--)
+                {
+                    @if (index == 0)
+                    {
+                        <li class="breadcrumb-item active" aria-current="page">@BreadcrumbItems[index].Text</li>
+                    }
+                    else
+                    {
+                        <TipSelect Item="@BreadcrumbItems[index]"></TipSelect>
+                    }
+                }
+            </ol>
+        </nav>
+    }
+}
+else
+{
+    <ul class="tipmenu nav nav-pills flex-column p-0">
+        @foreach (var menu in Items)
+        {
+            <TipSelect Item="@menu" OnClick="@OnClickItem"></TipSelect>
+        }
+    </ul>
+}
