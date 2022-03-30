@@ -411,7 +411,7 @@
     "SearchDialogText": "SearchDialog",
     "ToastText": "Toast",
     "TimerText": "Timer",
-    "Text6": "图表 Chart",
+    "Text6": "Chart",
     "ChartText": "Chart",
     "ChartSummaryText": "Summary",
     "ChartLineText": "Line",
@@ -420,7 +420,9 @@
     "ChartDoughnutText": "Doughnut",
     "ChartBubbleText": "Bubble",
     "DispatchText": "Dispatch",
-    "GeolocationText": "Geolocation"
+    "GeolocationText": "Geolocation",
+    "Notification": "Notification",
+    "SignaturePadText": "SignaturePad"
   },
   "BootstrapBlazor.Shared.Samples.GlobalException": {
     "Title": "Global exception",
@@ -2859,5 +2861,8 @@
     "BaseUsageText": "<code> bootstrapblazor </code> uses <code> font awesome 4.7.0 </code> as the built-in icon library. All icons are as follows",
     "SwitchButtonTextOff": "Click to copy",
     "SwitchButtonTextOn": "Show Copy Dialog"
+  },
+  "BootstrapBlazor.Shared.Samples.SignaturePads": {
+    "Title": "SignaturePad"
   }
 }

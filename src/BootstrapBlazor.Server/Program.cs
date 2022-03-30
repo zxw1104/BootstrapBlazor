@@ -17,7 +17,7 @@ builder.Services.AddResponseCompression();
 
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+builder.Services.AddServerSideBlazor().AddHubOptions(o =>o.MaximumReceiveMessageSize = null);
 builder.Services.AddBootstrapBlazorServices(builder.Configuration.GetSection("Themes")
     .GetChildren()
     .Select(c => new KeyValuePair<string, string>(c.Key, c.Value)));

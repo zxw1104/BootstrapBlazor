@@ -510,6 +510,11 @@ public sealed partial class NavMenu
                 Text = Localizer["Search"],
                 Url = "searchs"
             },
+            new()
+            {
+                Text = Localizer["SignaturePad"],
+                Url = "signaturepads"
+            },
             tableItem,
             new()
             {

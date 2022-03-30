@@ -421,7 +421,8 @@
     "ChartBubbleText": "气泡图",
     "DispatchText": "消息分发 Dispatch",
     "GeolocationText": "地理定位组件 Geolocation",
-    "NotificationsText": "浏览器通知 Notification"
+    "NotificationsText": "浏览器通知 Notification",
+    "SignaturePadText": "签名 SignaturePad"
   },
   "BootstrapBlazor.Shared.Samples.GlobalException": {
     "Title": "全局异常",
@@ -2743,7 +2744,8 @@
     "ChartBubble": "气泡图",
     "Transition": "过渡效果 Transition",
     "Geolocation": "地理定位组件 Geolocation",
-    "Notification": "浏览器通知 Notification"
+    "Notification": "浏览器通知 Notification",
+    "SignaturePad": "手写签名 SignaturePad"
   },
   "BootstrapBlazor.Shared.Samples.Table.TablesFooter": {
     "Left": "左对齐",
@@ -2869,5 +2871,8 @@
     "SwitchButtonText": "",
     "SwitchButtonTextOff": "点击拷贝",
     "SwitchButtonTextOn": "显示高级拷贝"
+  },
+  "BootstrapBlazor.Shared.Samples.SignaturePads": {
+    "Title": "SignaturePad 签名"
   }
 }
