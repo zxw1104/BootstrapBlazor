@@ -12,12 +12,7 @@ namespace BootstrapBlazor.Components;
 public interface IValidator
 {
     /// <summary>
-    /// 获得/设置 错误描述信息
-    /// </summary>
-    string? ErrorMessage { get; set; }
-
-    /// <summary>
-    /// 验证方法
+    /// 异步验证方法
     /// </summary>
     /// <param name="propertyValue"></param>
     /// <param name="context"></param>

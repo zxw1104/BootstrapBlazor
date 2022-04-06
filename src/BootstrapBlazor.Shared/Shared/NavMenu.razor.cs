@@ -492,7 +492,13 @@ public sealed partial class NavMenu
             {
                 IsNew = true,
                 Text = Localizer["Locator"],
-                Url = "locator"
+                Url = "locators"
+            },
+            new()
+            {
+                IsNew = true,
+                Text = Localizer["ImageViewer"],
+                Url = "imageviewers"
             },
             new()
             {
@@ -545,7 +551,12 @@ public sealed partial class NavMenu
             {
                 Text = Localizer["Transition"],
                 Url = "transitions"
-            }
+            },
+            //new()
+            //{
+            //    Text = Localizer["Speech"],
+            //    Url = "speechs"
+            //}
         };
         AddBadge(item);
     }

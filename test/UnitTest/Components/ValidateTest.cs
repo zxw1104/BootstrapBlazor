@@ -343,6 +343,57 @@ public class ValidateTest : BootstrapBlazorTestBase
     }
 
     [Fact]
+    public async Task AsyncRules_Ok()
+    {
+        var model = new Foo() { Name = "test" };
+        var invalid = false;
+        var cut = Context.RenderComponent<ValidateForm>(builder =>
+        {
+            builder.Add(v => v.Model, model);
+            builder.Add(v => v.OnInvalidSubmit, context =>
+            {
+                invalid = true;
+                return Task.CompletedTask;
+            });
+            builder.AddChildContent<FooAsync>(pb =>
+            {
+                pb.Add(v => v.Value, model.Name);
+                pb.Add(v => v.ValueChanged, v => model.Name = v);
+                pb.Add(v => v.ValueExpression, model.GenerateValueExpression());
+            });
+            builder.AddChildContent<Button>(pb =>
+            {
+                pb.Add(b => b.ButtonType, ButtonType.Submit);
+            });
+        });
+        var form = cut.Find("form");
+        var c = cut.Find("input");
+        await cut.InvokeAsync(() => c.Change("Test"));
+        await Task.Delay(300);
+        await cut.InvokeAsync(() => form.Submit());
+        Assert.True(invalid);
+    }
+
+    class FooAsync : BootstrapInput<string>
+    {
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+
+            Rules.Add(new MockAsyncValidator());
+        }
+    }
+
+    class MockAsyncValidator : ValidatorAsyncBase
+    {
+        public override async Task ValidateAsync(object? propertyValue, ValidationContext context, List<ValidationResult> results)
+        {
+            await Task.Delay(100);
+            results.Add(new ValidationResult("Invalid", new string[] { context.DisplayName }));
+        }
+    }
+
+    [Fact]
     public async Task ValidateProperty_Ok()
     {
         var model = new Foo() { Hobby = new string[0] };
@@ -438,7 +489,7 @@ public class ValidateTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void ValidateType_Ok()
+    public async Task ValidateType_Ok()
     {
         var model = new Foo() { Count = 0 };
         var cut = Context.RenderComponent<RenderTemplate>(builder =>
@@ -450,7 +501,7 @@ public class ValidateTest : BootstrapBlazorTestBase
             });
         });
         var intValidate = cut.FindComponent<MockValidate<int>>();
-        intValidate.Instance.ValidateTypeTest(model);
+        await intValidate.Instance.ValidateTypeTest(model);
     }
 
     [Fact]
@@ -534,13 +585,13 @@ public class ValidateTest : BootstrapBlazorTestBase
             CurrentValueAsString = "1";
         }
 
-        public void ValidateTypeTest(Foo model)
+        public async Task ValidateTypeTest(Foo model)
         {
             CurrentValueAsString = "test";
 
             var results = new List<ValidationResult>();
             var context = new ValidationContext(model);
-            ValidateProperty(1, context, results);
+            await ValidatePropertyAsync(1, context, results);
         }
 
         public void OnValidateTest()

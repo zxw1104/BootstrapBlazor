@@ -373,6 +373,7 @@
     "DisplayText": "数据显示 Display",
     "EmptyText": "空状态 Empty",
     "LocatorText": "位置定位 Locator",
+    "ImageViewerText": "图片 ImageViewer",
     "IpText": "IP 地址 IpAddress",
     "PrintText": "打印组件 Print",
     "TitleText": "网站标题 Title",
@@ -1089,7 +1090,12 @@
     "Ret1": "<div class='text-danger'>从plugin1返回的数据</div>",
     "Swal2Title": "点击 plugin2 按钮后弹窗",
     "Swal2Content": "点击插件按钮后弹窗并确认后才进行下一步处理",
-    "Ret2": "从plugin2返回的数据"
+    "Ret2": "从plugin2返回的数据",
+    "DoMethodAsync": "实例方法",
+    "DoMethodAsyncIntro": "使用实例方法从外部操作 <code>Editor</code>，具体的参数参照 <a href='https://summernote.org/deep-dive'>summernote api</a>",
+    "DoMethodAsyncButton1": "插入一段 Html",
+    "DoMethodAsyncButton2": "将段落修改为 H2",
+    "DoMethodAsyncButton3": "添加一张图片"
   },
   "BootstrapBlazor.Shared.Samples.EditorForms": {
     "Title": "EditorForm 表单组件",
@@ -1666,11 +1672,11 @@
     "SearchableTitle": "可搜索",
     "SearchableIntro": "在数据很多的情况下，可以对数据进行搜索和过滤。",
     "BindToWayTitle": "双向绑定",
-    "BindToWayIntro": "组件数据发生变化时，双向绑定 <code>bind_Value</code> 值同步变化",
+    "BindToWayIntro": "组件数据发生变化时，双向绑定 <code>bind-Value</code> 值同步变化",
     "BindToWayP1": "<code>Transfer</code> 组件为泛型组件，支持三种绑定类型 <code>string</code> <code>IEnumerable&lt;string&gt;</code> <code>IEnumerable&lt;SelectedItem&gt;</code> 本例中双向绑定 <code>SelectedValue</code> 类型为 <code>IEnumerable&lt;SelectedItem&gt;</code>",
     "BindToWayButtonText1": "增加",
     "ClientValidationTitle": "客户端验证",
-    "ClientValidationIntro": "组件数据发生变化时，双向绑定 <code>bind_Value</code> 值同步变化",
+    "ClientValidationIntro": "组件数据发生变化时，双向绑定 <code>bind-Value</code> 值同步变化",
     "ClientValidationP1": "<code>Transfer</code> 组件内置于 <code>ValidateForm</code> 组件即开启客户端验证，本例中组件双向绑定 <code>Model.Hobby</code> 类型为 <code>IEnumerable&lt;string&gt;</code>",
     "ClientValidationButtonText": "提交",
     "DisableTitle": "禁用",
@@ -2293,7 +2299,7 @@
     "OnListViewItemClick": "ListView元素点击时回调委托",
     "QueryAsync": "手工查询数据方法"
   },
-  "BootstrapBlazor.Shared.Samples.Locator": {
+  "BootstrapBlazor.Shared.Samples.Locators": {
     "Title": "获取 IP 地理位置",
     "SubTitle": "多用于系统日志跟踪与分析",
     "BasicUsageTitle": "普通用法",
@@ -2313,6 +2319,9 @@
     "BasicUsageP10": "1. 实现自定义定位器",
     "BasicUsageP11": "2. 配置自定义定位器",
     "BasicUsageP12": "通过 <code>AddBootstrapBlazor</code> 方法的回调委托参数进行自定义定位器 <code>CustomerLocator</code> 配置"
+  },
+  "BootstrapBlazor.Shared.Samples.Images": {
+    "BasicUsageTitle": "基础用法"
   },
   "BootstrapBlazor.Shared.Samples.Ips": {
     "BasicUsageTitle": "基础用法"
@@ -2695,6 +2704,7 @@
     "LinkButton": "链接按钮 LinkButton",
     "ListView": "列表组件 ListView",
     "Locator": "位置定位 Locator",
+    "Image": "图片 Image",
     "Popover": "弹出窗 Popover",
     "Print": "打印组件 Print",
     "QRCode": "二维码 QRCode",
@@ -2745,7 +2755,8 @@
     "Transition": "过渡效果 Transition",
     "Geolocation": "地理定位组件 Geolocation",
     "Notification": "浏览器通知 Notification",
-    "SignaturePad": "手写签名 SignaturePad"
+    "SignaturePad": "手写签名 SignaturePad",
+    "Speech": "语音识别 Speech"
   },
   "BootstrapBlazor.Shared.Samples.Table.TablesFooter": {
     "Left": "左对齐",

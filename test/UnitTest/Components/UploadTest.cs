@@ -437,7 +437,7 @@ public class UploadTest : BootstrapBlazorTestBase
     }
 
     [Fact]
-    public void ButtonUpload_IsDirectory_Ok()
+    public async Task ButtonUpload_IsDirectory_Ok()
     {
         var fileNames = new List<string>();
         var cut = Context.RenderComponent<ButtonUpload<string>>(pb =>
@@ -450,7 +450,7 @@ public class UploadTest : BootstrapBlazorTestBase
             });
         });
         var input = cut.FindComponent<InputFile>();
-        cut.InvokeAsync(() => input.Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs(new List<MockBrowserFile>()
+        await cut.InvokeAsync(() => input.Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs(new List<MockBrowserFile>()
         {
             new MockBrowserFile(),
             new MockBrowserFile("UploadTestFile2")
@@ -535,11 +535,6 @@ public class UploadTest : BootstrapBlazorTestBase
         var deleted = false;
         var cut = Context.RenderComponent<CardUpload<string>>(pb =>
         {
-            pb.Add(a => a.OnZoomAsync, file =>
-            {
-                zoom = true;
-                return Task.CompletedTask;
-            });
             pb.Add(a => a.OnDelete, file =>
             {
                 deleted = true;
@@ -557,8 +552,20 @@ public class UploadTest : BootstrapBlazorTestBase
                 new UploadFile() { FileName = null! }
             });
         });
+        cut.Contains("bb-viewer-wrapper active");
 
         // OnZoom
+        cut.InvokeAsync(() => cut.Find(".btn-outline-secondary").Click());
+        Assert.False(zoom);
+
+        cut.SetParametersAndRender(pb =>
+        {
+            pb.Add(a => a.OnZoomAsync, file =>
+            {
+                zoom = true;
+                return Task.CompletedTask;
+            });
+        });
         cut.InvokeAsync(() => cut.Find(".btn-outline-secondary").Click());
         Assert.True(zoom);
 

@@ -373,6 +373,7 @@
     "DisplayText": "Display",
     "EmptyText": "Empty",
     "LocatorText": "Locator",
+    "ImageViewerText": "ImageViewer",
     "IpText": "IpAddress",
     "PrintText": "Print",
     "TitleText": "Title",
@@ -1088,7 +1089,12 @@
     "Ret1": "<div class='text-danger'>Data returned from plugin1</div>",
     "Swal2Title": "After clicking the plugin2 button, a pop-up window will appear",
     "Swal2Content": "After clicking the plug-in button, the window will pop up and confirm before proceeding to the next step.",
-    "Ret2": "Data returned from plugin2"
+    "Ret2": "Data returned from plugin2",
+    "DoMethodAsync": "Instance Method",
+    "DoMethodAsyncIntro": "Call the instance method, please refer <a href='https://summernote.org/deep-dive'>summernote api</a>",
+    "DoMethodAsyncButton1": "Insert Html",
+    "DoMethodAsyncButton2": "Update to  H2",
+    "DoMethodAsyncButton3": "Insert Image"
   },
   "BootstrapBlazor.Shared.Samples.EditorForms": {
     "Title": "EditorForm",
@@ -1799,7 +1805,7 @@
     "InnerComponentLi3": "Birthday is the datetime type",
     "InnerComponentLi4": "Education is an enumeration type",
     "InnerComponentLi5": "Hobbies are collection types",
-    "InnerComponentP2": "In this example, by setting the <b>submit button</b>property <code>IsAsync</code> to submit the form asynchronously, click Submit to disable itself, and resume after the asynchronous operation is complete",
+    "InnerComponentP2": "In this example, by setting the <b>submit button</b> property <code>IsAsync</code> to submit the form asynchronously, click Submit to disable itself, and resume after the asynchronous operation is complete",
     "CustomDisplsyErrorTitle": "Custom displays error messages",
     "CustomDisplsyErrorIntro": "Set the custom error message by calling <code>SetError</code> method",
     "CustomDisplsyErrorP1": "<b>Scenario</b><p>the client verification after the pass of the database save operation, if other problems, you can still make a form custom error prompt, in this case, after the data verification is legal, click the <code>submit form</code> button, the name field will show, <code>the database already exists</code> such a custom prompt</p>",
@@ -2287,7 +2293,7 @@
     "OnListViewItemClick": "The ListView element calls back when it clicks on the delegate",
     "QueryAsync": "Manually query data methods"
   },
-  "BootstrapBlazor.Shared.Samples.Locator": {
+  "BootstrapBlazor.Shared.Samples.Locators": {
     "Title": "Get the IP geographic location",
     "SubTitle": "More for system log tracking and analysis",
     "BasicUsageTitle": "Basic usage",
@@ -2688,6 +2694,7 @@
     "LinkButton": "LinkButton",
     "ListView": "ListView",
     "Locator": "Locator",
+    "Image": "Image",
     "Popover": "Popover",
     "Print": "Print",
     "QRCode": "QRCode",
@@ -2736,7 +2743,8 @@
     "ChartDoughnut": "Doughnut",
     "ChartBubble": "Bubble",
     "Transition": "Transition",
-    "Geolocation": "Geolocation"
+    "Geolocation": "Geolocation",
+    "Speech": "Speech"
   },
   "BootstrapBlazor.Shared.Samples.Table.TablesFooter": {
     "Left": "Left",
