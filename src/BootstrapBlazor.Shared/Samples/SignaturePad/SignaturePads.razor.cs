@@ -56,10 +56,10 @@ public sealed partial class SignaturePads
     /// <returns></returns>
     private IEnumerable<AttributeItem> GetAttributes() => new AttributeItem[]
     {
-        new AttributeItem("OnResult","签名结果回调方法",  "","EventCallback<string>") ,
-        new AttributeItem("OnAlert","手写签名警告信息回调",  "","EventCallback<string>") ,
-        new AttributeItem("OnError","错误回调方法",  "","Func<string, Task>") ,
-        new AttributeItem("OnClose","手写签名关闭信息回调",  "","EventCallback") ,
+        new AttributeItem("OnResult","签名结果回调方法",  "","Func<string, Task>?") ,
+        new AttributeItem("OnAlert","手写签名警告信息回调",  "","Func<string, Task>?") ,
+        new AttributeItem("OnError","错误回调方法",  "","Func<string, Task>?") ,
+        new AttributeItem("OnClose","手写签名关闭信息回调",  "","Func<Task>?") ,
 
         new AttributeItem("SignAboveLabel","在框内签名标签文本",  "在框内签名") ,
         new AttributeItem("ClearBtnTitle","清除按钮文本",  "清除") ,
