@@ -2884,6 +2884,17 @@
     "SwitchButtonTextOn": "显示高级拷贝"
   },
   "BootstrapBlazor.Shared.Samples.SignaturePads": {
-    "Title": "SignaturePad 签名"
+    "BackText": "返回前页",
+    "BaseUsageText": "基础用法",
+    "ButtonCssStyleText": "按钮CSS式样",
+    "CustomButtonText": "自定义按钮文本",
+    "ResponsiveInterfaceText": "响应式签名界面",
+    "ResultBase64Text": "签名Base64",
+    "ResultText": "您的签名",
+    "Tips": "复杂签名会导致传输数据量大ssr会出现断流显示reload错误,配置更改单个传入集线器消息的最大大小(默认32KB)解决这个问题. <code> builder.Services.AddServerSideBlazor().AddHubOptions(o =>o.MaximumReceiveMessageSize = null); </code> ",
+    "TipsResponsive": "设备宽度小于640px(例如手机)自动置顶无边框,宽度小于500px按钮自动旋转. 可选透明背景.",
+    "Title": "SignaturePad 签名",
+    "SignatureText": "签名",
+    "CleanText": "清除"
   }
 }

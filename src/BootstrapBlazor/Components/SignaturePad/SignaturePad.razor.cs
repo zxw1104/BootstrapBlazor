@@ -44,70 +44,70 @@ public partial class SignaturePad : IDisposable
     /// </summary>
     [Parameter]
     [NotNull]
-    public string SignAboveLabel { get; set; } = "在框内签名";
+    public string? SignAboveLabel { get; set; }
 
     /// <summary>
     /// 清除按钮文本/Clear button title
     /// </summary>
     [Parameter]
     [NotNull]
-    public string ClearBtnTitle { get; set; } = "清除";
+    public string? ClearBtnTitle { get; set; }
 
     /// <summary>
     /// 请先签名提示文本/'Please provide a signature first' alert text
     /// </summary>
     [Parameter]
     [NotNull]
-    public string SignatureAlertText { get; set; } = "请先签名";
+    public string? SignatureAlertText { get; set; }
 
     /// <summary>
     /// 换颜色按钮文本/Change color button title
     /// </summary>
     [Parameter]
     [NotNull]
-    public string ChangeColorBtnTitle { get; set; } = "换颜色";
+    public string? ChangeColorBtnTitle { get; set; }
 
     /// <summary>
     /// 撤消按钮文本/Undo button title
     /// </summary>
     [Parameter]
     [NotNull]
-    public string UndoBtnTitle { get; set; } = "撤消";
+    public string? UndoBtnTitle { get; set; }
 
     /// <summary>
     /// 关闭按钮文本/Close button title
     /// </summary>
     [Parameter]
     [NotNull]
-    public string CloseBtnTitle { get; set; } = "关闭";
+    public string? CloseBtnTitle { get; set; }
 
     /// <summary>
     /// 保存为base64按钮文本/Save as Base64 button title
     /// </summary>
     [Parameter]
     [NotNull]
-    public string SaveBase64BtnTitle { get; set; } = "确定";
+    public string? SaveBase64BtnTitle { get; set; }
 
     /// <summary>
     /// 保存为PNG按钮文本/Save as PNG button title
     /// </summary>
     [Parameter]
     [NotNull]
-    public string SavePNGBtnTitle { get; set; } = "PNG";
+    public string? SavePNGBtnTitle { get; set; }
 
     /// <summary>
     /// 保存为JPG按钮文本/Save as JPG button title
     /// </summary>
     [Parameter]
     [NotNull]
-    public string SaveJPGBtnTitle { get; set; } = "JPG";
+    public string? SaveJPGBtnTitle { get; set; }
 
     /// <summary>
     /// 保存为SVG按钮文本/Save as SVG button title
     /// </summary>
     [Parameter]
     [NotNull]
-    public string SaveSVGBtnTitle { get; set; } = "SVG";
+    public string? SaveSVGBtnTitle { get; set; }
 
     /// <summary>
     /// 启用换颜色按钮/Enable change color button
@@ -193,7 +193,16 @@ public partial class SignaturePad : IDisposable
     {
         base.OnInitialized();
 
-        //ButtonScanText ??= Localizer[nameof(ButtonScanText)];
+        SignAboveLabel ??= Localizer[nameof(SignAboveLabel)];
+        ClearBtnTitle ??= Localizer[nameof(ClearBtnTitle)];
+        SignatureAlertText ??= Localizer[nameof(SignatureAlertText)];
+        ChangeColorBtnTitle ??= Localizer[nameof(ChangeColorBtnTitle)];
+        UndoBtnTitle ??= Localizer[nameof(UndoBtnTitle)];
+        CloseBtnTitle ??= Localizer[nameof(CloseBtnTitle)];
+        SaveBase64BtnTitle ??= Localizer[nameof(SaveBase64BtnTitle)];
+        SavePNGBtnTitle ??= Localizer[nameof(SavePNGBtnTitle)];
+        SaveJPGBtnTitle ??= Localizer[nameof(SaveJPGBtnTitle)];
+        SaveSVGBtnTitle ??= Localizer[nameof(SaveSVGBtnTitle)];
     }
 
     /// <summary>

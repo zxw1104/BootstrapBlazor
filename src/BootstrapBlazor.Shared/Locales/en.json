@@ -2871,6 +2871,17 @@
     "SwitchButtonTextOn": "Show Copy Dialog"
   },
   "BootstrapBlazor.Shared.Samples.SignaturePads": {
-    "Title": "SignaturePad"
+    "BackText": "Back",
+    "BaseUsageText": "Basic usage",
+    "ButtonCssStyleText": "Button CSS style",
+    "CustomButtonText": "Custom button text",
+    "ResponsiveInterfaceText": "Responsive signature interface",
+    "ResultBase64Text": "Your signature in base64",
+    "ResultText": "Your signature",
+    "Tips": "Complex signatures will cause a large amount of data to be transmitted, and ssr will show a reload error. The configuration changes the maximum size of a single incoming hub message (default 32KB) to solve this problem. <code> builder.Services.AddServerSideBlazor().AddHubOptions(o =>o.MaximumReceiveMessageSize = null); </code> ",
+    "TipsResponsive": "When device width is less than 640px (such as mobile phones) automatically topless without borders, the width is less than 500px the button is automatically rotated. Optional transparent background.",
+    "Title": "SignaturePad",
+    "SignatureText": "Signature",
+    "CleanText": "Clean"
   }
 }
