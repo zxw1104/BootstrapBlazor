@@ -18,7 +18,7 @@ builder.Services.AddResponseCompression();
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor().AddHubOptions(o =>o.MaximumReceiveMessageSize = null);
-builder.Services.AddBootstrapBlazorServices(builder.Configuration.GetSection("Themes")
+builder.Services.AddBootstrapBlazorServices();
 
 // 获得当前主题配置
 var themes = builder.Configuration.GetSection("Themes")
