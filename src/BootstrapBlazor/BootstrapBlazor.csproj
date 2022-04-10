@@ -25,21 +25,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Components\OnScreenKeyboard\**" />
     <Content Remove="Locales\*.json" />
     <EmbeddedResource Include="Locales\*.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Components\OnScreenKeyboard\**" />
-    <Compile Remove="wwwroot\lib\kioskboard\**" />
     <Content Remove="*.json" />
     <Content Remove="wwwroot\**\*.*" />
-    <Content Remove="wwwroot\lib\kioskboard\**" />
-    <EmbeddedResource Remove="Components\OnScreenKeyboard\**" />
-    <EmbeddedResource Remove="wwwroot\lib\kioskboard\**" />
-    <None Remove="Components\OnScreenKeyboard\**" />
-    <None Remove="wwwroot\lib\kioskboard\**" />
     <Content Include="wwwroot\css\bootstrap.blazor.bundle.min.css" />
     <Content Include="wwwroot\css\motronic.min.css" />
     <Content Include="wwwroot\js\bootstrap.blazor.bundle.min.js" />

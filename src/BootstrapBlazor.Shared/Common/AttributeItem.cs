@@ -12,28 +12,6 @@ namespace BootstrapBlazor.Shared.Common;
 public class AttributeItem
 {
     /// <summary>
-    /// 
-    /// </summary>
-    public AttributeItem() { }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="Name"></param>
-    /// <param name="Description"></param>
-    /// <param name="DefaultValue"></param>
-    /// <param name="Type"></param>
-    /// <param name="ValueList"></param>
-    public AttributeItem(string Name, string Description, string DefaultValue, string Type = "string", string ValueList = "-")
-    {
-        this.Name = Name;
-        this.Description = Description;
-        this.Type = Type;
-        this.ValueList = ValueList;
-        this.DefaultValue = DefaultValue;
-    }
-
-    /// <summary>
     /// 获得/设置 参数
     /// </summary>
     [DisplayName("参数")]
