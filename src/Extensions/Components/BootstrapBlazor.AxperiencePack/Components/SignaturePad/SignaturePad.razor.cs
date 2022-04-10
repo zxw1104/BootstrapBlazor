@@ -178,6 +178,11 @@ public partial class SignaturePad : IDisposable
     public string BackgroundColor { get; set; } = "rgb(255, 255, 255)";
 
     /// <summary>
+    /// 动态JS模块
+    /// </summary>
+    private IJSObjectReference? module;
+
+    /// <summary>
     ///
     /// </summary>
     protected ElementReference SignaturepadElement { get; set; }
@@ -194,7 +199,7 @@ public partial class SignaturePad : IDisposable
         base.OnInitialized();
 
         SignAboveLabel ??= Localizer[nameof(SignAboveLabel)];
-        ClearBtnTitle ??= Localizer[nameof(ClearBtnTitle)];
+        ClearBtnTitle ??= Localizer[nameof(ClearBtnTitle)] ;
         SignatureAlertText ??= Localizer[nameof(SignatureAlertText)];
         ChangeColorBtnTitle ??= Localizer[nameof(ChangeColorBtnTitle)];
         UndoBtnTitle ??= Localizer[nameof(UndoBtnTitle)];
@@ -214,8 +219,10 @@ public partial class SignaturePad : IDisposable
         {
             try
             {
+                module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/BootstrapBlazor.AxperiencePack/lib/signature_pad/app.js");
                 Interop = new JSInterop<SignaturePad>(JSRuntime);
-                await Interop.InvokeVoidAsync(this, SignaturepadElement, "bb_SignaturePad",  EnableAlertJS ? SignatureAlertText : "", BackgroundColor );
+                await module.InvokeVoidAsync("init", DotNetObjectReference.Create(this), SignaturepadElement, EnableAlertJS ? SignatureAlertText : null, BackgroundColor);
+                //await module.InvokeVoidAsync(this, SignaturepadElement, "bb_SignaturePad",  EnableAlertJS ? SignatureAlertText : "", BackgroundColor );
             }
             catch (Exception e)
             {
