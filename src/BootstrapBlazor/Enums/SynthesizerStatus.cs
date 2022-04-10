@@ -2,25 +2,38 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
+using System.Text.Json.Serialization;
+
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// 
+/// 语音合成状态枚举
 /// </summary>
-public class ProviderOption
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum SynthesizerStatus
 {
     /// <summary>
-    /// 获得/设置 语音识别指令名称
+    /// 正在合成
     /// </summary>
-    public string? MethodName { get; set; }
+    Synthesizer,
 
     /// <summary>
-    /// 获得/设置 IServiceProvider 实例
+    /// 朗读完毕
     /// </summary>
-    public IServiceProvider? ServiceProvider { get; set; }
+    Finished,
 
     /// <summary>
-    /// 获得/设置 回调方法
+    /// 取消
     /// </summary>
-    public Func<string, Task>? Callback { get; set; }
+    Cancel,
+
+    /// <summary>
+    /// 关闭
+    /// </summary>
+    Close,
+
+    /// <summary>
+    /// 出错
+    /// </summary>
+    Error
 }

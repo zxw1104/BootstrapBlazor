@@ -5,12 +5,13 @@
 namespace BootstrapBlazor.Components;
 
 /// <summary>
-/// SpeechOption 配置类
+/// ISpeechService 服务接口定义
 /// </summary>
-public class SpeechOption : ProviderOption
+public interface IRecognizerProvider
 {
     /// <summary>
-    /// 获得/设置 语音识别 Provider 实例
+    /// 识别语音回调方法
     /// </summary>
-    public ISpeechProvider? Provider { get; set; }
+    /// <returns></returns>
+    Task InvokeAsync(RecognizerOption option);
 }

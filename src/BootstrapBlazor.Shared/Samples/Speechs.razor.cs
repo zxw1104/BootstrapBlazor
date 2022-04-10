@@ -3,54 +3,110 @@
 // Website: https://www.blazor.zone or https://argozhang.github.io/
 
 using BootstrapBlazor.Components;
+using BootstrapBlazor.Shared.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Options;
 
 namespace BootstrapBlazor.Shared.Samples;
 
 /// <summary>
-/// 
+/// Speechs 示例
 /// </summary>
 public partial class Speechs
 {
     [Inject]
     [NotNull]
-    private SpeechService? SpeechService { get; set; }
+    private VersionService? VersionManager { get; set; }
 
     [Inject]
     [NotNull]
-    private IServiceProvider? ServiceProvider { get; set; }
+    private RecognizerService? RecognizerService { get; set; }
 
     [Inject]
     [NotNull]
-    private ISpeechProvider? SpeechProvider { get; set; }
+    private SynthesizerService? SynthesizerService { get; set; }
 
-    private string? Result { get; set; }
+    private List<ConsoleMessageItem> ConsoleMessages { get; } = new();
 
-    private async Task OnStart()
+    private string Version { get; set; } = "fetching";
+
+    private bool Show { get; set; }
+
+    /// <summary>
+    /// OnInitializedAsync 方法
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnInitializedAsync()
     {
-        await SpeechService.RecognizeOnceAsync(new SpeechOption()
-        {
-            ServiceProvider = ServiceProvider,
-            Callback = Recognize,
-            Provider = SpeechProvider
-        });
+        Version = await VersionManager.GetVersionAsync("bootstrapblazor.azurespeech");
     }
 
-    private Task Recognize(string result)
+    private void OnStart()
     {
-        Result = result;
+        Show = true;
+        _ = RecognizerService.RecognizeOnceAsync(Recognizer);
+    }
+
+    private Task Recognizer(string result)
+    {
+        Show = false;
+        ConsoleMessages.Add(new ConsoleMessageItem()
+        {
+            Message = result,
+            Color = Color.Success
+        });
+
+        ConfirmAction(result);
         StateHasChanged();
         return Task.CompletedTask;
     }
 
-    private async Task OnStop()
+    private void ConfirmAction(string result) => Task.Run(async () =>
     {
-        await SpeechService.CloseAsync(new SpeechOption()
+        if (CheckReceivedData(result))
         {
-            ServiceProvider = ServiceProvider,
-            Callback = Recognize,
-            Provider = SpeechProvider
-        });
+            var text = "您确认要把灯打开吗？请确认";
+            await SynthesizerService.SynthesizerOnceAsync(text, async status =>
+            {
+                ConsoleMessages.Add(new ConsoleMessageItem()
+                {
+                    Message = text,
+                    Color = Color.Warning
+                });
+                RecognizerConfirm();
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+    }).ConfigureAwait(false);
+
+    private void RecognizerConfirm() => Task.Run(async () =>
+    {
+        Show = true;
+        await InvokeAsync(StateHasChanged);
+
+        await Task.Delay(1000);
+        await RecognizerService.RecognizeOnceAsync(Confirm);
+    }).ConfigureAwait(false);
+
+    private async Task Confirm(string result)
+    {
+        Show = false;
+        await InvokeAsync(StateHasChanged);
+
+        if (result.Contains("确认"))
+        {
+            ConsoleMessages.Add(new ConsoleMessageItem()
+            {
+                Message = result,
+                Color = Color.Success
+            });
+            ConsoleMessages.Add(new ConsoleMessageItem()
+            {
+                Message = "开灯",
+                Color = Color.Danger
+            });
+            await InvokeAsync(StateHasChanged);
+        }
     }
+
+    private static bool CheckReceivedData(string result) => result.Contains("灯") && result.Contains("打开");
 }

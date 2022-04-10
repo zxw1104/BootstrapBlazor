@@ -59,7 +59,8 @@
     "validateforms": "ValidateForms",
     "wrap": "Table/TablesWrap",
     "virtualization": "Table/TablesVirtualization",
-    "signaturepads": "SignaturePad/SignaturePads"
+    "signaturepads": "SignaturePad/SignaturePads",
+    "speechwaves": "SpeechWaves"
   },
   "video": {
     "autorefresh": "BV1ap4y1x7Qn?p=8",

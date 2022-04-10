@@ -131,11 +131,47 @@ public sealed partial class NavMenu
 
         item = new DemoMenuItem()
         {
+            Text = Localizer["SpeechComponents"],
+            Icon = "fa fa-fw fa-microphone"
+        };
+        AddSpeech(item);
+
+        item = new DemoMenuItem()
+        {
             Text = Localizer["Components"],
             Icon = "fa fa-fw fa-fa",
             Url = "components"
         };
         AddSummary(item);
+    }
+
+    private void AddSpeech(DemoMenuItem item)
+    {
+        item.Items = new List<DemoMenuItem>
+        {
+            new()
+            {
+                IsNew = true,
+                Text = Localizer["SpeechIntro"],
+                Url = "speechs"
+            },
+            new()
+            {
+                Text = Localizer["Recognizer"],
+                Url = "recognizers"
+            },
+            new()
+            {
+                Text = Localizer["Synthesizer"],
+                Url = "synthesizers"
+            },
+            new()
+            {
+                Text = Localizer["SpeechWave"],
+                Url = "speechwaves"
+            },
+        };
+        AddBadge(item, count: 3);
     }
 
     private void AddQuickStar(DemoMenuItem item)
@@ -175,7 +211,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["GlobalException"],
                 Url = "globalexception"
             },
@@ -193,19 +228,16 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["ZIndex"],
                 Url = "layout"
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["Theme"],
                 Url = "themes"
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["FAIcon"],
                 Url = "fa-icons"
             },
@@ -229,7 +261,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["AutoFill"],
                 Url = "autofills"
             },
@@ -300,7 +331,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["Ip"],
                 Url = "ips"
             },
@@ -401,7 +431,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["Block"],
                 Url = "blocks"
             },
@@ -432,7 +461,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["Client"],
                 Url = "client"
             },
@@ -463,7 +491,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew= true,
                 Text = Localizer["Geolocation"],
                 Url = "geolocations"
             },
@@ -479,7 +506,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["LinkButton"],
                 Url = "linkbuttons"
             },
@@ -490,19 +516,16 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["Locator"],
                 Url = "locators"
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["ImageViewer"],
                 Url = "imageviewers"
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["Print"],
                 Url = "prints"
             },
@@ -513,13 +536,23 @@ public sealed partial class NavMenu
             },
             new()
             {
+                Text = Localizer["Recognizer"],
+                Url = "recognizers"
+            },
+            new()
+            {
                 Text = Localizer["Search"],
                 Url = "searchs"
             },
             new()
             {
                 Text = Localizer["SignaturePad"],
-                Url = "signaturepads"
+                Url = "signaturepads",
+            },
+            new()
+            {
+                Text = Localizer["SpeechWave"],
+                Url = "speechwaves"
             },
             tableItem,
             new()
@@ -551,12 +584,7 @@ public sealed partial class NavMenu
             {
                 Text = Localizer["Transition"],
                 Url = "transitions"
-            },
-            //new()
-            //{
-            //    Text = Localizer["Speech"],
-            //    Url = "speechs"
-            //}
+            }
         };
         AddBadge(item);
     }
@@ -596,7 +624,7 @@ public sealed partial class NavMenu
                 Url = "charts/bubble"
             }
         };
-        AddBadge(item);
+        AddBadge(item, count: 5);
     }
 
     private IEnumerable<DemoMenuItem> TableItems()
@@ -681,13 +709,11 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["TableExcel"],
                 Url = "tables/excel"
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["TableDynamicExcel"],
                 Url = "tables/dynamicexcel"
             },
@@ -733,7 +759,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["TableVirtualization"],
                 Url = "tables/virtualization"
             }
@@ -758,13 +783,11 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsUpdate = true,
                 Text = Localizer["Dialog"],
                 Url = "dialogs"
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["Dispatch"],
                 Url = "dispatchs"
             },
@@ -795,7 +818,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew= true,
                 Text = Localizer["Notification"],
                 Url = "notifications"
             },
@@ -859,7 +881,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["AnchorLink"],
                 Url = "anchorlinks"
             },
@@ -875,7 +896,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["FullScreen"],
                 Url = "fullscreens"
             },
@@ -886,7 +906,6 @@ public sealed partial class NavMenu
             },
             new()
             {
-                IsNew = true,
                 Text = Localizer["Logout"],
                 Url = "logouts"
             },
@@ -926,7 +945,6 @@ public sealed partial class NavMenu
         {
             new()
             {
-                IsNew = true,
                 Text = Localizer["Dragdrop"],
                 Url = "dragdrops"
             },
